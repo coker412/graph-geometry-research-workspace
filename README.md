@@ -1,157 +1,179 @@
-# Graph Geometry 研究框架交接包
+# Graph Geometry Research Workspace
 
-本压缩包只包含研究框架，不包含原作者的研究数据、项目内容、论文、PDF、运行日志、环境、Git 历史或认证信息。日常研究 Agent 使用 Codex；Rethlas 是可选且必须逐次人工批准的升级通道。
+一个给 Codex 使用的数学研究工作台模板，最初为离散几何与图曲率问题设计。
 
-本公开模板采用 MIT License，允许复制、修改和再发布，但须保留版权及许可声明。
+这个仓库一开始只是我给自己写的 `AGENTS.md` 和一套项目目录。后来我发现，数学研究很难放进一次对话里：证明路线会失败，定义需要反复核对，计算结果不能当成定理，几天以后还得知道上次卡在了哪里。于是这里逐渐加上了研究日志、证明依赖图、验证台账，以及一个可以在后台轮转猜想的队列。
 
-因为导师环境使用 GPT/Codex，本包有意不包含 Danus、Claude Code 或 Copilot 专用说明；对应规则已经统一写入 `AGENTS.md` 和本包的 Codex 配置说明，避免同时维护互相冲突的入口。
+所以，更准确地说，它是一套数学研究工作区和运行约定。它不是新的 AI 模型，也不是自动证明器。Codex 负责读文件、推进一个有边界的研究回合并把结果写回磁盘；研究者仍然负责判断问题、审查证明和决定什么时候可以公开结论。
 
-## 1. 包内包含什么
+## 它包含什么
 
-- `AGENTS.md`：研究纪律、证明验证、证据等级和重要猜想队列规则。
-- `TEACHER_SETUP_README.md`：Codex、外置 Rethlas、可选 Lean 和工作区的完整手工配置说明。
-- `RETHLAS使用教程.md`：Rethlas 问题准备、运行、结果同步和验证纪律。
-- `SETUP_AI_PROMPT.md`：导师可直接交给 AI 的配置任务书。
-- `TEACHER_QUEUE_QUICKSTART.md`：导师日常轮询只需照抄的一页说明。
-- `setup.sh`：统一的检查与可选 bootstrap 入口。
-- `queue.sh`：根目录下的极简队列入口。
-- `problems/important-conjectures/`：导师投放猜想的入口和队列配置。
-- `templates/`：问题、项目记录、证明图和 Rethlas 问题模板。
-- `tools/conjecture_queue.*`：Codex 长跑队列。
-- `tools/rethlas/`：可选的 Rethlas 包装脚本。
-- `tools/configure_teacher_workspace.sh`：把占位路径替换为导师机器上的实际路径。
-- `tools/export_teacher_framework.sh`：导师以后可再次生成同样的无数据白名单交接包。
-- `tools/verify_teacher_framework.sh`：检查结构、空数据目录、清单和常见秘密模式。
-- 空的 `projects/`、`archive/`、`shared/`、`library/`、`index/`、`agents/` 和 `environments/` 目录骨架。
+| 部分 | 作用 |
+|---|---|
+| [`AGENTS.md`](AGENTS.md) | 告诉 Codex 如何做文献、实验、证明搜索、失败记录和证明审计 |
+| `projects/` | 每个研究项目的长期工作目录 |
+| `problems/important-conjectures/` | 投放和配置重要猜想 |
+| `tools/conjecture_queue.*` | 按优先级轮转猜想，每次只运行一个有边界的 Codex 回合 |
+| `progress.md` 与 `ideas.md` | 保存推进过程、失败路线和下一步 |
+| `research-tree.md` 与 `proof-map.md` | 分别记录探索路线和候选证明的依赖关系 |
+| `verification-ledger.md` | 记录数学结论的证据等级、反例测试和审查结果 |
+| `tools/rethlas/` | 可选的 Rethlas 包装脚本，仅在研究者明确批准后使用 |
+| `setup.sh` | 检查或配置新的工作环境 |
 
-压缩包明确不包含：
+这个公开仓库只包含框架，不包含我的研究项目、论文、PDF、实验数据、运行日志或登录信息。
 
-- 原作者的 `projects/`、`archive/`、`shared/`、`library/` 或 `index/` 内容；
-- `.git/`、`.codex/`、`.claude/`、`.agents/`、`.vscode/`；
-- Conda/TeX/Julia 环境、缓存、日志、模型会话；
-- `.env`、API key、登录凭证、token、cookie；
-- PDF、压缩包、数据集、实验结果和论文源文件。
+## 工作方式
 
-## 2. 解压和校验
-
-在 Linux 机器上，把压缩包和同名 `.sha256` 文件放在同一目录：
-
-```bash
-# Linux
-sha256sum -c graph-geometry-framework-YYYYMMDD-HHMMSS.tar.gz.sha256
-
-# macOS
-shasum -a 256 -c graph-geometry-framework-YYYYMMDD-HHMMSS.tar.gz.sha256
-
-tar -xzf graph-geometry-framework-YYYYMMDD-HHMMSS.tar.gz
-cd graph-geometry-framework
+```mermaid
+flowchart LR
+    A[研究者填写猜想] --> B[队列选择一个可运行题目]
+    B --> C[Codex 推进一个研究回合]
+    C --> D[结果写入项目文件]
+    D --> E{当前状态}
+    E -->|仍有明确下一步| B
+    E -->|需要判断| F[等待研究者]
+    E -->|候选完整解答| G[冻结并进行严格审查]
 ```
 
-最简单的做法是让导师机器上的 AI 先读取 `SETUP_AI_PROMPT.md`。也可以直接做本地检查：
+队列不依赖某一次聊天的上下文。每轮结束后，定义、文献、实验、证明草稿、失败原因和下一步都会保存在项目目录中。下一次 Codex 调用先读这些文件，再从当前最小缺口继续。
+
+队列会公平轮转多个题目，避免一个难题占用所有时间。它只会自动继续 `queued` 和 `pushing` 状态。题目有歧义、需要升级工具、出现运行故障或得到完整候选解答时，会停下来等待研究者。
+
+## 快速开始
+
+### 1. 创建自己的副本
+
+在 GitHub 页面点击 **Use this template**，或者直接克隆：
+
+```bash
+git clone https://github.com/coker412/graph-geometry-research-workspace.git
+cd graph-geometry-research-workspace
+```
+
+### 2. 检查环境
 
 ```bash
 ./setup.sh --check
 ```
 
-## 3. 配置导师机器路径
+常用依赖包括 Git、Bash、Python 3、Codex CLI 和 tmux。计算实验默认使用名为 `graphlab` 的 Conda 环境。Rethlas 是可选组件，不影响普通 Codex 队列运行。
 
-`setup.sh --check` 会先验证原始分发包，然后自动调用路径配置工具并生成 `SETUP_REPORT.md`。如需手工指定路径，也可以运行：
-
-```bash
-CONDA_ROOT=/导师的/miniforge3 \
-RETHLAS_ROOT=/导师的/Rethlas \
-./tools/configure_teacher_workspace.sh
-```
-
-如果暂时不用 Rethlas，可以省略 `RETHLAS_ROOT`。配置脚本只替换本包中的路径占位符，不安装软件、不登录账户、不写入密钥。
-
-配置后检查：
-
-```bash
-./tools/verify_teacher_framework.sh
-```
-
-在导师明确允许联网下载和创建环境后，AI 可以运行：
-
-```bash
-./setup.sh --bootstrap
-```
-
-这会创建 `graphlab`，并把干净 Rethlas 克隆到工作区外部的兄弟目录。只需要普通 Codex 队列时使用：
+如果需要创建基础 Conda 环境：
 
 ```bash
 ./setup.sh --bootstrap --without-rethlas
 ```
 
-## 4. 安装本机工具
+联网安装和账户登录应由使用者自己确认。不要复制其他人的 Codex 登录目录。
 
-建议准备：
-
-- Linux、Bash、Git、tmux；
-- Conda/Miniforge；
-- `graphlab` Python 3.11 环境；
-- Codex CLI，并由导师使用自己的账户完成登录；
-- 可选：单独克隆的 Rethlas 和它自己的环境。
-
-Codex 的安装与登录方式可能更新，应以 [OpenAI Codex 官方文档](https://developers.openai.com/codex/cli/) 为准。不要复制原作者的 Codex 配置目录或登录文件。
-
-建立 Python 环境：
+### 3. 加入一道猜想
 
 ```bash
-conda create -n graphlab python=3.11 -y
-conda activate graphlab
+./queue.sh add hadwiger "Hadwiger conjecture"
 ```
 
-确认基础工具：
-
-```bash
-codex --version
-tmux -V
-./tools/conjecture_queue.sh doctor
-```
-
-## 5. 初始化导师自己的 Git 仓库
-
-压缩包不包含原作者的 Git 历史。导师检查文件后，可以建立全新的私人仓库：
-
-```bash
-git init
-git add .
-git status --short
-git commit -m "Initialize graph geometry research framework"
-```
-
-是否提交由导师决定。不要把 Codex 登录信息、`.env` 或后续私密数据加入 Git。
-
-## 6. 投放第一道重要猜想
-
-```bash
-./tools/conjecture_queue.sh add first-conjecture "第一道猜想的标题"
-```
-
-导师填写：
+填写题目：
 
 ```text
-problems/important-conjectures/items/first-conjecture/problem.md
+problems/important-conjectures/items/hadwiger/problem.md
 ```
 
-把同目录 `config.toml` 中的 `ready = false` 改为 `ready = true`，然后：
+然后把同目录 `config.toml` 中的：
+
+```toml
+ready = false
+```
+
+改为：
+
+```toml
+ready = true
+```
+
+题目原文由研究者维护。Runner 会保存输入快照，研究 Agent 不应改写原题。
+
+### 4. 先运行一个回合
 
 ```bash
-./tools/conjecture_queue.sh run --dry-run
-./tools/conjecture_queue.sh start
+./queue.sh check
+./queue.sh once
 ```
 
-第一次实际调度该题时，队列会创建独立的 `projects/conjecture-first-conjecture/`，并按 `AGENTS.md` 维护进度、路线图、证明依赖图和验证台账。
+`once` 只推进一个 Codex 回合，适合检查提示词、权限和项目结构是否符合预期。
 
-## 7. Rethlas 边界
+### 5. 在后台持续运行
 
-Rethlas 不在本压缩包内，也不是运行 Codex 队列的前提。只有导师明确批准某个精确证明缺口后，才单独安装并调用 Rethlas。任何 Rethlas 输出最高先视为 `agent-verified`，不能自动升级为 `human-verified`。
+```bash
+./queue.sh start
+```
 
-推荐布局固定为：
+常用管理命令：
+
+```bash
+./queue.sh status   # 查看队列状态
+./queue.sh watch    # 查看实时输出，按 Ctrl-b 再按 d 退出
+./queue.sh stop     # 当前回合结束后安全停止
+```
+
+后台模式使用 tmux。关闭终端不会终止任务，但关机或系统休眠仍会让任务停止或暂停。队列状态保存在磁盘上，重新启动后可以继续。
+
+## 每道猜想会生成什么
+
+第一次调度某道题时，Runner 会创建：
 
 ```text
-<某个上层目录>/
-├── graph-geometry-framework/   # 本压缩包解压目录
-└── Rethlas/                    # 独立克隆，绝不放入上面的工作区
+projects/conjecture-<slug>/
+├── README.md
+├── references.md
+├── ideas.md
+├── progress.md
+├── verification-ledger.md
+├── research-tree.md
+├── proof-map.md
+├── notes/
+├── code/
+├── lean/
+├── rethlas/
+├── input-snapshots/
+├── CURRENT_INPUT.md
+└── .conjecture-status
 ```
+
+这些文件不是为了把研究过程写得很繁琐，而是为了防止几个常见问题：失败路线被忘记，未经验证的引理悄悄变成前提，以及模型换了会话以后从头重复同一条错误路线。
+
+## 证明状态
+
+仓库使用以下证据等级：
+
+1. `conjecture`
+2. `experimental`
+3. `partial-result`
+4. `proof-draft`
+5. `agent-verified`
+6. `human-verified`
+7. `formalized`
+
+计算实验不能直接写成定理。Codex 或 Rethlas 给出的完整论证也只会先记为 `proof-draft` 或 `agent-verified`。只有研究者逐步复核并明确接受，才能标为 `human-verified`；Lean 等形式系统检查通过后才是 `formalized`。
+
+完整规则见 [`AGENTS.md`](AGENTS.md)。其中还规定了定义审计、文献核查、反例搜索、十项证明验证和 Rethlas 升级边界。
+
+## 关于 Rethlas
+
+普通队列只需要 Codex。Rethlas 用于处理已经压缩成精确命题的证明缺口，并且每次运行都需要研究者明确批准。它应安装在本工作区之外，相关命令和目录约定见 [`RETHLAS使用教程.md`](RETHLAS使用教程.md)。
+
+队列不会自行启动 Rethlas，也不会因为模型声称找到证明就宣布问题已经解决。
+
+## 适用范围
+
+这里的默认目录和例子来自图几何研究，包括离散曲率、图拉普拉斯、谱几何和离散几何流。不过大部分结构并不依赖具体领域。修改 `AGENTS.md`、项目模板和证据规则后，也可以用于其他需要长期证明搜索和计算实验的数学问题。
+
+## 更详细的文档
+
+- [`TEACHER_QUEUE_QUICKSTART.md`](TEACHER_QUEUE_QUICKSTART.md)：日常队列命令的一页说明
+- [`TEACHER_SETUP_README.md`](TEACHER_SETUP_README.md)：完整环境配置与交接说明
+- [`problems/important-conjectures/README.md`](problems/important-conjectures/README.md)：调度规则、状态机和恢复方式
+- [`SETUP_AI_PROMPT.md`](SETUP_AI_PROMPT.md)：可以直接交给 Codex 的环境配置任务书
+
+## License
+
+MIT License。可以复制、修改和再发布，但需要保留版权及许可声明。
