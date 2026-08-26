@@ -1,0 +1,22 @@
+# tmux 后台 session 名。
+session_name = "important_conjectures"
+
+# 留空表示使用 Codex CLI 当前默认模型；老师也可明确填写账户可用的 GPT/Codex 模型。
+model = ""
+reasoning_effort = "xhigh"
+
+# 单个 Codex 回合的硬超时。0 表示不设超时。
+attempt_timeout_minutes = 90
+
+# 一次 start 最多运行多久；0 表示持续运行，直到收到 stop 请求。
+max_wall_hours = 24
+
+# 没有可运行题目时定期重扫，老师可在运行期间继续投放新题。
+idle_seconds = 60
+max_idle_cycles = 0
+
+# 允许 Codex 使用内置网页搜索做文献核查。
+web_search = true
+
+# 连续 CLI/超时故障达到此数后冻结该题，避免无休止消耗额度。
+max_consecutive_runtime_failures = 3

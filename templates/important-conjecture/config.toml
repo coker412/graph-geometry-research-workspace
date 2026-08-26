@@ -1,0 +1,15 @@
+title = "{{TITLE}}"
+
+# 老师填完并核对 problem.md 后，改成 true 才会进入队列。
+ready = false
+enabled = true
+
+# 可选：复用 projects/ 下已有研究项目。留空时使用 projects/conjecture-<slug>/。
+# 必须是工作区内且位于 projects/ 下的相对路径。
+project_path = ""
+
+# 数字越大越先运行；同优先级按 slug 排序。每轮每题最多运行一次，避免单题独占。
+priority = 100
+
+# 0 表示不限制累计 Codex 回合数。也可先设成 3 或 5 观察质量。
+max_attempts = 0

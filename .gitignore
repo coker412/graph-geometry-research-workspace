@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# LaTeX auxiliary files
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.xdv
+
+# Data and results
+**/data/raw/
+**/results/raw/
+**/logs/
+
+# Secrets
+.env
+*.env
+agents/**/config.local.yaml
+agents/**/secrets.yaml
+agents/important-conjectures/STOP
+agents/important-conjectures/runner.lock
+exports/
