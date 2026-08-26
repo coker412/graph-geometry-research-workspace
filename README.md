@@ -12,7 +12,8 @@
 
 | 部分 | 作用 |
 |---|---|
-| [`AGENTS.md`](AGENTS.md) | 告诉 Codex 如何做文献、实验、证明搜索、失败记录和证明审计 |
+| [`AGENTS.md`](AGENTS.md) | 保存所有任务都必须遵守的核心规则 |
+| [`agents/instructions/`](agents/instructions/) | 按任务拆分研究流程、推理升级和论文写作细则 |
 | `projects/` | 每个研究项目的长期工作目录 |
 | `problems/important-conjectures/` | 投放和配置重要猜想 |
 | `tools/conjecture_queue.*` | 按优先级轮转猜想，每次只运行一个有边界的 Codex 回合 |
@@ -157,7 +158,7 @@ projects/conjecture-<slug>/
 
 计算实验不能直接写成定理。Codex 或 Rethlas 给出的完整论证也只会先记为 `proof-draft` 或 `agent-verified`。只有研究者逐步复核并明确接受，才能标为 `human-verified`；Lean 等形式系统检查通过后才是 `formalized`。
 
-完整规则见 [`AGENTS.md`](AGENTS.md)。其中还规定了定义审计、文献核查、反例搜索、十项证明验证和 Rethlas 升级边界。
+核心规则见 [`AGENTS.md`](AGENTS.md)，具体流程按任务放在 [`agents/instructions/`](agents/instructions/) 中。两者共同规定了定义审计、文献核查、反例搜索、十项证明验证和 Rethlas 升级边界。
 
 ## 关于 Rethlas
 

@@ -53,6 +53,9 @@ copy_executable() {
 
 mkdir -p "$package_root"
 copy_file "AGENTS.md" "AGENTS.md"
+copy_file "agents/instructions/research-workflow.md" "agents/instructions/research-workflow.md"
+copy_file "agents/instructions/queue-and-escalation.md" "agents/instructions/queue-and-escalation.md"
+copy_file "agents/instructions/paper-writing.md" "agents/instructions/paper-writing.md"
 copy_file ".gitignore" ".gitignore"
 copy_file "TEACHER_FRAMEWORK_HANDOFF.md" "README.md"
 copy_file "TEACHER_FRAMEWORK_HANDOFF.md" "TEACHER_FRAMEWORK_HANDOFF.md"

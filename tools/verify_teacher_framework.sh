@@ -15,6 +15,9 @@ fi
 
 required_files=(
   "AGENTS.md"
+  "agents/instructions/research-workflow.md"
+  "agents/instructions/queue-and-escalation.md"
+  "agents/instructions/paper-writing.md"
   "README.md"
   "TEACHER_FRAMEWORK_HANDOFF.md"
   "TEACHER_SETUP_README.md"
