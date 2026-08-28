@@ -113,6 +113,11 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertIn("方法族登记表", prompt)
         self.assertIn("搜索承诺为 `affirmative-proof`", prompt)
         self.assertIn("不得仅因现有路线耗尽或连续停滞", prompt)
+        self.assertIn("一个主路线", prompt)
+        self.assertIn("冻结依赖该结论的分支", prompt)
+        self.assertIn("不要因为第一条候选引理出现就终止全部探索者", prompt)
+        self.assertNotIn("每回合只深入一个路线", prompt)
+        self.assertNotIn("停止本回合的其他研究动作", prompt)
 
         offline_prompt = queue.build_prompt(
             items[0], project, snapshot, web_search=False
