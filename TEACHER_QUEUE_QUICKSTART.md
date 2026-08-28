@@ -34,6 +34,13 @@ problems/important-conjectures/items/hadwiger/problem.md
 
 把同目录 `config.toml` 中的 `ready = false` 改为 `ready = true`。
 
+新建题目默认使用 `search_contract = "affirmative-proof"`：长跑在搜索调度上假定完整
+肯定证明存在，不因几轮失败停止，但这不会提高证据等级；默认的
+`stagnation_rounds_before_blocked = 0` 表示不因停滞自动终止。若目标本来就是构造反例，改成
+`search_contract = "counterexample"`。希望先做不受文献路线影响的原创搜索时，把
+`problems/important-conjectures/runner.toml` 中的 `web_search` 设为 `false`；完成若干
+离线回合并保存方法族快照后，再改回 `true` 做联网核查。
+
 ## 开始长时间轮询
 
 最简单的 AI 指令：

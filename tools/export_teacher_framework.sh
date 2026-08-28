@@ -70,6 +70,7 @@ copy_file "problems/important-conjectures/README.md" "problems/important-conject
 copy_file "problems/important-conjectures/runner.toml" "problems/important-conjectures/runner.toml"
 copy_file "templates/important-conjecture/problem.md" "templates/important-conjecture/problem.md"
 copy_file "templates/important-conjecture/config.toml" "templates/important-conjecture/config.toml"
+copy_file "templates/blind-research-packet.md" "templates/blind-research-packet.md"
 copy_file "templates/project_template/ideas.md" "templates/project_template/ideas.md"
 copy_file "templates/research-visualization.md" "templates/research-visualization.md"
 copy_file "templates/rethlas-problem.md" "templates/rethlas-problem.md"

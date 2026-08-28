@@ -4,6 +4,14 @@ title = "{{TITLE}}"
 ready = false
 enabled = true
 
+# 长跑目标：affirmative-proof / counterexample / either。
+# affirmative-proof 会把完整肯定证明作为搜索工作假定和预期终点，但不改变证据等级。
+search_contract = "affirmative-proof"
+
+# 已有方法族全部阻塞后，至少连续做多少个无新机制的再发散回合才允许设为 blocked。
+# 0 表示永不因停滞自动 blocked，适合不设终止轮数的肯定证明长跑。
+stagnation_rounds_before_blocked = 0
+
 # 可选：复用 projects/ 下已有研究项目。留空时使用 projects/conjecture-<slug>/。
 # 必须是工作区内且位于 projects/ 下的相对路径。
 project_path = ""

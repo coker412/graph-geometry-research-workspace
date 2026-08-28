@@ -50,6 +50,7 @@ HUMAN_SETTABLE_STATUSES = {
     "completed",
 }
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+SEARCH_CONTRACTS = {"affirmative-proof", "counterexample", "either"}
 
 
 def now_iso() -> str:
@@ -123,6 +124,31 @@ def discover_items() -> list[dict]:
         except (OSError, tomllib.TOMLDecodeError) as exc:
             found.append({"slug": directory.name, "invalid": str(exc), "dir": directory})
             continue
+        search_contract = str(config.get("search_contract", "either")).strip()
+        if search_contract not in SEARCH_CONTRACTS:
+            found.append(
+                {
+                    "slug": directory.name,
+                    "invalid": f"未知 search_contract：{search_contract}",
+                    "dir": directory,
+                }
+            )
+            continue
+        try:
+            stagnation_rounds = int(
+                config.get("stagnation_rounds_before_blocked", 3)
+            )
+        except (TypeError, ValueError):
+            stagnation_rounds = 0
+        if stagnation_rounds < 0:
+            found.append(
+                {
+                    "slug": directory.name,
+                    "invalid": "stagnation_rounds_before_blocked 必须是非负整数",
+                    "dir": directory,
+                }
+            )
+            continue
         found.append(
             {
                 "slug": directory.name,
@@ -134,6 +160,8 @@ def discover_items() -> list[dict]:
                 "priority": int(config.get("priority", 100)),
                 "max_attempts": int(config.get("max_attempts", 0)),
                 "project_path": str(config.get("project_path", "")).strip(),
+                "search_contract": search_contract,
+                "stagnation_rounds_before_blocked": stagnation_rounds,
             }
         )
     return sorted(found, key=lambda item: (-item.get("priority", -10**9), item["slug"]))
@@ -216,6 +244,7 @@ def ensure_project(item: dict) -> Path:
             "本目录由重要猜想队列创建。正式题目以 `CURRENT_INPUT.md` 指向的快照为准。\n\n"
             "## 当前状态\n\n"
             "- 证据等级：`conjecture`\n"
+            f"- 搜索承诺：`{item.get('search_contract', 'either')}`\n"
             "- 当前路线：尚未开始\n"
             "- 最小缺口：尚未审计\n"
             "- 下一步：读取题目并完成定义审计\n"
@@ -223,14 +252,21 @@ def ensure_project(item: dict) -> Path:
         "references.md": "# References\n\n尚未开始文献审计。\n",
         "ideas.md": (
             "# Ideas\n\n"
-            "至少维护三个实质不同的攻击方向；每回合只深入推进一个方向。\n"
+            "至少维护三个实质不同的方法族；每回合只深入推进一个方向。\n\n"
+            "## 覆盖审计\n\n"
+            f"- 搜索承诺：`{item.get('search_contract', 'either')}`\n"
+            f"- 阻塞前所需连续再发散轮次：{item.get('stagnation_rounds_before_blocked', 3)}（0 = 不因停滞自动 blocked）\n"
+            "- 当前连续无新机制回合数：0\n\n"
+            "## 方法族登记表\n\n"
+            "| Family | 核心机制/表示 | 信息来源 | 暴露范围 | 决定性子目标 | 状态 | 结构性障碍 | 重开条件 |\n"
+            "|---|---|---|---|---|---|---|---|\n"
         ),
         "progress.md": "# Progress\n\n",
         "verification-ledger.md": (
             "# Verification Ledger\n\n"
             "每条新增数学推进都必须登记；未经审查的观察不得进入证明依赖。\n\n"
-            "| ID | 日期 | 数学陈述 | 证据等级 | 十项检查与反例测试 | 结论 | 证据文件 |\n"
-            "|---|---|---|---|---|---|---|\n"
+            "| ID | 日期 | 数学陈述 | 信息来源/隔离 | 证据等级 | 十项检查与反例测试 | 结论 | 证据文件 |\n"
+            "|---|---|---|---|---|---|---|---|\n"
         ),
         "research-tree.md": (
             "# Research Tree\n\n"
@@ -316,8 +352,35 @@ def create_input_snapshot(item: dict, project: Path) -> Path:
     return destination
 
 
-def build_prompt(item: dict, project: Path, snapshot: Path) -> str:
+def build_prompt(
+    item: dict, project: Path, snapshot: Path, web_search: bool = True
+) -> str:
     slug = item["slug"]
+    search_contract = str(item.get("search_contract", "either"))
+    stagnation_rounds = int(item.get("stagnation_rounds_before_blocked", 3))
+    if stagnation_rounds == 0:
+        blocked_instruction = "不得仅因现有路线耗尽或连续停滞而把题目设为 blocked；保持 pushing，在后续有边界回合持续生成新表述和新机制，直到完整结果、人工停止或其他必须暂停的状态。"
+    else:
+        blocked_instruction = f"只有所有主要路线均结构性阻塞，并且已经连续完成至少 {stagnation_rounds} 个没有发现新机制的再发散回合时才使用 blocked；写明最强中间结果、每条路线的精确障碍和停滞计数。发现新机制时把计数归零。"
+    if search_contract == "affirmative-proof":
+        search_instruction = f"""本题的搜索承诺为 `affirmative-proof`。在搜索调度上假定存在完整肯定证明，并把找到通过审计的完整肯定证明作为预期终点。不得因问题公开、困难、当前方法失败或已登记路线耗尽而降低目标或停止；应持续生成新的表述、不变量、分解、嵌入或构造。这个工作假定不是数学证据，主命题仍为 conjecture。任何主命题反例候选都必须完整记录和认证；若严格成立，它在逻辑上推翻工作假定并触发人工复核。"""
+    elif search_contract == "counterexample":
+        search_instruction = """本题的搜索承诺为 `counterexample`。持续寻找并严格认证足以否定主命题的反例，不以候选构造或有限参数检验代替证明。若出现完整肯定证明候选，同样必须记录并认证。"""
+    else:
+        search_instruction = """本题的搜索承诺为 `either`。完整肯定证明或经严格认证的决定性反例都可以成为预期终点；普通归约、局部计算和未闭合引理不能作为完成。"""
+    if web_search:
+        information_mode = """本次启动的信息模式为 `connected`：可以联网核查，但必须优先使用原始来源，逐项核对定义与假设。外部路线只能作为输入，不能替代关键证明。"""
+        evidence_instruction = "文献结论必须核对原始定理、全部假设和定义一致性。"
+        input_instruction = (
+            f"2. {project / 'CURRENT_INPUT.md'} 及其指向的题目、配置和参考资料"
+        )
+    else:
+        information_mode = """本次启动的信息模式为 `offline`：禁止公共互联网、连接器和新增外部数据源；不得读取题目快照 references/ 或项目 references.md 中的外部文献内容。只使用正式题目、明确允许的基础事实、内部生成且来源可追踪的项目状态、计算和推理。记忆中的外部定理只能登记为待核查线索，不能作为证明依据；不得宣称结果新颖或问题开放。"""
+        evidence_instruction = "外部记忆只可记录为待核查线索，不得进入证明依赖。"
+        input_instruction = (
+            f"2. {project / 'CURRENT_INPUT.md'} 及其指向的 problem.md 和 config.toml；"
+            "不要读取快照 references/"
+        )
     return f"""你正在执行“重要猜想队列”的一个独立研究回合。
 
 题目标识：{slug}
@@ -326,14 +389,20 @@ def build_prompt(item: dict, project: Path, snapshot: Path) -> str:
 
 先完整读取：
 1. {ROOT / 'AGENTS.md'}
-2. {project / 'CURRENT_INPUT.md'} 及其指向的题目、配置和参考资料
-3. 项目中的 README.md、references.md、ideas.md、progress.md、verification-ledger.md、research-tree.md、proof-map.md
+{input_instruction}
+3. 项目中的 README.md、ideas.md、progress.md、verification-ledger.md、research-tree.md、proof-map.md
 4. notes/ 中与当前缺口直接相关的材料
 
+{information_mode}
+
+{search_instruction}
+
 本回合要求：
-- 直接尝试证明或构造反例；不得以问题可能公开为理由停止。
+- 直接推进搜索承诺指定的目标；不得以问题可能公开为理由停止。
 - 选择一个最有价值、可在本回合推进的具体动作。初始阶段先审计定义、量词、归一化和最小例子；随后至少形成三个实质不同的路线，但每回合只深入一个路线。
-- 优先产生可复用的严格中间结果、反例测试、计算证据或精确缺口。文献结论必须核对原始定理、全部假设和定义一致性。
+- 在 ideas.md 维护方法族登记表，按核心机制而不是表面措辞归类；记录信息来源、暴露范围、决定性子目标、证伪测试、结构性障碍和重开条件。若路线只是把主问题改写成等强引理，不视为取得进展。
+- 若研究者已要求多智能体长跑且编排能力可用，按 research-workflow.md 动态分派：早期探索者使用不含热门路线和失败史的盲问题包；优先覆盖不足的方法族；候选证明另交对抗审计。子 Agent 只写独立分支产物，根 Agent 统一同步共享台账。
+- 优先产生可复用的严格中间结果、反例测试、计算证据或精确缺口。{evidence_instruction}
 - 推进要大胆：可以提出高风险引理、非常规构造和反例候选，并主动尝试修复失败路线。认证要保守：本回合新增的每一条数学推进都必须立即做与其强度相称的严格审查，明确检查定义、隐含假设、逻辑推出、反例、边界/除零/符号、外部定理假设以及是否只证明了弱化版本；把审查过程和结论写入 progress.md 或对应 notes 文件。
 - 只允许修改本研究项目 {project}；不得修改题目源目录、其他项目、AGENTS.md 或工作区规则；不得提交 Git。
 - 普通计算实验使用 graphlab 环境，记录命令、参数、随机种子和误差风险。
@@ -348,11 +417,12 @@ def build_prompt(item: dict, project: Path, snapshot: Path) -> str:
 - 如果题目有实质歧义，把状态改为 needs-human-input，并记录必须由老师决定的精确问题。
 - 如果需要 Rethlas 升级许可，把状态改为 needs-escalation-approval；不得启动 Rethlas。
 - 如果仍有明确可推进的下一步，状态保持 pushing。
-- 只有所有主要路线均结构性阻塞时才使用 blocked，并写明最强中间结果与每条路线的精确障碍。
+- {blocked_instruction}
+- blocked 路线只有出现能直接攻击原 gap 的新机制、不变量、构造、假设或工具才能重开；增加 Agent 数量、重复推导或改写措辞不是重开理由。
 
 回合结束前必须：
 1. 按 AGENTS.md 格式追加 progress.md；
-2. 把本回合每一条新增数学推进及十项检查结果登记到 verification-ledger.md；
+2. 把本回合每一条新增数学推进、来源标签、隔离方式及十项检查结果登记到 verification-ledger.md；
 3. 同步 README.md、ideas.md、research-tree.md、proof-map.md 中受本回合影响的状态；
 4. 把证明草稿、计算或交接稿放入正确子目录；
 5. 在 {project / '.conjecture-status'} 写入一个合法状态；
@@ -432,7 +502,9 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
 
     project = ensure_project(item)
     snapshot = create_input_snapshot(item, project)
-    prompt = build_prompt(item, project, snapshot)
+    prompt = build_prompt(
+        item, project, snapshot, web_search=bool(config.get("web_search", True))
+    )
     logs.mkdir(parents=True, exist_ok=True)
     command = codex_command(config, project, prompt, last_message)
     write_status(slug, "pushing")
@@ -677,7 +749,10 @@ def list_items() -> int:
     if not items:
         print("队列为空。使用：./tools/conjecture_queue.sh add <slug> \"题目标题\"")
         return 0
-    print(f"{'SLUG':28} {'READY':5} {'ON':3} {'PRI':4} {'ATTEMPTS':8} STATUS")
+    print(
+        f"{'SLUG':28} {'READY':5} {'ON':3} {'PRI':4} "
+        f"{'ATTEMPTS':8} {'CONTRACT':17} STATUS"
+    )
     for item in items:
         if item.get("invalid"):
             print(f"{item['slug']:28} ERROR: {item['invalid']}")
@@ -686,7 +761,8 @@ def list_items() -> int:
         state = read_runtime_state(slug) if project_dir(slug).is_dir() else {"attempts": 0}
         print(
             f"{slug:28} {str(item['ready']):5} {str(item['enabled']):3} "
-            f"{item['priority']:4} {int(state.get('attempts', 0)):8} {read_status(slug)}"
+            f"{item['priority']:4} {int(state.get('attempts', 0)):8} "
+            f"{item['search_contract']:17} {read_status(slug)}"
         )
     return 0
 

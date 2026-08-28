@@ -32,6 +32,7 @@ required_files=(
   "problems/important-conjectures/runner.toml"
   "templates/important-conjecture/problem.md"
   "templates/important-conjecture/config.toml"
+  "templates/blind-research-packet.md"
   "tools/conjecture_queue.py"
   "tools/conjecture_queue.sh"
   "tools/configure_teacher_workspace.sh"

@@ -53,10 +53,23 @@ class ConjectureQueueTest(unittest.TestCase):
 
         items = queue.discover_items()
         self.assertEqual([item["slug"] for item in items], ["sample-problem"])
+        self.assertEqual(items[0]["search_contract"], "affirmative-proof")
+        self.assertEqual(items[0]["stagnation_rounds_before_blocked"], 0)
         project = queue.ensure_project(items[0])
         first_snapshot = queue.create_input_snapshot(items[0], project)
         self.assertTrue((project / "progress.md").is_file())
         self.assertTrue((project / "verification-ledger.md").is_file())
+        self.assertIn(
+            "方法族登记表", (project / "ideas.md").read_text(encoding="utf-8")
+        )
+        self.assertIn(
+            "信息来源/隔离",
+            (project / "verification-ledger.md").read_text(encoding="utf-8"),
+        )
+        self.assertIn(
+            "搜索承诺：`affirmative-proof`",
+            (project / "README.md").read_text(encoding="utf-8"),
+        )
         self.assertTrue((first_snapshot / "problem.md").is_file())
         self.assertEqual(queue.read_status("sample-problem"), "queued")
 
@@ -93,6 +106,38 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertIn("needs-human-review", prompt)
         self.assertIn("solved-awaiting-human-verification", prompt)
         self.assertIn("只允许修改本研究项目", prompt)
+        self.assertIn("信息模式为 `connected`", prompt)
+        self.assertIn("方法族登记表", prompt)
+        self.assertIn("搜索承诺为 `affirmative-proof`", prompt)
+        self.assertIn("不得仅因现有路线耗尽或连续停滞", prompt)
+
+        offline_prompt = queue.build_prompt(
+            items[0], project, snapshot, web_search=False
+        )
+        self.assertIn("信息模式为 `offline`", offline_prompt)
+        self.assertIn("不要读取快照 references/", offline_prompt)
+        self.assertIn("不得宣称结果新颖或问题开放", offline_prompt)
+
+        command_config = queue.load_runner_config()
+        command_config["codex_path"] = "/bin/true"
+        connected_command = queue.codex_command(
+            command_config, project, prompt, project / "connected-last.md"
+        )
+        self.assertIn("--search", connected_command)
+        command_config["web_search"] = False
+        offline_command = queue.codex_command(
+            command_config, project, offline_prompt, project / "offline-last.md"
+        )
+        self.assertNotIn("--search", offline_command)
+
+        counterexample_item = dict(items[0])
+        counterexample_item["search_contract"] = "counterexample"
+        counterexample_item["stagnation_rounds_before_blocked"] = 3
+        counterexample_prompt = queue.build_prompt(
+            counterexample_item, project, snapshot
+        )
+        self.assertIn("搜索承诺为 `counterexample`", counterexample_prompt)
+        self.assertIn("至少 3 个没有发现新机制的再发散回合", counterexample_prompt)
 
         queue.write_status("higher", "needs-human-review")
         runnable = queue.eligible_items(queue.discover_items())
@@ -121,6 +166,20 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertTrue((project / "verification-ledger.md").is_file())
         marker = project / ".conjecture-queue-project.json"
         self.assertIn('"adopted_existing": true', marker.read_text(encoding="utf-8"))
+
+    def test_invalid_search_contract_is_rejected(self) -> None:
+        queue.add_item(argparse.Namespace(slug="invalid-contract", title="Invalid"))
+        config_path = queue.ITEMS_ROOT / "invalid-contract" / "config.toml"
+        content = config_path.read_text(encoding="utf-8")
+        content = content.replace(
+            'search_contract = "affirmative-proof"',
+            'search_contract = "wishful-thinking"',
+        )
+        config_path.write_text(content, encoding="utf-8")
+
+        item = queue.discover_items()[0]
+        self.assertIn("未知 search_contract", item["invalid"])
+        self.assertEqual(queue.eligible_items([item]), [])
 
     def test_foreground_restart_clears_old_stop_request(self) -> None:
         queue.RUNTIME_ROOT.mkdir(parents=True)

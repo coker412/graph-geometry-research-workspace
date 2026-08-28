@@ -227,7 +227,7 @@ problems/important-conjectures/README.md
 ```bash
 ./tools/conjecture_queue.sh add <slug> "猜想标题"
 # 填写 problems/important-conjectures/items/<slug>/problem.md
-# 在同目录 config.toml 中设置 ready = true
+# 在同目录 config.toml 中选择 search_contract，并设置 ready = true
 ./tools/conjecture_queue.sh doctor
 ./tools/conjecture_queue.sh run --dry-run
 ./tools/conjecture_queue.sh start
@@ -246,6 +246,11 @@ Runner 每次调用一个有边界的 `codex exec` 研究回合，把长期状�
 轮转到下一题。`needs-human-review` 只暂停当前题；只有完整解决主猜想的候选证明或严格反例才进入
 `solved-awaiting-human-verification`，使整个队列退出并等待老师复核。Rethlas 仍然是逐次人工
 批准的升级通道，不会被队列自动启动。
+
+新条目默认 `search_contract = "affirmative-proof"`，用于防止肯定证明搜索过早终止；
+同时默认 `stagnation_rounds_before_blocked = 0`，不因停滞自动停止。反例型任务应改成
+`counterexample`。`runner.toml` 的 `web_search = false` 用于离线原创
+阶段，`true` 用于联网文献核查。两阶段结果的来源和路线暴露必须分别记录。
 
 ## 6. 安装外部 Rethlas
 

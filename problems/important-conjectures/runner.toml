@@ -16,7 +16,7 @@ idle_seconds = 60
 max_idle_cycles = 0
 
 # 允许 Codex 使用内置网页搜索做文献核查。
-web_search = true
+web_search = false
 
 # 连续 CLI/超时故障达到此数后冻结该题，避免无休止消耗额度。
 max_consecutive_runtime_failures = 3
