@@ -16,6 +16,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import tomllib
@@ -51,6 +52,7 @@ HUMAN_SETTABLE_STATUSES = {
 }
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 SEARCH_CONTRACTS = {"affirmative-proof", "counterexample", "either"}
+INFORMATION_MODES = {"offline", "connected", "mixed-isolated"}
 
 
 def now_iso() -> str:
@@ -74,11 +76,34 @@ def load_runner_config() -> dict:
         "max_wall_hours": 24,
         "idle_seconds": 60,
         "max_idle_cycles": 0,
+        "information_mode": "",
         "web_search": True,
         "max_consecutive_runtime_failures": 3,
     }
     defaults.update(config)
+    resolve_information_mode(defaults)
     return defaults
+
+
+def resolve_information_mode(config: dict) -> str:
+    """Resolve the explicit mode, falling back to the legacy web_search flag."""
+    explicit = str(config.get("information_mode", "")).strip()
+    if explicit:
+        if explicit not in INFORMATION_MODES:
+            allowed = ", ".join(sorted(INFORMATION_MODES))
+            raise ValueError(f"未知 information_mode：{explicit}；可选值：{allowed}")
+        return explicit
+    return "connected" if bool(config.get("web_search", True)) else "offline"
+
+
+def effective_information_mode(item: dict, config: dict) -> str:
+    item_mode = str(item.get("information_mode", "")).strip()
+    if item_mode:
+        if item_mode not in INFORMATION_MODES:
+            allowed = ", ".join(sorted(INFORMATION_MODES))
+            raise ValueError(f"未知 information_mode：{item_mode}；可选值：{allowed}")
+        return item_mode
+    return resolve_information_mode(config)
 
 
 def item_dir(slug: str) -> Path:
@@ -134,6 +159,16 @@ def discover_items() -> list[dict]:
                 }
             )
             continue
+        information_mode = str(config.get("information_mode", "")).strip()
+        if information_mode and information_mode not in INFORMATION_MODES:
+            found.append(
+                {
+                    "slug": directory.name,
+                    "invalid": f"未知 information_mode：{information_mode}",
+                    "dir": directory,
+                }
+            )
+            continue
         try:
             stagnation_rounds = int(
                 config.get("stagnation_rounds_before_blocked", 3)
@@ -161,6 +196,7 @@ def discover_items() -> list[dict]:
                 "max_attempts": int(config.get("max_attempts", 0)),
                 "project_path": str(config.get("project_path", "")).strip(),
                 "search_contract": search_contract,
+                "information_mode": information_mode,
                 "stagnation_rounds_before_blocked": stagnation_rounds,
             }
         )
@@ -443,7 +479,14 @@ def locate_codex(config: dict) -> str:
     return found
 
 
-def codex_command(config: dict, project: Path, prompt: str, last_message: Path) -> list[str]:
+def codex_command(
+    config: dict,
+    project: Path,
+    prompt: str,
+    last_message: Path,
+    *,
+    web_search: bool | None = None,
+) -> list[str]:
     command = [
         locate_codex(config),
         "-C",
@@ -453,7 +496,9 @@ def codex_command(config: dict, project: Path, prompt: str, last_message: Path) 
         "-a",
         "never",
     ]
-    if bool(config.get("web_search", True)):
+    if web_search is None:
+        web_search = resolve_information_mode(config) == "connected"
+    if web_search:
         command.append("--search")
     model = str(config.get("model", "")).strip()
     if model:
@@ -465,6 +510,7 @@ def codex_command(config: dict, project: Path, prompt: str, last_message: Path) 
         [
             "exec",
             "--skip-git-repo-check",
+            "--ephemeral",
             "--json",
             "--output-last-message",
             str(last_message),
@@ -474,11 +520,435 @@ def codex_command(config: dict, project: Path, prompt: str, last_message: Path) 
     return command
 
 
+def bubblewrap_command(
+    command: list[str],
+    cwd: Path,
+    *,
+    writable_dirs: list[Path],
+    hidden_dirs: list[Path],
+) -> list[str]:
+    """Wrap a lane command in an OS mount namespace without network isolation."""
+    bubblewrap = shutil.which("bwrap")
+    if not bubblewrap:
+        raise RuntimeError(
+            "mixed-isolated 需要 bubblewrap 提供文件系统隔离；当前 PATH 中找不到 bwrap。"
+        )
+    wrapped = [
+        bubblewrap,
+        "--die-with-parent",
+        "--new-session",
+        "--unshare-pid",
+        "--ro-bind",
+        "/",
+        "/",
+        "--proc",
+        "/proc",
+    ]
+    for directory in writable_dirs:
+        resolved = directory.resolve()
+        if not resolved.is_dir():
+            raise RuntimeError(f"mixed-isolated 可写目录不存在：{resolved}")
+        wrapped.extend(["--bind", str(resolved), str(resolved)])
+    for directory in hidden_dirs:
+        resolved = directory.resolve()
+        if not resolved.is_dir():
+            raise RuntimeError(f"mixed-isolated 隐藏目录不存在：{resolved}")
+        wrapped.extend(["--tmpfs", str(resolved)])
+    wrapped.extend(["--chdir", str(cwd.resolve()), "--", *command])
+    return wrapped
+
+
 def append_history(slug: str, record: dict) -> None:
     history = RUNTIME_ROOT / "history.jsonl"
     RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
     with history.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps({"slug": slug, **record}, ensure_ascii=False) + "\n")
+
+
+def run_codex_process(
+    command: list[str],
+    cwd: Path,
+    event_log: Path,
+    timeout_seconds: int,
+    label: str = "",
+) -> dict:
+    """Run one Codex process and stream its output to a dedicated event log."""
+    event_log.parent.mkdir(parents=True, exist_ok=True)
+    timed_out = False
+    return_code = 1
+    try:
+        with event_log.open("w", encoding="utf-8") as output:
+            process = subprocess.Popen(
+                command,
+                cwd=cwd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                start_new_session=True,
+            )
+
+            def pump_output() -> None:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    output.write(line)
+                    output.flush()
+                    prefix = f"[{label}] " if label else ""
+                    print(prefix + line, end="", flush=True)
+
+            output_thread = threading.Thread(target=pump_output, daemon=True)
+            output_thread.start()
+            try:
+                return_code = process.wait(
+                    timeout=None if timeout_seconds <= 0 else timeout_seconds
+                )
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                os.killpg(process.pid, signal.SIGINT)
+                try:
+                    return_code = process.wait(timeout=30)
+                except subprocess.TimeoutExpired:
+                    os.killpg(process.pid, signal.SIGTERM)
+                    try:
+                        return_code = process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        os.killpg(process.pid, signal.SIGKILL)
+                        return_code = process.wait()
+            output_thread.join(timeout=10)
+            if process.stdout is not None:
+                process.stdout.close()
+    except OSError as exc:
+        event_log.write_text(f"runner error: {exc}\n", encoding="utf-8")
+        print(f"[{label or 'codex'}] runner error: {exc}", file=sys.stderr, flush=True)
+    return {"return_code": return_code, "timed_out": timed_out}
+
+
+def copy_connected_workspace(
+    project: Path, snapshot: Path, destination: Path
+) -> tuple[Path, Path]:
+    """Create a frozen workspace for the connected lane outside the live project."""
+    lane_root = destination / "workspace"
+    lane_project = lane_root / "project"
+    lane_root.mkdir(parents=True)
+    for relative in (
+        Path("AGENTS.md"),
+        Path("agents/instructions/research-workflow.md"),
+        Path("agents/instructions/queue-and-escalation.md"),
+    ):
+        source = ROOT / relative
+        if source.is_file():
+            target = lane_root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+
+    def ignore_untrusted_entries(directory: str, names: list[str]) -> set[str]:
+        ignored = {
+            ".git",
+            ".queue-runtime.json",
+            ".conjecture-status",
+            "__pycache__",
+        }
+        return {
+            name
+            for name in names
+            if name in ignored or (Path(directory) / name).is_symlink()
+        }
+
+    shutil.copytree(
+        project,
+        lane_project,
+        ignore=ignore_untrusted_entries,
+    )
+    replacements = (
+        (str(project.resolve()), str(lane_project.resolve())),
+        (str(ROOT.resolve()), str(lane_root.resolve())),
+    )
+    for path in lane_root.rglob("*"):
+        if not path.is_file() or path.is_symlink():
+            continue
+        if path.suffix not in {".md", ".toml", ".json", ".txt"}:
+            continue
+        try:
+            content = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            continue
+        rewritten = content
+        for old, new in replacements:
+            rewritten = rewritten.replace(old, new)
+        if rewritten != content:
+            path.write_text(rewritten, encoding="utf-8")
+    lane_snapshot = lane_project / snapshot.relative_to(project)
+    if not (lane_snapshot / "problem.md").is_file():
+        raise RuntimeError("联网隔离工作区缺少题目快照。")
+    return lane_root, lane_project
+
+
+def build_connected_lane_prompt(
+    item: dict, lane_root: Path, lane_project: Path, lane_snapshot: Path
+) -> str:
+    return f"""你是 mixed-isolated 研究回合中的联网核查分支。
+
+题目标识：{item['slug']}
+冻结题目：{lane_snapshot / 'problem.md'}
+冻结项目副本：{lane_project}
+
+先完整读取：
+1. {lane_root / 'AGENTS.md'}
+2. {lane_root / 'agents/instructions/research-workflow.md'}
+3. {lane_root / 'agents/instructions/queue-and-escalation.md'}
+4. 冻结项目副本中的 README.md、ideas.md、progress.md、proof-map.md 和直接相关 notes
+
+本分支允许使用公共互联网做文献核查。优先读取论文正文、出版方页面和作者版本，逐项核对
+定理的定义、归一化与全部假设。每条外部结论都要给出可追踪链接并标记 `web-source`。
+
+这是隔离分支。离线分支与本分支并行运行，汇合点之前看不到你的结果。你只能修改冻结项目
+副本，不得访问或修改原研究项目、题目源目录或 Git 仓库，不得调用 Rethlas 或网页端 Pro。
+不要改写共享台账或状态文件，也不要把文献中的断言当作已经证明的当前结论。
+
+选择一个信息增益最高的动作：核查当前关键缺口是否已有可用定理，寻找能改变方法族的新机制，
+或对冻结项目中的脆弱断言进行联网对抗审计。返回具体定理、公式、反例或精确适用性差异，
+拒绝只有状态和泛泛建议的报告。
+
+把完整结果写入 {lane_project / 'CONNECTED_RESULT.md'}。文件必须列出检索范围、来源链接、
+可安全导入的结论、不能直接导入的线索、对离线路线的潜在影响及仍需独立验证的缺口。
+最终答复只简要概括该文件。
+"""
+
+
+def build_mixed_integration_prompt(
+    item: dict, project: Path, checkpoint: Path
+) -> str:
+    return f"""你正在执行 mixed-isolated 回合的汇合审计。
+
+题目标识：{item['slug']}
+研究项目：{project}
+联网隔离结果：{checkpoint / 'connected' / 'RESULT.md'}
+隔离清单：{checkpoint / 'CHECKPOINT.json'}
+
+先完整读取 {ROOT / 'AGENTS.md'}、research-workflow.md、queue-and-escalation.md，以及项目当前
+README.md、ideas.md、progress.md、verification-ledger.md、research-tree.md、proof-map.md。
+离线分支已经在本项目完成本轮推进。联网分支只看过回合开始时的冻结副本，其结果直到现在
+才被复制到项目中。
+
+本汇合回合不允许新增互联网检索。逐条审计联网结果，核对来源、定义、假设和归一化；外部
+材料只能关闭它实际证明的步骤。保留离线独立得到的节点为 `internal-offline`。从联网材料
+导入的节点标为 `web-source`，受其影响的新推导标为 `mixed`。不得追溯性地把 mixed 节点
+记为独立发现。
+
+只导入经过审查且对当前项目有用的信息。无法核实或不能直接适用的内容保留为线索，不进入
+proof map 的已证明依赖。同步本回合影响到的共享台账和状态，并在 progress.md 记录汇合点、
+来源污染边界、接受或拒绝的联网结论以及下一步。候选完整证明或决定性反例仍须执行十项
+认证，证据等级不得自动升级为 human-verified。
+
+只能修改 {project}，不得修改题目源、其他项目、工作区规则或 Git 仓库。回合结束时给出
+产物、检查、证据等级、未关闭缺口和下一步。
+"""
+
+
+def persist_connected_checkpoint(
+    project: Path,
+    attempt_number: int,
+    connected_result: Path,
+    metadata: dict,
+) -> Path:
+    checkpoint = (
+        project
+        / "notes"
+        / "mixed-isolated"
+        / f"attempt-{attempt_number:04d}"
+    )
+    connected_dir = checkpoint / "connected"
+    connected_dir.mkdir(parents=True, exist_ok=True)
+    destination = connected_dir / "RESULT.md"
+    if connected_result.is_file() and not connected_result.is_symlink():
+        shutil.copy2(connected_result, destination)
+    else:
+        destination.write_text(
+            "# Connected lane result\n\n联网分支没有生成可导入的结果。\n",
+            encoding="utf-8",
+        )
+    (checkpoint / "CHECKPOINT.json").write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return checkpoint
+
+
+def execute_mixed_isolated_attempt(
+    item: dict,
+    config: dict,
+    project: Path,
+    snapshot: Path,
+    logs: Path,
+    attempt_number: int,
+    timestamp: str,
+) -> dict:
+    """Run offline and connected lanes concurrently, then integrate at a checkpoint."""
+    timeout_seconds = int(config.get("attempt_timeout_minutes", 90)) * 60
+    offline_event = logs / f"attempt-{attempt_number:04d}-{timestamp}-offline.jsonl"
+    offline_last = logs / f"attempt-{attempt_number:04d}-{timestamp}-offline-last.md"
+    connected_event = logs / f"attempt-{attempt_number:04d}-{timestamp}-connected.jsonl"
+    connected_last = logs / f"attempt-{attempt_number:04d}-{timestamp}-connected-last.md"
+    integration_event = logs / f"attempt-{attempt_number:04d}-{timestamp}-integration.jsonl"
+    integration_last = logs / f"attempt-{attempt_number:04d}-{timestamp}-last.md"
+
+    offline_prompt = build_prompt(item, project, snapshot, web_search=False)
+    offline_prompt += """
+
+你是 mixed-isolated 的离线分支。另一个联网分支正在隔离工作区并行核查，但其输入和输出
+在本回合汇合前对你不可见。保持 internal-offline 来源边界，不要搜索运行日志或隔离目录。
+"""
+    offline_codex_command = codex_command(
+        config, project, offline_prompt, offline_last, web_search=False
+    )
+
+    with tempfile.TemporaryDirectory(prefix=f"conjecture-{item['slug']}-mixed-") as raw:
+        isolated_root = Path(raw)
+        lane_root, lane_project = copy_connected_workspace(
+            project, snapshot, isolated_root
+        )
+        lane_snapshot = lane_project / snapshot.relative_to(project)
+        connected_prompt = build_connected_lane_prompt(
+            item, lane_root, lane_project, lane_snapshot
+        )
+        temporary_connected_event = isolated_root / "connected.jsonl"
+        temporary_connected_last = isolated_root / "connected-last.md"
+        connected_codex_command = codex_command(
+            config,
+            lane_project,
+            connected_prompt,
+            temporary_connected_last,
+            web_search=True,
+        )
+        offline_command = bubblewrap_command(
+            offline_codex_command,
+            project,
+            writable_dirs=[project, logs],
+            hidden_dirs=[isolated_root],
+        )
+        connected_command = bubblewrap_command(
+            connected_codex_command,
+            lane_project,
+            writable_dirs=[isolated_root],
+            hidden_dirs=[ROOT],
+        )
+
+        results: dict[str, dict] = {}
+
+        def run_lane(
+            name: str, command: list[str], cwd: Path, event_log: Path
+        ) -> None:
+            results[name] = run_codex_process(
+                command, cwd, event_log, timeout_seconds, label=name
+            )
+
+        offline_thread = threading.Thread(
+            target=run_lane,
+            args=("offline", offline_command, project, offline_event),
+        )
+        connected_thread = threading.Thread(
+            target=run_lane,
+            args=(
+                "connected",
+                connected_command,
+                lane_project,
+                temporary_connected_event,
+            ),
+        )
+        offline_thread.start()
+        connected_thread.start()
+        offline_thread.join()
+        connected_thread.join()
+
+        if temporary_connected_event.is_file():
+            shutil.copy2(temporary_connected_event, connected_event)
+        if temporary_connected_last.is_file():
+            shutil.copy2(temporary_connected_last, connected_last)
+        lane_result = lane_project / "CONNECTED_RESULT.md"
+        connected_result = lane_result if lane_result.is_file() else temporary_connected_last
+        metadata = {
+            "mode": "mixed-isolated",
+            "attempt": attempt_number,
+            "created_at": now_iso(),
+            "input_snapshot": str(snapshot.relative_to(project)),
+            "offline": results.get("offline", {}),
+            "connected": results.get("connected", {}),
+            "visibility_rule": (
+                "connected output copied into the live project only after both lanes ended"
+            ),
+            "provenance": {
+                "offline": "internal-offline",
+                "connected": "web-source",
+                "post-checkpoint": "mixed",
+            },
+        }
+        checkpoint = persist_connected_checkpoint(
+            project, attempt_number, connected_result, metadata
+        )
+
+    offline_result = results.get("offline", {"return_code": 1, "timed_out": False})
+    connected_result_state = results.get(
+        "connected", {"return_code": 1, "timed_out": False}
+    )
+    lane_failed = (
+        offline_result["return_code"] != 0
+        or connected_result_state["return_code"] != 0
+        or offline_result["timed_out"]
+        or connected_result_state["timed_out"]
+    )
+    if lane_failed:
+        metadata["integration"] = {
+            "status": "skipped",
+            "reason": "offline or connected lane failed or timed out",
+        }
+        (checkpoint / "CHECKPOINT.json").write_text(
+            json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        return {
+            "return_code": 1,
+            "timed_out": bool(
+                offline_result["timed_out"] or connected_result_state["timed_out"]
+            ),
+            "event_log": offline_event,
+            "last_message": offline_last if offline_last.is_file() else None,
+            "lane_event_logs": {
+                "offline": offline_event,
+                "connected": connected_event,
+            },
+        }
+
+    integration_prompt = build_mixed_integration_prompt(item, project, checkpoint)
+    integration_command = codex_command(
+        config,
+        project,
+        integration_prompt,
+        integration_last,
+        web_search=False,
+    )
+    integration_result = run_codex_process(
+        integration_command,
+        project,
+        integration_event,
+        timeout_seconds,
+        label="integration",
+    )
+    metadata["integration"] = integration_result
+    metadata["finished_at"] = now_iso()
+    (checkpoint / "CHECKPOINT.json").write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return {
+        **integration_result,
+        "event_log": integration_event,
+        "last_message": integration_last if integration_last.is_file() else None,
+        "lane_event_logs": {
+            "offline": offline_event,
+            "connected": connected_event,
+            "integration": integration_event,
+        },
+    }
 
 
 def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
@@ -489,73 +959,129 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     event_log = logs / f"attempt-{attempt_number:04d}-{timestamp}.jsonl"
     last_message = logs / f"attempt-{attempt_number:04d}-{timestamp}-last.md"
+    information_mode = effective_information_mode(item, config)
 
     if dry_run:
         project = project_dir(slug)
         snapshot = project / "input-snapshots" / "<computed-at-run-time>"
-        command = codex_command(config, project, "<研究提示词>", last_message)
         print(f"[dry-run] 将运行：{slug}")
         print(f"[dry-run] 项目：{project}")
         print(f"[dry-run] 快照：{snapshot}")
-        print(f"[dry-run] 命令：{shlex.join(command[:-1])} <研究提示词>")
+        print(f"[dry-run] 信息模式：{information_mode}")
+        if information_mode == "mixed-isolated":
+            isolated = project / "<temporary-connected-copy>"
+            offline_command = codex_command(
+                config,
+                project,
+                "<离线研究提示词>",
+                logs / "<offline-last.md>",
+                web_search=False,
+            )
+            connected_command = codex_command(
+                config,
+                isolated,
+                "<联网核查提示词>",
+                logs / "<connected-last.md>",
+                web_search=True,
+            )
+            integration_command = codex_command(
+                config,
+                project,
+                "<汇合审计提示词>",
+                logs / "<integration-last.md>",
+                web_search=False,
+            )
+            print(
+                "[dry-run] 并行离线分支："
+                f"{shlex.join(offline_command[:-1])} <离线研究提示词>"
+            )
+            print(
+                "[dry-run] 并行联网分支："
+                f"{shlex.join(connected_command[:-1])} <联网核查提示词>"
+            )
+            print(
+                "[dry-run] 汇合审计："
+                f"{shlex.join(integration_command[:-1])} <汇合审计提示词>"
+            )
+            print("[dry-run] 额度提示：一次 mixed-isolated 回合包含三次 Codex 调用。")
+        else:
+            command = codex_command(
+                config,
+                project,
+                "<研究提示词>",
+                last_message,
+                web_search=information_mode == "connected",
+            )
+            print(f"[dry-run] 命令：{shlex.join(command[:-1])} <研究提示词>")
         return 0
 
     project = ensure_project(item)
     snapshot = create_input_snapshot(item, project)
-    prompt = build_prompt(
-        item, project, snapshot, web_search=bool(config.get("web_search", True))
-    )
     logs.mkdir(parents=True, exist_ok=True)
-    command = codex_command(config, project, prompt, last_message)
     write_status(slug, "pushing")
     started_at = now_iso()
-    print(f"[{started_at}] 开始 {slug}，第 {attempt_number} 回合", flush=True)
-    timed_out = False
-    return_code = 1
-    timeout_seconds = int(config.get("attempt_timeout_minutes", 90)) * 60
-    with event_log.open("w", encoding="utf-8") as output:
-        process = subprocess.Popen(
-            command,
-            cwd=project,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1,
-            start_new_session=True,
+    print(
+        f"[{started_at}] 开始 {slug}，第 {attempt_number} 回合，"
+        f"mode={information_mode}",
+        flush=True,
+    )
+    if information_mode == "mixed-isolated":
+        outcome = execute_mixed_isolated_attempt(
+            item,
+            config,
+            project,
+            snapshot,
+            logs,
+            attempt_number,
+            timestamp,
         )
+    else:
+        prompt = build_prompt(
+            item,
+            project,
+            snapshot,
+            web_search=information_mode == "connected",
+        )
+        command = codex_command(
+            config,
+            project,
+            prompt,
+            last_message,
+            web_search=information_mode == "connected",
+        )
+        timeout_seconds = int(config.get("attempt_timeout_minutes", 90)) * 60
+        result = run_codex_process(
+            command, project, event_log, timeout_seconds
+        )
+        outcome = {
+            **result,
+            "event_log": event_log,
+            "last_message": last_message if last_message.is_file() else None,
+            "lane_event_logs": {information_mode: event_log},
+        }
 
-        def pump_output() -> None:
-            assert process.stdout is not None
-            for line in process.stdout:
-                output.write(line)
-                output.flush()
-                print(line, end="", flush=True)
-
-        output_thread = threading.Thread(target=pump_output, daemon=True)
-        output_thread.start()
-        try:
-            return_code = process.wait(timeout=None if timeout_seconds <= 0 else timeout_seconds)
-        except subprocess.TimeoutExpired:
-            timed_out = True
-            os.killpg(process.pid, signal.SIGINT)
-            try:
-                return_code = process.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGTERM)
-                try:
-                    return_code = process.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGKILL)
-                    return_code = process.wait()
-        output_thread.join(timeout=10)
+    return_code = int(outcome["return_code"])
+    timed_out = bool(outcome["timed_out"])
+    outcome_event_log = Path(outcome["event_log"])
+    outcome_last_message = outcome.get("last_message")
 
     state["attempts"] = attempt_number
     state["last_started_at"] = started_at
     state["last_finished_at"] = now_iso()
     state["last_return_code"] = return_code
     state["last_timed_out"] = timed_out
-    state["last_event_log"] = str(event_log.relative_to(ROOT))
-    state["last_message"] = str(last_message.relative_to(ROOT)) if last_message.exists() else None
+    state["last_information_mode"] = information_mode
+    state["last_event_log"] = str(outcome_event_log.relative_to(ROOT))
+    state["last_message"] = (
+        str(Path(outcome_last_message).relative_to(ROOT))
+        if outcome_last_message is not None
+        else None
+    )
+    state["last_lane_event_logs"] = {
+        name: str(Path(path).relative_to(ROOT))
+        for name, path in outcome.get("lane_event_logs", {}).items()
+        if Path(path).is_file()
+    }
     if return_code == 0 and not timed_out:
         state["consecutive_runtime_failures"] = 0
     else:
@@ -566,6 +1092,14 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             config.get("max_consecutive_runtime_failures", 3)
         ):
             write_status(slug, "runtime-error")
+
+    if (
+        information_mode == "mixed-isolated"
+        and (return_code != 0 or timed_out)
+        and read_status(slug) == "solved-awaiting-human-verification"
+    ):
+        state["mixed_audit_incomplete"] = True
+        write_status(slug, "needs-human-review")
 
     status = read_status(slug)
     if status not in KNOWN_STATUSES:
@@ -582,7 +1116,9 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             "return_code": return_code,
             "timed_out": timed_out,
             "status": status,
+            "information_mode": information_mode,
             "event_log": state["last_event_log"],
+            "lane_event_logs": state["last_lane_event_logs"],
         },
     )
     print(
@@ -749,9 +1285,10 @@ def list_items() -> int:
     if not items:
         print("队列为空。使用：./tools/conjecture_queue.sh add <slug> \"题目标题\"")
         return 0
+    config = load_runner_config()
     print(
         f"{'SLUG':28} {'READY':5} {'ON':3} {'PRI':4} "
-        f"{'ATTEMPTS':8} {'CONTRACT':17} STATUS"
+        f"{'ATTEMPTS':8} {'CONTRACT':17} {'MODE':16} STATUS"
     )
     for item in items:
         if item.get("invalid"):
@@ -762,7 +1299,9 @@ def list_items() -> int:
         print(
             f"{slug:28} {str(item['ready']):5} {str(item['enabled']):3} "
             f"{item['priority']:4} {int(state.get('attempts', 0)):8} "
-            f"{item['search_contract']:17} {read_status(slug)}"
+            f"{item['search_contract']:17} "
+            f"{effective_information_mode(item, config):16} "
+            f"{read_status(slug)}"
         )
     return 0
 
@@ -807,7 +1346,19 @@ def doctor() -> int:
         print(f"tmux: OK ({tmux})")
     else:
         errors.append("PATH 中找不到 tmux")
-    print(f"items: {len(discover_items())}")
+    items = discover_items()
+    print(f"items: {len(items)}")
+    mixed_requested = resolve_information_mode(config) == "mixed-isolated" or any(
+        not item.get("invalid")
+        and str(item.get("information_mode", "")).strip() == "mixed-isolated"
+        for item in items
+    )
+    if mixed_requested:
+        bubblewrap = shutil.which("bwrap")
+        if bubblewrap:
+            print(f"mixed isolation: OK ({bubblewrap})")
+        else:
+            errors.append("mixed-isolated 已启用，但 PATH 中找不到 bwrap")
     if not (ROOT / ".git" / "HEAD").is_file():
         warnings.append("当前工作区的 .git 不完整；队列可运行，但无法依赖 Git 审计。")
     for warning in warnings:

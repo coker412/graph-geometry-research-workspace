@@ -12,6 +12,10 @@ search_contract = "affirmative-proof"
 # 0 表示永不因停滞自动 blocked，适合不设终止轮数的肯定证明长跑。
 stagnation_rounds_before_blocked = 0
 
+# 可选：覆盖 runner.toml 的全局信息模式。
+# 留空表示继承；可选 offline / connected / mixed-isolated。
+information_mode = ""
+
 # 可选：复用 projects/ 下已有研究项目。留空时使用 projects/conjecture-<slug>/。
 # 必须是工作区内且位于 projects/ 下的相对路径。
 project_path = ""

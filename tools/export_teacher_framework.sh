@@ -108,6 +108,7 @@ done
 "$export_python" - "$package_root" "$WORKSPACE_ROOT" "$research_root" \
   "$package_conda_root" "$package_rethlas_root" <<'PY'
 from pathlib import Path
+import re
 import sys
 
 package_root = Path(sys.argv[1])
@@ -140,6 +141,22 @@ for path in package_root.rglob("*"):
     for old, new in replacements:
         content = content.replace(old, new)
     path.write_text(content, encoding="utf-8")
+
+runner_config = package_root / "problems/important-conjectures/runner.toml"
+content = runner_config.read_text(encoding="utf-8")
+generic_values = {
+    "session_name": '"important_conjectures"',
+    "max_wall_hours": "24",
+    "information_mode": '""',
+    "web_search": "false",
+}
+for key, value in generic_values.items():
+    content, count = re.subn(
+        rf"(?m)^{re.escape(key)}\s*=.*$", f"{key} = {value}", content
+    )
+    if count != 1:
+        raise SystemExit(f"cannot normalize runner setting: {key}")
+runner_config.write_text(content, encoding="utf-8")
 PY
 
 "$export_python" - "$package_root" <<'PY'

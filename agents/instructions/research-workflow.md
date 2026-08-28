@@ -42,6 +42,10 @@
   不能替代当前证明中的逻辑缺口。
 - `staged`：先进行若干 `offline` 发散回合，冻结内部路线快照，再切换到 `connected`
   做文献核查和交叉验证。切换时间、原因和受外部信息影响的节点必须记录。
+- `mixed-isolated`：离线原创分支与联网核查分支并行运行。联网分支只能读取回合开始时的
+  冻结副本，并在独立临时工作区写入结果；离线分支在汇合点之前不能看到联网输入、日志
+  或输出。两边结束后由单独的汇合审计导入结果。离线节点标记 `internal-offline`，联网
+  结论标记 `web-source`，汇合后受外部信息影响的推导标记 `mixed`。
 
 “来源隔离”和“路线隔离”是两件事。离线回合仍可读取本项目的长期状态；若需要真正
 独立的重新发现，应给探索者只读的盲问题包，其中只含正式陈述、定义、允许的基础事实
@@ -170,7 +174,7 @@
 ## [日期] 想法: [名称]
 
 ### 信息模式与来源
-offline / connected / staged；internal-offline / provided-source / web-source / mixed
+offline / connected / staged / mixed-isolated；internal-offline / provided-source / web-source / mixed
 
 ### 搜索承诺
 affirmative-proof / counterexample / either；连续无新机制回合数

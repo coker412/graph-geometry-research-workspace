@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import importlib.util
+import io
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
@@ -180,6 +183,221 @@ class ConjectureQueueTest(unittest.TestCase):
         item = queue.discover_items()[0]
         self.assertIn("未知 search_contract", item["invalid"])
         self.assertEqual(queue.eligible_items([item]), [])
+
+    def test_information_mode_resolution_and_item_override(self) -> None:
+        self.assertEqual(
+            queue.resolve_information_mode({"web_search": False}), "offline"
+        )
+        self.assertEqual(
+            queue.resolve_information_mode({"web_search": True}), "connected"
+        )
+        self.assertEqual(
+            queue.resolve_information_mode(
+                {"information_mode": "mixed-isolated", "web_search": False}
+            ),
+            "mixed-isolated",
+        )
+        self.assertEqual(
+            queue.effective_information_mode(
+                {"information_mode": "offline"},
+                {"information_mode": "connected"},
+            ),
+            "offline",
+        )
+        with self.assertRaisesRegex(ValueError, "未知 information_mode"):
+            queue.resolve_information_mode({"information_mode": "hybrid"})
+
+    def test_invalid_item_information_mode_is_rejected(self) -> None:
+        queue.add_item(argparse.Namespace(slug="invalid-mode", title="Invalid Mode"))
+        config_path = queue.ITEMS_ROOT / "invalid-mode" / "config.toml"
+        content = config_path.read_text(encoding="utf-8").replace(
+            'information_mode = ""', 'information_mode = "hybrid"'
+        )
+        config_path.write_text(content, encoding="utf-8")
+
+        item = queue.discover_items()[0]
+        self.assertIn("未知 information_mode", item["invalid"])
+        self.assertEqual(queue.eligible_items([item]), [])
+
+    def test_mixed_isolated_dry_run_shows_three_capability_lanes(self) -> None:
+        queue.add_item(argparse.Namespace(slug="mixed", title="Mixed"))
+        config_path = queue.ITEMS_ROOT / "mixed" / "config.toml"
+        content = config_path.read_text(encoding="utf-8")
+        content = content.replace("ready = false", "ready = true")
+        content = content.replace(
+            'information_mode = ""', 'information_mode = "mixed-isolated"'
+        )
+        config_path.write_text(content, encoding="utf-8")
+        item = queue.discover_items()[0]
+        config = queue.load_runner_config()
+        config["codex_path"] = "/bin/true"
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(queue.execute_attempt(item, config, dry_run=True), 0)
+        rendered = output.getvalue()
+        self.assertIn("并行离线分支", rendered)
+        self.assertIn("并行联网分支", rendered)
+        self.assertIn("汇合审计", rendered)
+        self.assertIn("三次 Codex 调用", rendered)
+        connected_line = next(
+            line for line in rendered.splitlines() if "并行联网分支" in line
+        )
+        offline_line = next(
+            line for line in rendered.splitlines() if "并行离线分支" in line
+        )
+        integration_line = next(
+            line for line in rendered.splitlines() if "汇合审计：" in line
+        )
+        self.assertIn("--search", connected_line)
+        self.assertNotIn("--search", offline_line)
+        self.assertNotIn("--search", integration_line)
+        self.assertFalse(queue.project_dir("mixed").exists())
+        self.assertFalse(queue.RUNTIME_ROOT.exists())
+
+    def test_connected_lane_uses_a_frozen_project_copy(self) -> None:
+        queue.add_item(argparse.Namespace(slug="frozen", title="Frozen"))
+        config_path = queue.ITEMS_ROOT / "frozen" / "config.toml"
+        config_path.write_text(
+            config_path.read_text(encoding="utf-8").replace(
+                "ready = false", "ready = true"
+            ),
+            encoding="utf-8",
+        )
+        item = queue.discover_items()[0]
+        project = queue.ensure_project(item)
+        snapshot = queue.create_input_snapshot(item, project)
+        (project / "progress.md").write_text("before checkpoint\n", encoding="utf-8")
+        (project / "notes" / "absolute-path.md").write_text(
+            f"see {project / 'progress.md'}\n", encoding="utf-8"
+        )
+        (project / "notes" / "outside-link").symlink_to(queue.ROOT / "AGENTS.md")
+
+        with tempfile.TemporaryDirectory() as raw:
+            lane_root, lane_project = queue.copy_connected_workspace(
+                project, snapshot, Path(raw)
+            )
+            (project / "progress.md").write_text(
+                "offline branch changed\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                (lane_project / "progress.md").read_text(encoding="utf-8"),
+                "before checkpoint\n",
+            )
+            rewritten = (lane_project / "notes" / "absolute-path.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertNotIn(str(project), rewritten)
+            self.assertIn(str(lane_project), rewritten)
+            self.assertFalse((lane_project / "notes" / "outside-link").exists())
+            lane_snapshot = lane_project / snapshot.relative_to(project)
+            prompt = queue.build_connected_lane_prompt(
+                item, lane_root, lane_project, lane_snapshot
+            )
+            self.assertIn("联网核查分支", prompt)
+            self.assertIn("汇合点之前看不到你的结果", prompt)
+            self.assertIn("web-source", prompt)
+            wrapped = queue.bubblewrap_command(
+                ["/bin/true"],
+                lane_project,
+                writable_dirs=[lane_project],
+                hidden_dirs=[queue.ROOT],
+            )
+            self.assertIn("--ro-bind", wrapped)
+            self.assertIn("--tmpfs", wrapped)
+            self.assertEqual(wrapped[-1], "/bin/true")
+
+    @unittest.skipUnless(queue.shutil.which("bwrap"), "bubblewrap is required")
+    def test_mixed_isolated_attempt_runs_two_lanes_then_integration(self) -> None:
+        queue.add_item(argparse.Namespace(slug="mixed-run", title="Mixed Run"))
+        config_path = queue.ITEMS_ROOT / "mixed-run" / "config.toml"
+        content = config_path.read_text(encoding="utf-8")
+        content = content.replace("ready = false", "ready = true")
+        content = content.replace(
+            'information_mode = ""', 'information_mode = "mixed-isolated"'
+        )
+        config_path.write_text(content, encoding="utf-8")
+        item = queue.discover_items()[0]
+
+        with tempfile.TemporaryDirectory() as binary_dir:
+            fake_codex = Path(binary_dir) / "fake-codex"
+            fake_codex.write_text(
+                """#!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+arguments = sys.argv[1:]
+output = Path(arguments[arguments.index('--output-last-message') + 1])
+output.parent.mkdir(parents=True, exist_ok=True)
+output.write_text('fake final message\\n', encoding='utf-8')
+if '--search' in arguments:
+    Path('CONNECTED_RESULT.md').write_text(
+        '# Connected result\\n\\nweb-source test result\\n', encoding='utf-8'
+    )
+""",
+                encoding="utf-8",
+            )
+            fake_codex.chmod(0o755)
+            config = queue.load_runner_config()
+            config["codex_path"] = str(fake_codex)
+            config["attempt_timeout_minutes"] = 1
+            self.assertEqual(queue.execute_attempt(item, config), 0)
+
+        project = queue.project_dir("mixed-run")
+        checkpoint = (
+            project / "notes" / "mixed-isolated" / "attempt-0001"
+        )
+        self.assertIn(
+            "web-source test result",
+            (checkpoint / "connected" / "RESULT.md").read_text(encoding="utf-8"),
+        )
+        metadata = queue.json.loads(
+            (checkpoint / "CHECKPOINT.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(metadata["mode"], "mixed-isolated")
+        self.assertEqual(metadata["offline"]["return_code"], 0)
+        self.assertEqual(metadata["connected"]["return_code"], 0)
+        self.assertEqual(metadata["integration"]["return_code"], 0)
+        runtime = queue.read_runtime_state("mixed-run")
+        self.assertEqual(runtime["last_information_mode"], "mixed-isolated")
+        self.assertEqual(
+            set(runtime["last_lane_event_logs"]),
+            {"offline", "connected", "integration"},
+        )
+
+    def test_failed_mixed_audit_cannot_freeze_as_solved(self) -> None:
+        queue.add_item(argparse.Namespace(slug="mixed-failure", title="Mixed Failure"))
+        config_path = queue.ITEMS_ROOT / "mixed-failure" / "config.toml"
+        content = config_path.read_text(encoding="utf-8")
+        content = content.replace("ready = false", "ready = true")
+        content = content.replace(
+            'information_mode = ""', 'information_mode = "mixed-isolated"'
+        )
+        config_path.write_text(content, encoding="utf-8")
+        item = queue.discover_items()[0]
+        config = queue.load_runner_config()
+
+        def failed_mixed(*args: object, **kwargs: object) -> dict:
+            logs = Path(args[4])
+            event_log = logs / "failed.jsonl"
+            event_log.parent.mkdir(parents=True, exist_ok=True)
+            event_log.write_text("failure\n", encoding="utf-8")
+            queue.write_status("mixed-failure", "solved-awaiting-human-verification")
+            return {
+                "return_code": 1,
+                "timed_out": False,
+                "event_log": event_log,
+                "last_message": None,
+                "lane_event_logs": {"offline": event_log},
+            }
+
+        with mock.patch.object(
+            queue, "execute_mixed_isolated_attempt", side_effect=failed_mixed
+        ):
+            self.assertEqual(queue.execute_attempt(item, config), 1)
+        self.assertEqual(queue.read_status("mixed-failure"), "needs-human-review")
+        runtime = queue.read_runtime_state("mixed-failure")
+        self.assertTrue(runtime["mixed_audit_incomplete"])
 
     def test_foreground_restart_clears_old_stop_request(self) -> None:
         queue.RUNTIME_ROOT.mkdir(parents=True)

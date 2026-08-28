@@ -16,6 +16,9 @@ idle_seconds = 60
 max_idle_cycles = 0
 
 # 允许 Codex 使用内置网页搜索做文献核查。
+# information_mode 留空时继续使用这个兼容开关；也可填写
+# offline / connected / mixed-isolated。留空不会改变已有任务的行为。
+information_mode = ""
 web_search = false
 
 # 连续 CLI/超时故障达到此数后冻结该题，避免无休止消耗额度。
