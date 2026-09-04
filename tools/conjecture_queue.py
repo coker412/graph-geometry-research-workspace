@@ -28,8 +28,20 @@ ITEMS_ROOT = QUEUE_ROOT / "items"
 RUNNER_CONFIG = QUEUE_ROOT / "runner.toml"
 ITEM_TEMPLATE_ROOT = ROOT / "templates" / "important-conjecture"
 RUNTIME_ROOT = ROOT / "agents" / "important-conjectures"
+LANE_RUNTIME_ROOT = Path.home() / ".cache" / "graph-geometry-codex-lanes"
 STOP_FILE = RUNTIME_ROOT / "STOP"
 LOCK_FILE = RUNTIME_ROOT / "runner.lock"
+CURRENT_STATE_NAME = "CURRENT_STATE.md"
+CURRENT_STATE_MAX_LINES = 300
+CURRENT_STATE_MAX_BYTES = 32 * 1024
+CURRENT_STATE_REQUIRED_HEADINGS = (
+    "## Control",
+    "## Problem and scope",
+    "## Current mathematical status",
+    "## Active proof frontier",
+    "## Next bounded round",
+    "## Evidence pointers",
+)
 
 RUNNABLE_STATUSES = {"queued", "pushing"}
 KNOWN_STATUSES = RUNNABLE_STATUSES | {
@@ -240,6 +252,109 @@ def write_runtime_state(slug: str, state: dict) -> None:
     )
 
 
+def current_state_template(item: dict, *, migration_status: str) -> str:
+    legacy = migration_status == "pending"
+    evidence_ceiling = "unmigrated-see-verification-ledger" if legacy else "conjecture"
+    status_summary = (
+        "Legacy state has not yet been summarized; this file changes no evidence level."
+        if legacy
+        else "The main statement remains a conjecture."
+    )
+    return f"""# Current State
+
+This is the bounded entry point for the next research round. It summarizes current
+state but does not replace the evidence files it cites. Keep it under
+{CURRENT_STATE_MAX_LINES} lines and {CURRENT_STATE_MAX_BYTES // 1024} KiB.
+
+## Control
+
+- schema-version: 1
+- updated-at: {now_iso()}
+- migration-status: `{migration_status}`
+- queue-status: `{read_status(item['slug'])}`
+- search-contract: `{item.get('search_contract', 'either')}`
+- evidence-ceiling: `{evidence_ceiling}`
+
+## Problem and scope
+
+- Formal input: `CURRENT_INPUT.md` and its immutable snapshot.
+- Definitions and normalization: not yet audited.
+- Scope exclusions: none recorded.
+
+## Current mathematical status
+
+- Strongest usable results: {'see the existing verification ledger' if legacy else 'none recorded'}.
+- Current conclusion: {status_summary}
+- Human decisions pending: none.
+
+## Active proof frontier
+
+- Smallest open gap: audit the statement and definitions.
+- Active routes: not yet selected.
+- Blocked routes worth remembering: none.
+
+## Next bounded round
+
+- Goal: audit definitions and form at least three genuinely different method families.
+- Acceptance: record a precise gap, strict intermediate result, counterexample test,
+  reproducible experiment, or verified literature distinction.
+
+## Evidence pointers
+
+- Verification ledger IDs: none.
+- Active proof-map nodes: `P0`.
+- Direct evidence files: none.
+
+## History access
+
+- Read `progress.md`, `ideas.md`, `research-tree.md`, and `proof-map.md` only for a
+  named gap, node, route, or evidence pointer needed in the current round.
+- Historical files remain authoritative evidence; this summary must never silently
+  strengthen, weaken, or replace a mathematical claim.
+"""
+
+
+def initialize_current_state(item: dict, project: Path, *, force_pending: bool) -> bool:
+    path = project / CURRENT_STATE_NAME
+    if path.exists():
+        return False
+    path.write_text(
+        current_state_template(
+            item, migration_status="pending" if force_pending else "complete"
+        ),
+        encoding="utf-8",
+    )
+    return True
+
+
+def validate_current_state(project: Path) -> list[str]:
+    path = project / CURRENT_STATE_NAME
+    if not path.is_file():
+        return [f"missing {CURRENT_STATE_NAME}"]
+    content = path.read_text(encoding="utf-8")
+    issues: list[str] = []
+    byte_count = len(content.encode("utf-8"))
+    line_count = len(content.splitlines())
+    if byte_count > CURRENT_STATE_MAX_BYTES:
+        issues.append(
+            f"{CURRENT_STATE_NAME} is {byte_count} bytes; limit is {CURRENT_STATE_MAX_BYTES}"
+        )
+    if line_count > CURRENT_STATE_MAX_LINES:
+        issues.append(
+            f"{CURRENT_STATE_NAME} is {line_count} lines; limit is {CURRENT_STATE_MAX_LINES}"
+        )
+    for heading in CURRENT_STATE_REQUIRED_HEADINGS:
+        if heading not in content:
+            issues.append(f"{CURRENT_STATE_NAME} missing heading: {heading}")
+    if "- schema-version: 1" not in content:
+        issues.append(f"{CURRENT_STATE_NAME} missing schema-version 1")
+    if "- migration-status: `pending`" not in content and (
+        "- migration-status: `complete`" not in content
+    ):
+        issues.append(f"{CURRENT_STATE_NAME} has invalid migration-status")
+    return issues
+
+
 def ensure_project(item: dict) -> Path:
     slug = item["slug"]
     source = item["dir"]
@@ -253,7 +368,8 @@ def ensure_project(item: dict) -> Path:
             f"目标目录已经存在但不是队列创建的项目，拒绝覆盖：{project}"
         )
 
-    adopted_existing = project.exists() and not marker.is_file()
+    marker_preexisting = marker.is_file()
+    adopted_existing = project.exists() and not marker_preexisting
     project.mkdir(parents=True, exist_ok=True)
     for name in ("notes", "code", "lean", "rethlas", "input-snapshots"):
         (project / name).mkdir(exist_ok=True)
@@ -325,6 +441,12 @@ def ensure_project(item: dict) -> Path:
         path = project / relative
         if not path.exists():
             path.write_text(content, encoding="utf-8")
+
+    initialize_current_state(
+        item,
+        project,
+        force_pending=adopted_existing or marker_preexisting,
+    )
 
     if not status_path(slug).exists():
         write_status(slug, "queued")
@@ -427,8 +549,14 @@ def build_prompt(
 先完整读取：
 1. {ROOT / 'AGENTS.md'}
 {input_instruction}
-3. 项目中的 README.md、ideas.md、progress.md、verification-ledger.md、research-tree.md、proof-map.md
-4. notes/ 中与当前缺口直接相关的材料
+3. {project / CURRENT_STATE_NAME}
+4. CURRENT_STATE.md 明确指向的 ledger 行、proof-map 节点、路线和直接证据
+5. notes/ 中与当前最小缺口直接相关的材料
+
+渐进读取规则：
+- CURRENT_STATE.md 是下一回合的短入口，必须保持在 {CURRENT_STATE_MAX_LINES} 行和 {CURRENT_STATE_MAX_BYTES // 1024} KiB 以内；它只做索引和当前状态摘要，不替代证据。
+- 不得默认完整重读 progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger.md。只读取当前目标实际需要的段落、节点和证据。
+- 若 CURRENT_STATE.md 的 migration-status 为 `pending`，先读取 README/proof-map 的当前状态段、最近一个完整 progress 回合和其中引用的 ledger/证据，建立保守摘要；遗漏的旧结果按未知处理，不得自行降低或提高证据等级。随后把 migration-status 改为 `complete`。
 
 {information_mode}
 
@@ -460,11 +588,12 @@ def build_prompt(
 
 回合结束前必须：
 1. 按 AGENTS.md 格式追加 progress.md；
-2. 把本回合每一条新增数学推进、来源标签、隔离方式及十项检查结果登记到 verification-ledger.md；
-3. 同步 README.md、ideas.md、research-tree.md、proof-map.md 中受本回合影响的状态；
-4. 把证明草稿、计算或交接稿放入正确子目录；
-5. 在 {project / '.conjecture-status'} 写入一个合法状态；
-6. 最终答复简要列出本回合产物、检查、证据等级、未关闭缺口和下一步。
+2. 只把实质数学推进、关键失败或证据等级变化登记到 verification-ledger.md；
+3. 重写 CURRENT_STATE.md，使其准确反映当前最小缺口、可用结果、活动路线、下一回合和证据指针，并通过大小与章节约束；
+4. 仅当对应结构真的变化时更新 ideas.md、research-tree.md 或 proof-map.md；仅当项目稳定范围变化时更新 README.md，禁止向 README 追加逐回合日志；
+5. 把证明草稿、计算或交接稿放入正确子目录；
+6. 在 {project / '.conjecture-status'} 写入一个合法状态；
+7. 最终答复简要列出本回合产物、检查、证据等级、未关闭缺口和下一步。
 """
 
 
@@ -488,13 +617,14 @@ def codex_command(
     last_message: Path,
     *,
     web_search: bool | None = None,
+    sandbox: str = "workspace-write",
 ) -> list[str]:
     command = [
         locate_codex(config),
         "-C",
         str(project),
         "-s",
-        "workspace-write",
+        sandbox,
         "-a",
         "never",
     ]
@@ -528,6 +658,8 @@ def bubblewrap_command(
     *,
     writable_dirs: list[Path],
     hidden_dirs: list[Path],
+    environment: dict[str, str] | None = None,
+    writable_bindings: list[tuple[Path, Path]] | None = None,
 ) -> list[str]:
     """Wrap a lane command in an OS mount namespace without network isolation."""
     bubblewrap = shutil.which("bwrap")
@@ -545,6 +677,8 @@ def bubblewrap_command(
         "/",
         "--proc",
         "/proc",
+        "--dev",
+        "/dev",
     ]
     for directory in writable_dirs:
         resolved = directory.resolve()
@@ -556,8 +690,35 @@ def bubblewrap_command(
         if not resolved.is_dir():
             raise RuntimeError(f"mixed-isolated 隐藏目录不存在：{resolved}")
         wrapped.extend(["--tmpfs", str(resolved)])
+    for source, target in writable_bindings or []:
+        resolved_source = source.resolve()
+        resolved_target = target.resolve()
+        if not resolved_source.is_dir():
+            raise RuntimeError(
+                f"mixed-isolated 私有绑定源不存在：{resolved_source}"
+            )
+        if not resolved_target.is_dir():
+            raise RuntimeError(
+                f"mixed-isolated 私有绑定目标不存在：{resolved_target}"
+            )
+        wrapped.extend(
+            ["--bind", str(resolved_source), str(resolved_target)]
+        )
+    for name, value in (environment or {}).items():
+        wrapped.extend(["--setenv", name, value])
     wrapped.extend(["--chdir", str(cwd.resolve()), "--", *command])
     return wrapped
+
+
+def prepare_lane_codex_home(destination: Path) -> Path:
+    """Create a private writable Codex runtime with only login bootstrap files."""
+    destination.mkdir(parents=True, mode=0o700, exist_ok=True)
+    source = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).resolve()
+    for name in ("auth.json", "installation_id", "models_cache.json"):
+        candidate = source / name
+        if candidate.is_file() and not candidate.is_symlink():
+            shutil.copy2(candidate, destination / name)
+    return destination.resolve()
 
 
 def append_history(slug: str, record: dict) -> None:
@@ -698,7 +859,7 @@ def build_connected_lane_prompt(
 1. {lane_root / 'AGENTS.md'}
 2. {lane_root / 'agents/instructions/research-workflow.md'}
 3. {lane_root / 'agents/instructions/queue-and-escalation.md'}
-4. 冻结项目副本中的 README.md、ideas.md、progress.md、proof-map.md 和直接相关 notes
+4. 冻结项目副本中的 CURRENT_STATE.md、它明确指向的证据和直接相关 notes
 
 本分支允许使用公共互联网做文献核查。优先读取论文正文、出版方页面和作者版本，逐项核对
 定理的定义、归一化与全部假设。每条外部结论都要给出可追踪链接并标记 `web-source`。
@@ -727,8 +888,9 @@ def build_mixed_integration_prompt(
 联网隔离结果：{checkpoint / 'connected' / 'RESULT.md'}
 隔离清单：{checkpoint / 'CHECKPOINT.json'}
 
-先完整读取 {ROOT / 'AGENTS.md'}、research-workflow.md、queue-and-escalation.md，以及项目当前
-README.md、ideas.md、progress.md、verification-ledger.md、research-tree.md、proof-map.md。
+先完整读取 {ROOT / 'AGENTS.md'}、research-workflow.md、queue-and-escalation.md，以及项目的
+CURRENT_STATE.md、它明确指向的 ledger 行、proof-map 节点和直接证据。不要默认完整重读
+progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger.md。
 离线分支已经在本项目完成本轮推进。联网分支只看过回合开始时的冻结副本，其结果直到现在
 才被复制到项目中。
 
@@ -738,7 +900,7 @@ README.md、ideas.md、progress.md、verification-ledger.md、research-tree.md�
 记为独立发现。
 
 只导入经过审查且对当前项目有用的信息。无法核实或不能直接适用的内容保留为线索，不进入
-proof map 的已证明依赖。同步本回合影响到的共享台账和状态，并在 progress.md 记录汇合点、
+proof map 的已证明依赖。同步本回合影响到的共享台账和状态，重写 CURRENT_STATE.md，并在 progress.md 记录汇合点、
 来源污染边界、接受或拒绝的联网结论以及下一步。候选完整证明或决定性反例仍须执行十项
 认证，证据等级不得自动升级为 human-verified。
 
@@ -801,11 +963,39 @@ def execute_mixed_isolated_attempt(
 在本回合汇合前对你不可见。保持 internal-offline 来源边界，不要搜索运行日志或隔离目录。
 """
     offline_codex_command = codex_command(
-        config, project, offline_prompt, offline_last, web_search=False
+        config,
+        project,
+        offline_prompt,
+        offline_last,
+        web_search=False,
+        sandbox="danger-full-access",
     )
 
-    with tempfile.TemporaryDirectory(prefix=f"conjecture-{item['slug']}-mixed-") as raw:
+    LANE_RUNTIME_ROOT.mkdir(parents=True, mode=0o700, exist_ok=True)
+    with (
+        tempfile.TemporaryDirectory(
+            prefix=f"conjecture-{item['slug']}-mixed-"
+        ) as raw,
+        tempfile.TemporaryDirectory(
+            prefix=f"conjecture-{item['slug']}-offline-codex-",
+            dir=LANE_RUNTIME_ROOT,
+        ) as offline_codex_raw,
+        tempfile.TemporaryDirectory(
+            prefix=f"conjecture-{item['slug']}-connected-codex-",
+            dir=LANE_RUNTIME_ROOT,
+        ) as connected_codex_raw,
+    ):
         isolated_root = Path(raw)
+        offline_codex_home = prepare_lane_codex_home(Path(offline_codex_raw))
+        connected_codex_home = prepare_lane_codex_home(Path(connected_codex_raw))
+        sandbox_registry_target = Path(
+            f"/tmp/codex-bwrap-synthetic-mount-targets-{os.getuid()}"
+        )
+        sandbox_registry_target.mkdir(mode=0o700, exist_ok=True)
+        offline_sandbox_registry = offline_codex_home / "bwrap-registry"
+        connected_sandbox_registry = connected_codex_home / "bwrap-registry"
+        offline_sandbox_registry.mkdir(mode=0o700)
+        connected_sandbox_registry.mkdir(mode=0o700)
         lane_root, lane_project = copy_connected_workspace(
             project, snapshot, isolated_root
         )
@@ -821,18 +1011,27 @@ def execute_mixed_isolated_attempt(
             connected_prompt,
             temporary_connected_last,
             web_search=True,
+            sandbox="danger-full-access",
         )
         offline_command = bubblewrap_command(
             offline_codex_command,
             project,
-            writable_dirs=[project, logs],
-            hidden_dirs=[isolated_root],
+            writable_dirs=[project, logs, offline_codex_home],
+            hidden_dirs=[isolated_root, connected_codex_home],
+            environment={"CODEX_HOME": str(offline_codex_home)},
+            writable_bindings=[
+                (offline_sandbox_registry, sandbox_registry_target)
+            ],
         )
         connected_command = bubblewrap_command(
             connected_codex_command,
             lane_project,
-            writable_dirs=[isolated_root],
-            hidden_dirs=[ROOT],
+            writable_dirs=[isolated_root, connected_codex_home],
+            hidden_dirs=[ROOT, offline_codex_home],
+            environment={"CODEX_HOME": str(connected_codex_home)},
+            writable_bindings=[
+                (connected_sandbox_registry, sandbox_registry_target)
+            ],
         )
 
         results: dict[str, dict] = {}
@@ -978,6 +1177,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
                 "<离线研究提示词>",
                 logs / "<offline-last.md>",
                 web_search=False,
+                sandbox="danger-full-access",
             )
             connected_command = codex_command(
                 config,
@@ -985,6 +1185,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
                 "<联网核查提示词>",
                 logs / "<connected-last.md>",
                 web_search=True,
+                sandbox="danger-full-access",
             )
             integration_command = codex_command(
                 config,
@@ -1103,6 +1304,18 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         state["mixed_audit_incomplete"] = True
         write_status(slug, "needs-human-review")
 
+    state_issues = validate_current_state(project)
+    if state_issues:
+        state["current_state_validation_errors"] = state_issues
+        write_status(slug, "needs-human-review")
+        print(
+            f"CURRENT_STATE 验证失败，已暂停 {slug}：" + "; ".join(state_issues),
+            file=sys.stderr,
+            flush=True,
+        )
+    else:
+        state.pop("current_state_validation_errors", None)
+
     status = read_status(slug)
     if status not in KNOWN_STATUSES:
         state["invalid_agent_status"] = status
@@ -1158,10 +1371,25 @@ def solution_holds(items: list[dict] | None = None) -> list[str]:
     ]
 
 
-def runner_lock_held() -> bool:
-    if not LOCK_FILE.is_file():
+def focus_lock_file(slug: str) -> Path:
+    validate_slug(slug)
+    return RUNTIME_ROOT / f"runner.{slug}.lock"
+
+
+def focus_stop_file(slug: str) -> Path:
+    validate_slug(slug)
+    return RUNTIME_ROOT / f"STOP.{slug}"
+
+
+def focus_session_name(config: dict, slug: str) -> str:
+    validate_slug(slug)
+    return f"{config['session_name']}__{slug}"
+
+
+def lock_held(path: Path) -> bool:
+    if not path.is_file():
         return False
-    with LOCK_FILE.open("a", encoding="utf-8") as handle:
+    with path.open("a", encoding="utf-8") as handle:
         try:
             fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
@@ -1170,45 +1398,75 @@ def runner_lock_held() -> bool:
     return False
 
 
-def wait_for_rescan(seconds: int) -> bool:
+def runner_lock_held(slug: str | None = None) -> bool:
+    return lock_held(focus_lock_file(slug) if slug else LOCK_FILE)
+
+
+def active_focus_slugs(items: list[dict] | None = None) -> list[str]:
+    candidates = discover_items() if items is None else items
+    return [
+        item["slug"]
+        for item in candidates
+        if not item.get("invalid") and runner_lock_held(item["slug"])
+    ]
+
+
+def wait_for_rescan(seconds: int, stop_file: Path | None = STOP_FILE) -> bool:
     """Wait up to seconds; return early when a safe-stop request appears."""
     deadline = time.monotonic() + max(1, seconds)
     while time.monotonic() < deadline:
-        if STOP_FILE.exists():
+        if stop_file is not None and stop_file.exists():
             return True
         time.sleep(min(1.0, max(0.0, deadline - time.monotonic())))
-    return STOP_FILE.exists()
+    return bool(stop_file is not None and stop_file.exists())
 
 
-def consume_stop_request() -> bool:
-    if not STOP_FILE.exists():
+def consume_stop_request(stop_file: Path | None = STOP_FILE) -> bool:
+    if stop_file is None or not stop_file.exists():
         return False
-    STOP_FILE.unlink(missing_ok=True)
+    stop_file.unlink(missing_ok=True)
     return True
 
 
 def run_loop(args: argparse.Namespace) -> int:
     config = load_runner_config()
     if args.dry_run:
-        return run_loop_body(args, config)
+        return run_loop_body(args, config, None)
 
     RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
-    with LOCK_FILE.open("w", encoding="utf-8") as lock_handle:
+    slug = args.slug
+    if slug:
+        validate_slug(slug)
+    lock_file = focus_lock_file(slug) if slug else LOCK_FILE
+    stop_file = focus_stop_file(slug) if slug else STOP_FILE
+    with lock_file.open("w", encoding="utf-8") as lock_handle:
         try:
             fcntl.flock(lock_handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
-            print("错误：另一个队列 runner 已经在运行。", file=sys.stderr)
+            label = f"题目 {slug}" if slug else "公平队列"
+            print(f"错误：{label} 的 runner 已经在运行。", file=sys.stderr)
             return 1
-        STOP_FILE.unlink(missing_ok=True)
-        return run_loop_body(args, config)
+        if slug and runner_lock_held():
+            print("错误：公平队列正在运行；请先安全停止后再启动单题 runner。", file=sys.stderr)
+            return 1
+        if not slug:
+            focused = active_focus_slugs()
+            if focused:
+                print(
+                    "错误：以下单题 runner 正在运行：" + ", ".join(focused),
+                    file=sys.stderr,
+                )
+                return 1
+        stop_file.unlink(missing_ok=True)
+        return run_loop_body(args, config, stop_file)
 
 
-def run_loop_body(args: argparse.Namespace, config: dict) -> int:
+def run_loop_body(args: argparse.Namespace, config: dict, stop_file: Path | None) -> int:
     started = time.monotonic()
     max_wall_hours = float(config.get("max_wall_hours", 24))
     idle_cycles = 0
     while True:
-        if consume_stop_request():
+        if consume_stop_request(stop_file):
             print("检测到停止请求；将在当前回合边界退出。")
             return 0
         if max_wall_hours > 0 and time.monotonic() - started >= max_wall_hours * 3600:
@@ -1239,15 +1497,15 @@ def run_loop_body(args: argparse.Namespace, config: dict) -> int:
             if max_idle > 0 and idle_cycles >= max_idle:
                 print(f"连续空闲 {idle_cycles} 次；正常退出。")
                 return 0
-            if wait_for_rescan(int(config.get("idle_seconds", 60))):
-                consume_stop_request()
+            if wait_for_rescan(int(config.get("idle_seconds", 60)), stop_file):
+                consume_stop_request(stop_file)
                 print("检测到停止请求；在空闲扫描边界退出。")
                 return 0
             continue
 
         idle_cycles = 0
         for item in runnable:
-            if consume_stop_request():
+            if consume_stop_request(stop_file):
                 return 0
             if read_status(item["slug"]) not in RUNNABLE_STATUSES:
                 continue
@@ -1308,6 +1566,59 @@ def list_items() -> int:
     return 0
 
 
+def selected_state_items(slug: str | None) -> list[dict]:
+    items = [item for item in discover_items() if not item.get("invalid")]
+    if slug is None:
+        return items
+    validate_slug(slug)
+    selected = [item for item in items if item["slug"] == slug]
+    if not selected:
+        raise ValueError(f"找不到题目：{slug}")
+    return selected
+
+
+def initialize_project_states(args: argparse.Namespace) -> int:
+    created = 0
+    for item in selected_state_items(args.slug):
+        project = project_dir(item["slug"])
+        if not project.is_dir():
+            print(f"SKIP {item['slug']}: 项目尚未建立")
+            continue
+        if initialize_current_state(item, project, force_pending=True):
+            created += 1
+            print(f"CREATED {project / CURRENT_STATE_NAME}")
+        else:
+            print(f"EXISTS {project / CURRENT_STATE_NAME}")
+    print(f"current-state initialized: {created}")
+    return 0
+
+
+def audit_project_states(args: argparse.Namespace) -> int:
+    failed = False
+    pending = 0
+    checked = 0
+    for item in selected_state_items(args.slug):
+        project = project_dir(item["slug"])
+        if not project.is_dir():
+            print(f"SKIP {item['slug']}: 项目尚未建立")
+            continue
+        checked += 1
+        issues = validate_current_state(project)
+        if issues:
+            failed = True
+            for issue in issues:
+                print(f"FAIL {item['slug']}: {issue}")
+            continue
+        content = (project / CURRENT_STATE_NAME).read_text(encoding="utf-8")
+        if "- migration-status: `pending`" in content:
+            pending += 1
+            print(f"PENDING {item['slug']}: 下一研究回合先完成保守迁移")
+        else:
+            print(f"OK {item['slug']}")
+    print(f"current-state checked={checked} pending={pending} failed={failed}")
+    return 1 if failed else 0
+
+
 def doctor() -> int:
     errors: list[str] = []
     warnings: list[str] = []
@@ -1350,6 +1661,35 @@ def doctor() -> int:
         errors.append("PATH 中找不到 tmux")
     items = discover_items()
     print(f"items: {len(items)}")
+    missing_current_state = 0
+    invalid_current_state = 0
+    pending_current_state = 0
+    for item in items:
+        if item.get("invalid") or not project_dir(item["slug"]).is_dir():
+            continue
+        issues = validate_current_state(project_dir(item["slug"]))
+        if issues == [f"missing {CURRENT_STATE_NAME}"]:
+            missing_current_state += 1
+        elif issues:
+            invalid_current_state += 1
+        else:
+            content = (project_dir(item["slug"]) / CURRENT_STATE_NAME).read_text(
+                encoding="utf-8"
+            )
+            if "- migration-status: `pending`" in content:
+                pending_current_state += 1
+    if missing_current_state:
+        warnings.append(
+            f"{missing_current_state} 个已有项目缺少 {CURRENT_STATE_NAME}；运行 state-init。"
+        )
+    if pending_current_state:
+        warnings.append(
+            f"{pending_current_state} 个项目的 {CURRENT_STATE_NAME} 等待保守迁移。"
+        )
+    if invalid_current_state:
+        errors.append(
+            f"{invalid_current_state} 个项目的 {CURRENT_STATE_NAME} 未通过结构或大小检查。"
+        )
     mixed_requested = resolve_information_mode(config) == "mixed-isolated" or any(
         not item.get("invalid")
         and str(item.get("information_mode", "")).strip() == "mixed-isolated"
@@ -1370,9 +1710,26 @@ def doctor() -> int:
     return 1 if errors else 0
 
 
-def start_runner() -> int:
+def start_runner(args: argparse.Namespace) -> int:
     config = load_runner_config()
-    session = str(config["session_name"])
+    slug = args.slug
+    if slug:
+        validate_slug(slug)
+        matching = [item for item in discover_items() if item["slug"] == slug]
+        if not matching:
+            print(f"错误：找不到题目 {slug}", file=sys.stderr)
+            return 2
+        item = matching[0]
+        if item.get("invalid") or not item.get("ready") or not item.get("enabled"):
+            print(f"错误：题目 {slug} 当前不可运行。", file=sys.stderr)
+            return 2
+        if read_status(slug) not in RUNNABLE_STATUSES:
+            print(
+                f"错误：题目 {slug} 的状态为 {read_status(slug)}，不能自动继续。",
+                file=sys.stderr,
+            )
+            return 2
+    session = focus_session_name(config, slug) if slug else str(config["session_name"])
     holds = solution_holds()
     if holds:
         print(
@@ -1382,8 +1739,20 @@ def start_runner() -> int:
         )
         print("请先审查并用 set-status 明确处理。", file=sys.stderr)
         return 3
-    if runner_lock_held():
-        print("队列 runner 已经在运行（可能是前台模式）。")
+    if slug and runner_lock_held():
+        print("错误：公平队列正在运行；请先安全停止。", file=sys.stderr)
+        return 1
+    if not slug:
+        focused = active_focus_slugs()
+        if focused:
+            print(
+                "错误：以下单题 runner 正在运行：" + ", ".join(focused),
+                file=sys.stderr,
+            )
+            return 1
+    if runner_lock_held(slug):
+        label = f"单题 runner {slug}" if slug else "队列 runner"
+        print(f"{label} 已经在运行（可能是前台模式）。")
         return 0
     if doctor() != 0:
         print("错误：启动前健康检查未通过。", file=sys.stderr)
@@ -1400,25 +1769,51 @@ def start_runner() -> int:
         print(f"查看：tmux attach -t {session}")
         return 0
     RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
-    STOP_FILE.unlink(missing_ok=True)
+    stop_file = focus_stop_file(slug) if slug else STOP_FILE
+    stop_file.unlink(missing_ok=True)
     command = [sys.executable, str(Path(__file__).resolve()), "run"]
+    if slug:
+        command.extend(["--slug", slug])
     result = subprocess.run(
         [tmux, "new-session", "-d", "-s", session, shlex.join(command)], check=False
     )
     if result.returncode != 0:
         print("错误：无法启动 tmux 队列。", file=sys.stderr)
         return result.returncode
-    print(f"已启动重要猜想队列：{session}")
+    if slug:
+        print(f"已启动独立单题 runner：{slug}（{session}）")
+    else:
+        print(f"已启动重要猜想公平队列：{session}")
     print(f"查看实时输出：tmux attach -t {session}")
     print("退出查看但不中断：Ctrl-b，然后 d")
-    print("安全停止：./tools/conjecture_queue.sh stop")
+    if slug:
+        print(f"安全停止：./tools/conjecture_queue.sh stop --slug {slug}")
+    else:
+        print("安全停止：./tools/conjecture_queue.sh stop")
     return 0
 
 
-def stop_runner() -> int:
+def stop_runner(args: argparse.Namespace) -> int:
     RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
-    STOP_FILE.write_text(f"requested_at={now_iso()}\n", encoding="utf-8")
-    print("已请求停止；runner 会在当前 Codex 回合结束后退出，不会强杀研究进程。")
+    if args.all:
+        targets = [("公平队列", STOP_FILE)] + [
+            (item["slug"], focus_stop_file(item["slug"]))
+            for item in discover_items()
+            if not item.get("invalid")
+        ]
+        for _, stop_file in targets:
+            stop_file.write_text(f"requested_at={now_iso()}\n", encoding="utf-8")
+        print("已请求停止全部 runner；各自会在当前 Codex 回合结束后退出。")
+        return 0
+    if args.slug:
+        validate_slug(args.slug)
+        stop_file = focus_stop_file(args.slug)
+        label = f"单题 runner {args.slug}"
+    else:
+        stop_file = STOP_FILE
+        label = "公平队列 runner"
+    stop_file.write_text(f"requested_at={now_iso()}\n", encoding="utf-8")
+    print(f"已请求停止{label}；它会在当前 Codex 回合结束后退出，不会强杀研究进程。")
     return 0
 
 
@@ -1443,12 +1838,39 @@ def show_status() -> int:
         runner_status = f"not-running ({session})"
     print(f"runner: {runner_status}")
     print(f"stop-requested: {STOP_FILE.exists()}")
+    focus_rows: list[str] = []
+    for item in discover_items():
+        if item.get("invalid"):
+            continue
+        slug = item["slug"]
+        focus_session = focus_session_name(config, slug)
+        in_tmux = bool(
+            tmux
+            and subprocess.run(
+                [tmux, "has-session", "-t", focus_session],
+                capture_output=True,
+                check=False,
+            ).returncode
+            == 0
+        )
+        locked = runner_lock_held(slug)
+        if in_tmux or locked or focus_stop_file(slug).exists():
+            where = f"tmux:{focus_session}" if in_tmux else "foreground"
+            focus_rows.append(
+                f"{slug} ({where}, running={locked}, "
+                f"stop-requested={focus_stop_file(slug).exists()})"
+            )
+    print("focused-runners: " + ("; ".join(focus_rows) if focus_rows else "none"))
     return list_items()
 
 
-def watch_runner() -> int:
+def watch_runner(args: argparse.Namespace) -> int:
     config = load_runner_config()
-    session = str(config["session_name"])
+    session = (
+        focus_session_name(config, args.slug)
+        if args.slug
+        else str(config["session_name"])
+    )
     tmux = shutil.which("tmux")
     if not tmux:
         print("错误：PATH 中找不到 tmux。", file=sys.stderr)
@@ -1457,7 +1879,7 @@ def watch_runner() -> int:
         [tmux, "has-session", "-t", session], capture_output=True, check=False
     )
     if exists.returncode != 0:
-        print(f"错误：队列 tmux session 不存在：{session}", file=sys.stderr)
+        print(f"错误：tmux session 不存在：{session}", file=sys.stderr)
         return 1
     return subprocess.run([tmux, "attach", "-t", session], check=False).returncode
 
@@ -1485,14 +1907,27 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("title", nargs="?")
     sub.add_parser("list", help="列出全部猜想及状态")
     sub.add_parser("doctor", help="只读健康检查")
+    state_init = sub.add_parser(
+        "state-init", help=f"为已有项目补建 {CURRENT_STATE_NAME}，不覆盖现有文件"
+    )
+    state_init.add_argument("--slug", help="只处理指定题目；默认处理全部已有项目")
+    state_audit = sub.add_parser(
+        "state-audit", help=f"检查 {CURRENT_STATE_NAME} 的结构和大小"
+    )
+    state_audit.add_argument("--slug", help="只检查指定题目；默认检查全部已有项目")
     run = sub.add_parser("run", help="前台运行队列")
     run.add_argument("--once", action="store_true", help="只运行一个研究回合")
     run.add_argument("--dry-run", action="store_true", help="只展示下一回合，不调用 Codex")
     run.add_argument("--slug", help="只调度指定题目")
-    sub.add_parser("start", help="在 tmux 中后台启动")
-    sub.add_parser("stop", help="在当前回合结束后安全停止")
+    start = sub.add_parser("start", help="在 tmux 中后台启动")
+    start.add_argument("--slug", help="启动固定题目的独立 tmux runner")
+    stop = sub.add_parser("stop", help="在当前回合结束后安全停止")
+    stop_group = stop.add_mutually_exclusive_group()
+    stop_group.add_argument("--slug", help="只停止指定单题 runner")
+    stop_group.add_argument("--all", action="store_true", help="停止公平队列和全部单题 runner")
     sub.add_parser("status", help="显示 runner 和题目状态")
-    sub.add_parser("watch", help="进入队列的 tmux 实时终端")
+    watch = sub.add_parser("watch", help="进入队列的 tmux 实时终端")
+    watch.add_argument("--slug", help="进入指定单题 runner 的 tmux")
     set_status = sub.add_parser("set-status", help="人工改变题目状态")
     set_status.add_argument("slug")
     set_status.add_argument("status", choices=sorted(HUMAN_SETTABLE_STATUSES))
@@ -1509,16 +1944,20 @@ def main() -> int:
             return list_items()
         if args.command == "doctor":
             return doctor()
+        if args.command == "state-init":
+            return initialize_project_states(args)
+        if args.command == "state-audit":
+            return audit_project_states(args)
         if args.command == "run":
             return run_loop(args)
         if args.command == "start":
-            return start_runner()
+            return start_runner(args)
         if args.command == "stop":
-            return stop_runner()
+            return stop_runner(args)
         if args.command == "status":
             return show_status()
         if args.command == "watch":
-            return watch_runner()
+            return watch_runner(args)
         if args.command == "set-status":
             return set_item_status(args)
     except (OSError, RuntimeError, ValueError, tomllib.TOMLDecodeError) as exc:

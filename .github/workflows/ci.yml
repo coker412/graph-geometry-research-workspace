@@ -1,0 +1,44 @@
+name: public-workspace-checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check source manifest
+        run: python tools/update_manifest.py check
+
+      - name: Compile Python tools
+        run: >-
+          python -m py_compile
+          tools/conjecture_queue.py
+          tools/project_state.py
+          tools/update_manifest.py
+          tools/workspace_hygiene.py
+
+      - name: Run unit tests
+        run: python -m unittest discover -s tools/tests -v
+
+      - name: Check shell syntax
+        run: bash -n setup.sh queue.sh tools/*.sh tools/rethlas/*.sh
+
+      - name: Verify public source boundary
+        run: ./tools/verify_teacher_framework.sh --public-source
+
+      - name: Exercise distribution export
+        run: ./tools/export_teacher_framework.sh

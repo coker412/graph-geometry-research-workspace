@@ -21,6 +21,7 @@ Codex 回合 1：定义审计、最小例子、路线生成
 ```text
 projects/conjecture-<slug>/
 ├── README.md
+├── CURRENT_STATE.md
 ├── references.md
 ├── ideas.md
 ├── progress.md
@@ -38,7 +39,21 @@ projects/conjecture-<slug>/
 
 题目原文始终保留在 `problems/important-conjectures/items/<slug>/`。Runner 会建立不可变输入快照，不会让研究 Agent 改写老师的原题。
 
-第一次真正调度某题时，runner 会自动创建这个完整项目骨架。以后每个回合都必须追加 `progress.md`，并在 `verification-ledger.md` 逐条登记新增数学陈述、证据等级、十项检查、反例测试、审查结论和证据文件。
+第一次真正调度某题时，runner 会自动创建这个完整项目骨架。`CURRENT_STATE.md` 是下一回合
+默认读取的短入口，限制为 300 行、32 KiB；历史台账只按其中的 ID 和路径读取。每个回合
+必须追加 `progress.md`、重写 `CURRENT_STATE.md`，并只把实质数学推进、关键失败或证据等级
+变化登记到 `verification-ledger.md`。README 不再承载逐回合日志。
+
+旧项目升级后先运行：
+
+```bash
+./queue.sh state-init
+./queue.sh state-audit
+```
+
+`state-init` 只补建缺失文件，从不覆盖已有摘要。旧项目会标记为 `migration-status: pending`；
+下一研究回合从当前状态段、最近完整回合和精确证据建立保守摘要，未读历史不会被擅自升级
+或降级。
 
 ## 老师的最短操作流程
 
@@ -76,9 +91,21 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 
 ### 3. 后台长跑
 
+公平轮转全部可运行题目：
+
 ```bash
 ./tools/conjecture_queue.sh start
 ```
+
+让不同题目各占一个 tmux 并行运行：
+
+```bash
+./tools/conjecture_queue.sh start --slug problem-a
+./tools/conjecture_queue.sh start --slug problem-b
+```
+
+这两个命令建立两个独立 session。每个 runner 只读写自己的研究项目，不在题目之间轮转。
+公平队列和单题 runner 不能同时运行，防止同一项目被两个根 Agent 并发修改。
 
 查看实时输出：
 
@@ -100,6 +127,19 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 ./tools/conjecture_queue.sh stop
 ```
 
+单独停止或查看一道题：
+
+```bash
+./tools/conjecture_queue.sh watch --slug problem-a
+./tools/conjecture_queue.sh stop --slug problem-a
+```
+
+安全停止全部 runner：
+
+```bash
+./tools/conjecture_queue.sh stop --all
+```
+
 安全停止不会强杀正在写文件的 Codex；当前研究回合结束后，runner 才退出。
 
 ## 调度规则
@@ -110,6 +150,8 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 - `max_attempts = 0` 表示不限制该题的累计回合数；早期试运行建议先设为 `3` 或 `5`。
 - `runner.toml` 的 `max_wall_hours` 控制一次后台启动的总时长。默认 24 小时；设为 `0` 才是持续运行直到人工停止。
 - 单回合默认 90 分钟超时。连续三次 CLI 或超时故障会冻结为 `runtime-error`，防止无休止消耗额度。
+- `start --slug <slug>` 固定研究一道题。不同 slug 使用不同 tmux、锁文件和停止文件，可以
+  真正并行；同一 slug 不能重复启动。
 
 ## Agent 使用方式与额度
 
@@ -158,10 +200,17 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 审计，按 `internal-offline`、`web-source` 和 `mixed` 更新来源标签。Runner 使用 Linux
 `bubblewrap` 隐藏真实工作区和并行分支目录；`bwrap` 不可用时拒绝启动该模式，不会降级
 为只靠提示词约束的隔离。
+两个分支还使用各自的临时 Codex 运行目录，只复制登录所需的最小文件，不共享旧会话、
+状态数据库或另一分支的运行信息。
 
 一次 `mixed-isolated` 回合通常包含三次 Codex 调用：两个并行分支和一个汇合审计，因此比
 普通回合消耗更多额度。该模式必须由研究者在全局或单题配置中主动选择，不是默认模式。
 对于研究者明确要求不联网的题目，所有分支都必须保持 `offline`。
+
+题目级并发和信息分支并发是两层不同的并行。两个 `start --slug` 可以让两道题同时运行；
+如果两题都配置为 `mixed-isolated`，每道题又会在自己的回合内并行运行离线分支与联网
+分支，再各自执行汇合审计。两道题不会共享项目写入目录，联网分支也不能在汇合前读取
+对应离线分支的实时结果。
 
 ## 状态机
 
@@ -253,10 +302,22 @@ agents/important-conjectures/logs/<slug>/
 
 机器重启后直接再次运行 `./tools/conjecture_queue.sh start`。Runner 会从项目文件和状态继续，不依赖旧聊天会话。
 
+空间占用只读报告：
+
+```bash
+./queue.sh hygiene report
+```
+
+清理命令默认 dry run。`./queue.sh hygiene latex` 只列出可重新生成的 LaTeX 中间文件；
+`./queue.sh hygiene logs --older-than-days 30 --keep-latest-per-slug 5` 只列出可无损压缩的旧
+JSONL。只有显式增加 `--apply` 才会执行，项目环境始终只报告、不自动删除。
+
 ## 当前限制
 
-- 调度器本身是公平轮转的串行队列，同一时刻只启动一个 Codex 研究回合。研究者明确要求
-  且当前编排能力可用时，该回合内部可以按盲问题包协议使用子 Agent；这不改变调度器的
-  串行性，根 Agent 仍负责唯一写入共享台账。
+- 默认 `start` 仍是公平轮转的串行队列。同一时刻只启动一个题目的根回合。需要题目级
+  并发时，必须为每道题分别执行 `start --slug`；系统不自动决定并发题数，也不允许公平
+  队列和单题 runner 同时运行。
+- 一个题目的根回合内部可以按盲问题包协议使用子 Agent；根 Agent 仍是该项目共享台账的
+  唯一写入者。
 - LLM 自检不是形式证明。任何 `needs-human-review` 或 `solved-awaiting-human-verification` 结果仍需老师逐步复核；必要时再升级到 Rethlas 或 Lean。
 - `stop` 是回合边界停止。如果必须立即终止，应由操作者进入 tmux 后发送中断，并检查项目文件是否留下半写状态。

@@ -18,12 +18,73 @@
 | `problems/important-conjectures/` | 投放和配置重要猜想 |
 | `tools/conjecture_queue.*` | 按优先级轮转猜想，每次只运行一个有边界的 Codex 回合 |
 | `progress.md` 与 `ideas.md` | 保存推进过程、失败路线和下一步 |
+| `CURRENT_STATE.md` | 下一研究回合的短入口；索引当前缺口和证据，不替代历史台账 |
 | `research-tree.md` 与 `proof-map.md` | 分别记录探索路线和候选证明的依赖关系 |
 | `verification-ledger.md` | 记录数学结论的证据等级、反例测试和审查结果 |
 | `tools/rethlas/` | 可选的 Rethlas 包装脚本，仅在研究者明确批准后使用 |
 | `setup.sh` | 检查或配置新的工作环境 |
 
+## 长项目如何避免上下文膨胀
+
+每个长期项目使用 `CURRENT_STATE.md` 作为下一回合的默认入口，限制为 300 行、32 KiB。
+Agent 先读正式题目和这份摘要，再按稳定 ID、proof-map 节点和路径读取需要的原始证据；不
+默认完整重读持续增长的 `progress.md`、`ideas.md`、`research-tree.md` 或 `proof-map.md`。
+
+旧队列项目升级后运行：
+
+```bash
+./queue.sh state-init
+./queue.sh state-audit
+```
+
+队列外的普通项目使用：
+
+```bash
+./tools/project_state.py init
+./tools/project_state.py audit
+```
+
+初始化从不覆盖已有摘要。旧项目先标为 `migration-status: pending`，下一研究回合从当前状态
+段、最近完整回合和引用证据建立保守摘要；未读历史不会被擅自升级或降级。README 只保存
+稳定范围和使用说明，逐回合记录继续追加到 `progress.md`。
+
+空间治理默认也是只读的：
+
+```bash
+./queue.sh hygiene report
+./queue.sh hygiene latex
+./queue.sh hygiene logs --older-than-days 30 --keep-latest-per-slug 5
+```
+
+后两个命令默认只列计划；显式增加 `--apply` 才会删除可再生的 LaTeX 中间文件或无损压缩
+旧 JSONL。项目环境只报告占用，从不自动删除。
+
 这个公开仓库只包含框架，不包含我的研究项目、论文、PDF、实验数据、运行日志或登录信息。
+
+## 公开源码边界
+
+对于公开发布的通用框架，本仓库是规范源。私有研究工作区可以保留运行副本和本地扩展，
+但公开版本的文档、模板、工具与测试以这里为准。发布时不要从私有工作区递归复制目录。
+
+提交前运行：
+
+```bash
+python tools/update_manifest.py write
+./tools/verify_teacher_framework.sh --public-source
+python -m unittest discover -s tools/tests -v
+```
+
+`--public-source` 要求 `projects/`、`archive/`、`shared/`、`index/`、`library/` 和
+`environments/` 中没有研究数据。校验器也会拒绝 PDF、JSONL、常见密钥文件和未登记的
+源码文件。GitHub Actions 会在每次 push 和 pull request 上重复这些检查，并完整试跑一次
+分发包导出。
+
+## 最小示例
+
+[`examples/tree-edge-count/`](examples/tree-edge-count/) 是一个完全虚构的项目，问题是证明
+有限非空树有 \(n-1\) 条边。它展示正式题目、短状态、方法族、证明依赖、候选证明、验证
+台账和追加式进度怎样互相引用。示例停在 `proof-draft`，用来说明证据升级不会因为证明
+看起来完整而自动发生。
 
 ## 先选择运行方式
 
@@ -36,7 +97,7 @@
 | 信息来源 | `offline`、`connected`、`mixed-isolated`，以及人工分阶段的 `staged` | 默认由 `runner.toml` 决定，新工作区通常从离线开始 | `runner.toml` 或单题 `config.toml` 的 `information_mode` |
 | Agent 强度 | `single`、`adaptive`、`swarm` | `adaptive` 是当前提示词策略 | 目前写入题目要求或 `AGENTS.md`；还不是 runner 配置字段 |
 | 搜索目标 | `affirmative-proof`、`counterexample`、`either` | 新题模板默认为 `affirmative-proof` | 单题 `config.toml` 的 `search_contract` |
-| 调度方式 | 单回合、公平后台队列、前台单题专注 | `start` 使用公平队列 | CLI 命令；后台 `focus/pin` 尚未实现 |
+| 调度方式 | 单回合、公平后台队列、独立后台单题 | `start` 使用公平队列 | CLI 命令；`start --slug` 为每道题建立独立 tmux |
 | 运行期限 | 有界试跑、持续到完整结果 | 新题累计回合默认不限；一次 `start` 默认运行至多 24 小时 | 单题 `config.toml`、`runner.toml` 与题目状态 |
 | 研究阶段 | 探索、认证 | 先探索；候选结论触发分支认证 | 由工作流自动切换，也可由研究者明确要求审计 |
 
@@ -66,7 +127,8 @@ information_mode = "mixed-isolated"
 ```
 
 `mixed-isolated` 的联网分支只能读取回合开始时的冻结副本。它不能看到离线分支的实时文件，
-也不能写入真实项目。两个分支结束后，runner 才启动汇合审计。
+也不能写入真实项目。两个分支分别使用临时 Codex 运行目录，不共享旧会话或状态数据库。
+两个分支结束后，runner 才启动汇合审计。
 
 ### Agent 强度
 
@@ -107,10 +169,11 @@ search_contract = "affirmative-proof"
 | 单回合 | `./queue.sh once` | 前台运行队列中的下一个可运行题目，然后退出 |
 | 公平后台队列 | `./queue.sh start` | 在 tmux 中按优先级完成一轮，每题最多一个回合，再重新扫描 |
 | 前台单题专注 | `./tools/conjecture_queue.sh run --slug <slug>` | 只反复调度指定题目，终端必须保持打开 |
+| 后台单题专注 | `./queue.sh start --slug <slug>` | 为指定题目建立独立 tmux，只读写该题项目 |
 
-当前 `start` 总是公平轮转，`priority` 只决定一轮中的先后次序，不表示永久锁定某题。后台
-`focus/pin` 尚未实现。需要后台单题长跑时，可以自行在 tmux 中运行上面的 `--slug`
-命令；在正式加入专用命令前，README 不把它描述成已有模式。
+不带 `--slug` 的 `start` 仍然公平轮转，`priority` 只决定一轮中的先后次序。不同 slug
+可以分别执行 `start --slug` 并行运行；每道题使用独立的 tmux、锁文件和停止文件。同一
+slug 不能重复启动，公平队列也不能与单题 runner 同时运行。
 
 ### 探索与认证
 
@@ -158,34 +221,33 @@ max_wall_hours = 0
 不完整输出中恢复。长期性来自连续回合和磁盘状态，而不是单次调用时长。
 
 如果队列中只有这道题，可以使用 `./queue.sh start`。如果队列中还有其他题，`start` 会
-公平轮转。当前可用的单题专注命令是：
+公平轮转。前台单题专注命令是：
 
 ```bash
 ./tools/conjecture_queue.sh run --slug <slug>
 ```
 
-它在前台运行。需要关闭终端后继续时，可以从仓库根目录手动放入 tmux：
+需要关闭终端后继续时，直接启动后台单题 runner：
 
 ```bash
-tmux new-session -d -s conjecture_focus \
-  './tools/conjecture_queue.sh run --slug <slug>'
+./queue.sh start --slug <slug>
 ```
 
 查看和退出查看：
 
 ```bash
-tmux attach -t conjecture_focus
+./queue.sh watch --slug <slug>
 # 按 Ctrl-b，再按 d，只退出查看，不停止研究
 ```
 
 安全停止会等当前回合写完文件：
 
 ```bash
-./tools/conjecture_queue.sh stop
+./queue.sh stop --slug <slug>
 ```
 
-再次执行同一个 `run --slug` 命令即可从项目文件继续。后台 `focus/pin` 仍计划做成正式
-命令，目前上述 tmux 方法只是对已有 `--slug` 功能的直接使用。
+再次执行同一个 `start --slug` 命令即可从项目文件继续。使用 `./queue.sh stop --all`
+可以让公平队列和全部单题 runner 分别在各自当前回合结束后退出。
 
 下面这段可以放进题目的“给研究 Agent 的固定要求”。它适用于离线肯定证明长跑：
 
@@ -246,10 +308,21 @@ stagnation_rounds_before_blocked = 0
 ```
 
 采用 `adaptive`，并把 `runner.toml` 的 `max_wall_hours` 设为 `0`。如果只研究一道题，使用
-`run --slug <slug>`；`start` 会轮转所有可运行题目。
+`start --slug <slug>`；不带 `--slug` 的 `start` 会轮转所有可运行题目。
 
 先原创、后核查：先以 `offline` 运行并保存方法族快照，在阶段边界改为 `connected`。
 需要同回合并行核查时，选择 `mixed-isolated`，并预留约三次普通调用的基础额度。
+
+两道题同时采用隔离混合模式时，分别在各自的 `config.toml` 写入
+`information_mode = "mixed-isolated"`，再运行：
+
+```bash
+./queue.sh start --slug <problem-a>
+./queue.sh start --slug <problem-b>
+```
+
+系统会建立两个题目级 tmux。每个题目级 tmux 又在单个回合内并行运行离线原创分支和
+联网核查分支，随后执行该题自己的汇合审计。
 
 ## 工作方式
 

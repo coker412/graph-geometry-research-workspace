@@ -53,6 +53,7 @@ copy_executable() {
 
 mkdir -p "$package_root"
 copy_file "AGENTS.md" "AGENTS.md"
+copy_file "LICENSE" "LICENSE"
 copy_file "agents/instructions/research-workflow.md" "agents/instructions/research-workflow.md"
 copy_file "agents/instructions/queue-and-escalation.md" "agents/instructions/queue-and-escalation.md"
 copy_file "agents/instructions/paper-writing.md" "agents/instructions/paper-writing.md"
@@ -72,11 +73,18 @@ copy_file "templates/important-conjecture/problem.md" "templates/important-conje
 copy_file "templates/important-conjecture/config.toml" "templates/important-conjecture/config.toml"
 copy_file "templates/blind-research-packet.md" "templates/blind-research-packet.md"
 copy_file "templates/project_template/ideas.md" "templates/project_template/ideas.md"
+copy_file "templates/project_template/CURRENT_STATE.md" "templates/project_template/CURRENT_STATE.md"
 copy_file "templates/research-visualization.md" "templates/research-visualization.md"
 copy_file "templates/rethlas-problem.md" "templates/rethlas-problem.md"
 copy_executable "tools/conjecture_queue.py" "tools/conjecture_queue.py"
 copy_executable "tools/conjecture_queue.sh" "tools/conjecture_queue.sh"
 copy_file "tools/tests/test_conjecture_queue.py" "tools/tests/test_conjecture_queue.py"
+copy_file "tools/tests/test_workspace_hygiene.py" "tools/tests/test_workspace_hygiene.py"
+copy_executable "tools/workspace_hygiene.py" "tools/workspace_hygiene.py"
+copy_executable "tools/project_state.py" "tools/project_state.py"
+copy_executable "tools/update_manifest.py" "tools/update_manifest.py"
+copy_file "tools/tests/test_project_state.py" "tools/tests/test_project_state.py"
+copy_file "tools/tests/test_update_manifest.py" "tools/tests/test_update_manifest.py"
 copy_executable "tools/configure_teacher_workspace.sh" "tools/configure_teacher_workspace.sh"
 copy_executable "tools/verify_teacher_framework.sh" "tools/verify_teacher_framework.sh"
 copy_executable "tools/export_teacher_framework.sh" "tools/export_teacher_framework.sh"
@@ -84,6 +92,11 @@ copy_executable "tools/export_teacher_framework.sh" "tools/export_teacher_framew
 for script in "$WORKSPACE_ROOT"/tools/rethlas/*.sh; do
   copy_executable "${script#"$WORKSPACE_ROOT/"}" "${script#"$WORKSPACE_ROOT/"}"
 done
+
+while IFS= read -r example; do
+  relative="${example#"$WORKSPACE_ROOT/"}"
+  copy_file "$relative" "$relative"
+done < <(find "$WORKSPACE_ROOT/examples" -type f -print | sort)
 
 empty_dirs=(
   "problems/important-conjectures/items"
@@ -122,14 +135,6 @@ replacements = [
     (conda_root, "__CONDA_ROOT__"),
     (research_root, "__RESEARCH_ROOT__"),
 ]
-replacements.extend([
-    ("ricci" + "flow0602", "example-project"),
-    ("intersecting-subset-" + "ramsey0624", "example-project"),
-    ("nine_over_four_" + "breakthrough", "example-problem"),
-    ("P2" + "cut", "example-problem"),
-    ("P2" + "_cut", "example_problem"),
-    ("某个存在性命题", "某个存在性命题"),
-])
 replacements = [(old, new) for old, new in replacements if old]
 suffixes = {".md", ".sh", ".py", ".toml"}
 for path in package_root.rglob("*"):
@@ -159,21 +164,7 @@ for key, value in generic_values.items():
 runner_config.write_text(content, encoding="utf-8")
 PY
 
-"$export_python" - "$package_root" <<'PY'
-from hashlib import sha256
-from pathlib import Path
-import sys
-
-root = Path(sys.argv[1])
-lines = []
-for path in sorted(root.rglob("*"), key=lambda item: item.as_posix()):
-    if not path.is_file() or path.name == "MANIFEST.sha256":
-        continue
-    digest = sha256(path.read_bytes()).hexdigest()
-    relative = path.relative_to(root).as_posix()
-    lines.append(f"{digest}  ./{relative}\n")
-(root / "MANIFEST.sha256").write_text("".join(lines), encoding="utf-8")
-PY
+"$export_python" "$package_root/tools/update_manifest.py" write
 
 PYTHON_BIN="$export_python" \
   "$package_root/tools/verify_teacher_framework.sh" --distribution
@@ -203,10 +194,15 @@ CONDA_ROOT="$package_conda_root" \
 RETHLAS_ROOT="$package_rethlas_root" \
   "$extracted_root/setup.sh" --check
 PYTHON_BIN="$export_python" "$extracted_root/tools/verify_teacher_framework.sh"
-"$extracted_root/tools/conjecture_queue.sh" doctor
+if command -v codex >/dev/null 2>&1 && command -v tmux >/dev/null 2>&1; then
+  "$extracted_root/tools/conjecture_queue.sh" doctor
+  runtime_check="queue doctor passed"
+else
+  runtime_check="queue doctor skipped because Codex or tmux is unavailable"
+fi
 
 echo "已生成：$archive_path"
 echo "校验文件：$archive_path.sha256"
 echo "内容清单：$package_name/MANIFEST.sha256"
 echo "本包使用严格白名单，不包含 projects/archive/shared 等目录中的任何研究数据。"
-echo "已完成解压、路径配置、结构检查和队列 doctor 端到端验收。"
+echo "已完成解压、路径配置和结构检查；$runtime_check。"

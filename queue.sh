@@ -11,9 +11,16 @@ usage() {
   ./queue.sh add <英文短名> "题目标题"  新建一道题
   ./queue.sh check                      启动前检查，不调用 Codex
   ./queue.sh start                      用 tmux 后台持续轮询
+  ./queue.sh start --slug <英文短名>    独立 tmux 持续研究一道题
   ./queue.sh status                     查看队列和各题状态
+  ./queue.sh state-init [--slug NAME]   给旧项目补建短状态入口，不覆盖现有文件
+  ./queue.sh state-audit [--slug NAME]  检查短状态入口的结构与大小
+  ./queue.sh hygiene report             只读报告日志、LaTeX 产物和环境占用
   ./queue.sh watch                      进入实时终端（Ctrl-b 后按 d 退出查看）
+  ./queue.sh watch --slug <英文短名>    查看指定单题 runner
   ./queue.sh stop                       当前 Codex 回合结束后安全停止
+  ./queue.sh stop --slug <英文短名>     只安全停止指定单题 runner
+  ./queue.sh stop --all                 安全停止全部 runner
   ./queue.sh once                       前台只推进一个回合
   ./queue.sh run                        前台持续轮询；关闭终端会中断
 
@@ -32,17 +39,23 @@ case "$command_name" in
     "$QUEUE" list
     exec "$QUEUE" run --dry-run
     ;;
-  start|status|stop)
-    exec "$QUEUE" "$command_name"
+  start|status|stop|state-init|state-audit)
+    shift
+    exec "$QUEUE" "$command_name" "$@"
     ;;
   watch)
-    exec "$QUEUE" watch
+    shift
+    exec "$QUEUE" watch "$@"
     ;;
   once)
     exec "$QUEUE" run --once
     ;;
   run)
     exec "$QUEUE" run
+    ;;
+  hygiene)
+    shift
+    exec "$WORKSPACE_ROOT/tools/workspace_hygiene.py" "$@"
     ;;
   help|-h|--help)
     usage

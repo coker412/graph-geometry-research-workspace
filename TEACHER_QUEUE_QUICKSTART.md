@@ -14,6 +14,15 @@
 ./queue.sh check
 ```
 
+从旧版框架升级、已经存在研究项目时，再运行：
+
+```bash
+./queue.sh state-init
+./queue.sh state-audit
+```
+
+这只补建下一回合使用的短状态入口，不覆盖证明、进度或验证台账。
+
 ## 加入一道猜想
 
 也可以直接对 AI 说：
@@ -90,3 +99,12 @@ tmux 不能让电脑在睡眠或关机时继续计算。Mac 合盖休眠后任�
 - `solved-awaiting-human-verification`：出现完整候选证明或决定性反例，整个队列冻结，等待导师严格复核。
 
 Rethlas 永远不会由普通轮询自动启动。
+
+## 空间占用
+
+```bash
+./queue.sh hygiene report
+```
+
+该命令只报告，不清理。LaTeX 中间文件和旧队列日志的治理命令默认也只是 dry run；只有导师
+明确要求并加入 `--apply` 才执行。项目环境不会被自动删除。

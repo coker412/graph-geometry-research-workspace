@@ -31,6 +31,7 @@
 ```text
 projects/<项目名>/
 ├── README.md
+├── CURRENT_STATE.md
 ├── references.md
 ├── ideas.md
 ├── progress.md
@@ -55,6 +56,21 @@ projects/<项目名>/
 - Python 实验放在项目的 `code/`。
 - Lean 形式化放在项目的 `lean/`。
 - 论文源码只放在项目的 `paper/`。
+
+## 长期状态与渐进读取
+
+`CURRENT_STATE.md` 是长期项目下一回合的唯一短入口，最多 300 行、32 KiB。它只汇总当前
+问题边界、最高证据等级、可用结果、最小缺口、活动路线、下一回合和精确证据指针；不能
+替代 `verification-ledger.md`、证明正文或实验记录，也不能自行改变数学结论的强度。
+
+默认先读 `CURRENT_STATE.md`，再按其中的稳定 ID 和路径读取需要的 ledger 行、proof-map
+节点及直接证据。不得为了“了解上下文”完整重读不断增长的 `progress.md`、`ideas.md`、
+`research-tree.md` 或 `proof-map.md`。旧项目首次迁移时，只从当前状态段、最近完整回合和
+被引用证据建立保守摘要；未读历史按未知处理，不得擅自提高或降低证据等级。
+
+`progress.md` 是追加式历史；`README.md` 只保存稳定范围和使用说明，不追加逐回合日志。
+只有路线结构或证明依赖实际变化时才更新 `ideas.md`、`research-tree.md` 或 `proof-map.md`，
+不要求每轮机械同步全部文件。
 
 ## 安全与版本控制
 

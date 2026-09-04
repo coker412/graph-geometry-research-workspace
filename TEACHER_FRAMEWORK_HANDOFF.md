@@ -16,6 +16,9 @@
 - `problems/important-conjectures/`：导师投放猜想的入口和队列配置。
 - `templates/`：问题、项目记录、证明图和 Rethlas 问题模板。
 - `tools/conjecture_queue.*`：Codex 长跑队列。
+- `CURRENT_STATE.md` 模板与 `state-audit`：用短状态入口恢复长项目，避免每轮重读全部历史。
+- `tools/project_state.py`：为队列外的普通项目初始化并检查同一种短状态入口。
+- `tools/workspace_hygiene.py`：默认只读地报告日志、LaTeX 中间文件和环境占用；清理必须显式 `--apply`。
 - `tools/rethlas/`：可选的 Rethlas 包装脚本。
 - `tools/configure_teacher_workspace.sh`：把占位路径替换为导师机器上的实际路径。
 - `tools/export_teacher_framework.sh`：导师以后可再次生成同样的无数据白名单交接包。
@@ -106,6 +109,8 @@ conda activate graphlab
 codex --version
 tmux -V
 ./tools/conjecture_queue.sh doctor
+./tools/conjecture_queue.sh state-audit
+./tools/workspace_hygiene.py report
 ```
 
 ## 5. 初始化导师自己的 Git 仓库

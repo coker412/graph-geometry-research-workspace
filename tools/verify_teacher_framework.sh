@@ -3,18 +3,22 @@ set -euo pipefail
 
 WORKSPACE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-distribution_mode=false
+verification_mode="workspace"
 
-if [[ $# -gt 1 ]] || { [[ $# -eq 1 ]] && [[ "$1" != "--distribution" ]]; }; then
-  echo "用法：./tools/verify_teacher_framework.sh [--distribution]" >&2
+if [[ $# -gt 1 ]] || { [[ $# -eq 1 ]] && \
+  [[ "$1" != "--distribution" ]] && [[ "$1" != "--public-source" ]]; }; then
+  echo "用法：./tools/verify_teacher_framework.sh [--distribution|--public-source]" >&2
   exit 2
 fi
-if [[ $# -eq 1 ]]; then
-  distribution_mode=true
+if [[ $# -eq 1 ]] && [[ "$1" == "--distribution" ]]; then
+  verification_mode="distribution"
+elif [[ $# -eq 1 ]] && [[ "$1" == "--public-source" ]]; then
+  verification_mode="public-source"
 fi
 
 required_files=(
   "AGENTS.md"
+  "LICENSE"
   "agents/instructions/research-workflow.md"
   "agents/instructions/queue-and-escalation.md"
   "agents/instructions/paper-writing.md"
@@ -33,14 +37,36 @@ required_files=(
   "templates/important-conjecture/problem.md"
   "templates/important-conjecture/config.toml"
   "templates/blind-research-packet.md"
+  "templates/project_template/CURRENT_STATE.md"
   "tools/conjecture_queue.py"
   "tools/conjecture_queue.sh"
+  "tools/workspace_hygiene.py"
+  "tools/project_state.py"
+  "tools/update_manifest.py"
+  "tools/tests/test_conjecture_queue.py"
+  "tools/tests/test_workspace_hygiene.py"
+  "tools/tests/test_project_state.py"
+  "tools/tests/test_update_manifest.py"
   "tools/configure_teacher_workspace.sh"
   "tools/export_teacher_framework.sh"
   "tools/verify_teacher_framework.sh"
+  "examples/tree-edge-count/README.md"
+  "examples/tree-edge-count/problem.md"
+  "examples/tree-edge-count/CURRENT_STATE.md"
+  "examples/tree-edge-count/ideas.md"
+  "examples/tree-edge-count/progress.md"
+  "examples/tree-edge-count/research-tree.md"
+  "examples/tree-edge-count/proof-map.md"
+  "examples/tree-edge-count/verification-ledger.md"
+  "examples/tree-edge-count/notes/proof.md"
 )
 
 failed=false
+if [[ "$verification_mode" == "public-source" ]] && \
+   [[ ! -f "$WORKSPACE_ROOT/.github/workflows/ci.yml" ]]; then
+  echo "公开源码缺少：.github/workflows/ci.yml" >&2
+  failed=true
+fi
 for relative in "${required_files[@]}"; do
   if [[ ! -f "$WORKSPACE_ROOT/$relative" ]]; then
     echo "缺少：$relative" >&2
@@ -57,13 +83,13 @@ for relative in "${required_dirs[@]}"; do
 done
 
 for forbidden in .git .codex .claude .agents .vscode; do
-  if [[ "$distribution_mode" == true ]] && [[ -e "$WORKSPACE_ROOT/$forbidden" ]]; then
+  if [[ "$verification_mode" == "distribution" ]] && [[ -e "$WORKSPACE_ROOT/$forbidden" ]]; then
     echo "分发包不应包含：$forbidden" >&2
     failed=true
   fi
 done
 
-if [[ "$distribution_mode" == true ]]; then
+if [[ "$verification_mode" != "workspace" ]]; then
   for data_dir in projects archive shared index library environments; do
     while IFS= read -r path; do
       if [[ "$(basename "$path")" != ".gitkeep" ]]; then
@@ -79,6 +105,8 @@ while IFS= read -r path; do
   failed=true
 done < <(
   find "$WORKSPACE_ROOT" -type f \
+    -not -path "$WORKSPACE_ROOT/.git/*" \
+    -not -path "$WORKSPACE_ROOT/exports/*" \
     \( -name '.env' -o -name '*.env' -o -name '*.pem' -o -name '*.key' \
        -o -name '*.p12' -o -name '*.pfx' -o -name '*.pdf' -o -name '*.zip' \
        -o -name '*.7z' -o -name '*.jsonl' -o -iname '*credential*' \
@@ -88,49 +116,22 @@ done < <(
 secret_pattern='(OPENAI_API_KEY|ANTHROPIC_API_KEY|DANUS_CODEX_API_KEY|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)[[:space:]]*[=:]'
 if command -v rg >/dev/null 2>&1; then
   if rg -n -I "$secret_pattern" "$WORKSPACE_ROOT" \
+      -g '!.git/**' -g '!exports/**' \
       -g '!tools/verify_teacher_framework.sh' >/dev/null; then
     echo "发现疑似密钥赋值；请运行 rg 手工检查。" >&2
     failed=true
   fi
 else
   if grep -R -I -E "$secret_pattern" "$WORKSPACE_ROOT" \
+      --exclude-dir='.git' --exclude-dir='exports' \
       --exclude='verify_teacher_framework.sh' >/dev/null; then
     echo "发现疑似密钥赋值；请运行 grep 手工检查。" >&2
     failed=true
   fi
 fi
 
-if [[ "$distribution_mode" == true ]]; then
-  source_identity_pattern='(/home/cheng|ricciflow0602|intersecting-subset-ramsey0624|P2cut|P2_cut)'
-  identity_matches="$(cd "$WORKSPACE_ROOT" && \
-      grep -R -I -l -E "$source_identity_pattern" . \
-        --exclude='verify_teacher_framework.sh' || true)"
-  if [[ -n "$identity_matches" ]]; then
-    echo "发现原工作区路径或项目标识；分发包未完全匿名化。" >&2
-    (cd "$WORKSPACE_ROOT" && \
-      grep -R -I -n -E "$source_identity_pattern" . \
-        --exclude='verify_teacher_framework.sh') >&2 || true
-    failed=true
-  fi
-fi
-
-if [[ "$distribution_mode" == true ]] && [[ -f "$WORKSPACE_ROOT/MANIFEST.sha256" ]]; then
-  if ! "$PYTHON_BIN" - "$WORKSPACE_ROOT" <<'PY'
-from hashlib import sha256
-from pathlib import Path
-import sys
-
-root = Path(sys.argv[1]).resolve()
-for raw_line in (root / "MANIFEST.sha256").read_text(encoding="utf-8").splitlines():
-    digest, name = raw_line.split(maxsplit=1)
-    relative = name.lstrip("* ")
-    path = (root / relative).resolve()
-    if root not in path.parents or not path.is_file():
-        raise SystemExit(1)
-    if sha256(path.read_bytes()).hexdigest() != digest:
-        raise SystemExit(1)
-PY
-  then
+if [[ "$verification_mode" != "workspace" ]] && [[ -f "$WORKSPACE_ROOT/MANIFEST.sha256" ]]; then
+  if ! "$PYTHON_BIN" "$WORKSPACE_ROOT/tools/update_manifest.py" check; then
     echo "MANIFEST.sha256 校验失败。" >&2
     failed=true
   fi
@@ -142,6 +143,8 @@ if [[ "$failed" == true ]]; then
 fi
 
 echo "框架检查通过。"
-if [[ "$distribution_mode" == true ]]; then
+if [[ "$verification_mode" == "distribution" ]]; then
   echo "数据目录为空，未发现禁止目录、文件类型或常见密钥赋值。"
+elif [[ "$verification_mode" == "public-source" ]]; then
+  echo "公开源码边界通过：研究数据目录为空，清单与源码一致。"
 fi

@@ -29,3 +29,4 @@ agents/**/secrets.yaml
 agents/important-conjectures/STOP
 agents/important-conjectures/runner.lock
 exports/
+SETUP_REPORT.md

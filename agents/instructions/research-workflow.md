@@ -83,10 +83,26 @@
 继续。只有主问题的完整候选解进入认证时，根 Agent 才停止全题探索并按状态机等待研究者
 复核。
 
-根 Agent 是唯一同步共享 `ideas.md`、`progress.md`、`research-tree.md`、`proof-map.md`
-和 `verification-ledger.md` 的角色。探索者写入
+根 Agent 是唯一修改共享状态的角色。每轮必须追加 `progress.md` 并重写短入口
+`CURRENT_STATE.md`；只在出现实质数学推进、关键失败或证据等级变化时登记
+`verification-ledger.md`，只在对应结构变化时更新 `ideas.md`、`research-tree.md` 或
+`proof-map.md`。探索者写入
 `notes/branches/<round>/<branch-id>/RESULT.md` 等各自独立的分支产物，避免并发覆盖；
 盲问题包使用 `templates/blind-research-packet.md`。
+
+## 当前状态入口与历史分层
+
+长期项目使用不超过 300 行、32 KiB 的 `CURRENT_STATE.md` 作为下一回合入口。它至少记录：
+
+- 正式题目和定义边界；
+- 当前最高证据等级与可安全使用的结果；
+- 当前最小 gap、活动路线和有价值的 blocked 路线；
+- 下一回合的单一有界目标与验收标准；
+- ledger ID、proof-map 节点和直接证据路径。
+
+先读该文件，再按指针读取证据。`progress.md` 是追加历史，不是每轮必读上下文；README 是
+稳定项目说明，不是进度日志。当前状态摘要若与证据冲突，以证据为准并立即修正摘要。旧项目
+迁移时必须保守：未核对的历史结论不进入“可安全使用的结果”，也不因遗漏而被降级。
 
 ## 第一阶段：定义与文献
 
@@ -275,3 +291,6 @@ proof-draft / agent-verified / human-verified / formalized
 - 已核对的关键文献差异。
 
 只报告“问题尚未解决”不算研究推进。
+
+回合结束时还必须更新 `CURRENT_STATE.md`。其内容应足以让一个新会话在不完整重读历史的
+前提下继续当前最小缺口，同时用稳定 ID 和路径保留到原始证据的追溯能力。
