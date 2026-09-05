@@ -351,15 +351,16 @@ class ConjectureQueueTest(unittest.TestCase):
             self.assertIn("联网核查分支", prompt)
             self.assertIn("汇合点之前看不到你的结果", prompt)
             self.assertIn("web-source", prompt)
-            wrapped = queue.bubblewrap_command(
-                ["/bin/true"],
-                lane_project,
-                writable_dirs=[lane_project],
-                hidden_dirs=[queue.ROOT],
-                writable_bindings=[
-                    (lane_project, lane_root)
-                ],
-            )
+            with mock.patch.object(
+                queue.shutil, "which", return_value="/usr/bin/bwrap"
+            ):
+                wrapped = queue.bubblewrap_command(
+                    ["/bin/true"],
+                    lane_project,
+                    writable_dirs=[lane_project],
+                    hidden_dirs=[queue.ROOT],
+                    writable_bindings=[(lane_project, lane_root)],
+                )
             self.assertIn("--ro-bind", wrapped)
             self.assertIn("--dev", wrapped)
             self.assertIn("--tmpfs", wrapped)
