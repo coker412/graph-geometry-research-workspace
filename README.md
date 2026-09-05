@@ -1,36 +1,260 @@
 # Graph Geometry Research Workspace
 
-这是一个面向数学研究者的 AI 辅助研究工作台，目前主要用于离散几何和几何分析。
+让数学研究跨会话继续，并保留可审查的证据链。
 
-工作台把一次长期研究拆成可恢复的回合：`AGENTS.md` 规定研究纪律，项目目录保存长期状态，猜想队列负责调度。每个回合都有明确边界，结束时把结果、失败路线、证据等级和下一缺口写回磁盘。下一回合不依赖旧聊天，而是从这些文件继续。
+[![Public workspace checks](https://github.com/coker412/graph-geometry-research-workspace/actions/workflows/ci.yml/badge.svg)](https://github.com/coker412/graph-geometry-research-workspace/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-我更关心研究过程能不能留下可靠记录。定义是否一致，一条路线为什么失败，计算结果支持了什么，候选证明还有哪个 gap，这些都不应该随着对话结束而消失。这个仓库就是为此逐渐整理出来的，目前仍在实际使用中调整。
+这个工作台面向使用 Codex 进行证明搜索、反例构造、文献核查和计算实验的数学研究者。
+它把题目、路线、证据、失败记录和下一步保存在项目目录中。研究可以跨越很多会话继续，
+不必依赖一段不断增长的聊天记录。
 
-工作台本身不提供新的模型。它调用 Codex 做文献、实验和证明搜索，数学研究者负责选择运行模式、控制额度、检查证明并决定结论的证据等级。
+[快速开始](#快速开始) · [查看示例](#先看一个完整示例) · [核心能力](#核心能力) ·
+[运行模式](#运行模式) · [安全边界](#证据与安全边界)
 
-## 它包含什么
+## 适合谁
 
-| 部分 | 作用 |
+这个工作台适合需要长期推进数学问题，并且希望保留完整研究轨迹的个人研究者或小型团队。
+它特别适合以下任务：
+
+- 一个问题需要多个证明路线和多轮反例测试；
+- 研究过程会跨会话、跨模型或跨 Agent；
+- 候选证明必须和计算证据、文献事实、人工确认严格区分；
+- 多道猜想需要在后台公平轮转，或需要专注运行其中一道题。
+
+它不是自动证明正确性的保证，也不是新的数学模型。工作台负责组织 Codex 的研究过程，
+数学研究者仍然负责确认定义、检查证明并决定是否公开结论。
+
+## 快速开始
+
+### 1. 获取工作台
+
+```bash
+git clone https://github.com/coker412/graph-geometry-research-workspace.git
+cd graph-geometry-research-workspace
+```
+
+也可以在 GitHub 页面使用 **Use this template** 创建自己的副本。
+
+### 2. 检查环境
+
+```bash
+./setup.sh --check
+```
+
+基础运行需要 Git、Bash、Python 3、Codex CLI 和 tmux。计算实验默认使用名为 `graphlab`
+的 Conda 环境。缺少基础环境时，可以运行：
+
+```bash
+./setup.sh --bootstrap --without-rethlas
+```
+
+账户登录和联网安装需要由使用者亲自确认。不要复制其他人的 Codex 登录目录。
+
+### 3. 加入一道题
+
+```bash
+./queue.sh add my-problem "My conjecture"
+```
+
+填写：
+
+```text
+problems/important-conjectures/items/my-problem/problem.md
+```
+
+核对同目录的 `config.toml`，再把：
+
+```toml
+ready = false
+```
+
+改为：
+
+```toml
+ready = true
+```
+
+题目原文由研究者维护。Runner 会保存输入快照，研究 Agent 不会改写原题。
+
+### 4. 先跑一个回合
+
+```bash
+./queue.sh check
+./queue.sh once
+```
+
+`check` 只检查环境和下一题，不调用 Codex。`once` 推进一个有边界的研究回合，适合确认
+题目、权限和输出结构是否正确。
+
+### 5. 需要时转入后台
+
+```bash
+./queue.sh start
+```
+
+```bash
+./queue.sh status   # 查看状态
+./queue.sh watch    # 查看输出，按 Ctrl-b 再按 d 退出查看
+./queue.sh stop     # 当前回合结束后安全停止
+```
+
+后台模式使用 tmux。关闭终端不会终止任务。关机或系统休眠会停止或暂停计算，但磁盘状态仍会
+保留，重新启动后可以继续。
+
+## 先看一个完整示例
+
+[`examples/tree-edge-count/`](examples/tree-edge-count/) 是一个虚构项目，问题是证明有限非空树
+有 \(n-1\) 条边。它不包含任何真实研究内容，展示了以下文件如何互相引用：
+
+```text
+problem.md
+    ↓
+CURRENT_STATE.md
+    ↓
+ideas.md + research-tree.md + proof-map.md
+    ↓
+notes/proof.md
+    ↓
+verification-ledger.md + progress.md
+```
+
+示例中的候选证明保持为 `proof-draft`。即使论证看起来完整，工作台也不会自动把它升级为
+人工确认的结果。
+
+## 它解决什么
+
+| 常见问题 | 工作台的处理方式 |
 |---|---|
-| [`AGENTS.md`](AGENTS.md) | 保存所有任务都必须遵守的核心规则 |
-| [`agents/instructions/`](agents/instructions/) | 按任务拆分研究流程、推理升级和论文写作细则 |
-| `projects/` | 每个研究项目的长期工作目录 |
-| `problems/important-conjectures/` | 投放和配置重要猜想 |
-| `tools/conjecture_queue.*` | 按优先级轮转猜想，每次只运行一个有边界的 Codex 回合 |
-| `progress.md` 与 `ideas.md` | 保存推进过程、失败路线和下一步 |
-| `CURRENT_STATE.md` | 下一研究回合的短入口；索引当前缺口和证据，不替代历史台账 |
-| `research-tree.md` 与 `proof-map.md` | 分别记录探索路线和候选证明的依赖关系 |
-| `verification-ledger.md` | 记录数学结论的证据等级、反例测试和审查结果 |
-| `tools/rethlas/` | 可选的 Rethlas 包装脚本，仅在研究者明确批准后使用 |
-| `setup.sh` | 检查或配置新的工作环境 |
+| 新会话不了解上次做到哪里 | `CURRENT_STATE.md` 保存当前问题边界、最小缺口和证据指针 |
+| Agent 重复失败路线 | `ideas.md` 和 `research-tree.md` 记录方法族、失败原因与重开条件 |
+| 未验证的引理逐渐变成默认前提 | `proof-map.md` 和 `verification-ledger.md` 保存依赖与证据等级 |
+| 计算结果被误写成定理 | 计算证据最高先标为 `experimental` |
+| 一道难题占用全部时间 | 队列按优先级公平轮转，也支持独立单题 runner |
+| 模型声称解决问题后继续自动运行 | 完整候选解会冻结队列，等待研究者逐步复核 |
 
-## 长项目如何避免上下文膨胀
+## 工作方式
 
-每个长期项目使用 `CURRENT_STATE.md` 作为下一回合的默认入口，限制为 300 行、32 KiB。
-Agent 先读正式题目和这份摘要，再按稳定 ID、proof-map 节点和路径读取需要的原始证据；不
-默认完整重读持续增长的 `progress.md`、`ideas.md`、`research-tree.md` 或 `proof-map.md`。
+```mermaid
+flowchart LR
+    A[研究者提交正式题目] --> B[选择信息与搜索模式]
+    B --> C[Codex 推进一个有边界回合]
+    C --> D[结果和证据写回项目]
+    D --> E{当前状态}
+    E -->|有明确下一步| C
+    E -->|需要判断| F[等待研究者]
+    E -->|候选完整解答| G[冻结并严格审查]
+```
 
-旧队列项目升级后运行：
+每个 Codex 调用只负责一个有边界的回合。长期运行来自连续回合和磁盘状态，不是让一次
+调用无限等待。每轮至少保存一项可复核产物，例如严格中间结果、精确 gap、反例候选、
+已排除路线或可复现实验现象。
+
+一个回合可以包含少量彼此独立的探索分支。根 Agent 选择一条主路线深入推进，并负责统一
+写入共享状态。候选引理只冻结依赖它的分支；完整候选解答才会停止整道题的探索。
+
+## 核心能力
+
+| 能力 | 对应组件 |
+|---|---|
+| 可恢复研究回合 | `CURRENT_STATE.md`, `progress.md` |
+| 方法族和失败路线管理 | `ideas.md`, `research-tree.md` |
+| 候选证明依赖追踪 | `proof-map.md` |
+| 数学证据分级 | `verification-ledger.md` |
+| 多题轮转与单题长跑 | `tools/conjecture_queue.*`, `queue.sh` |
+| 离线原创与联网核查隔离 | `offline`, `connected`, `mixed-isolated` |
+| 可选的证明升级 | `tools/rethlas/` |
+| 发布前隐私和完整性检查 | GitHub Actions, `tools/verify_teacher_framework.sh` |
+
+`AGENTS.md` 保存所有任务共用的研究纪律。`agents/instructions/` 按研究、队列升级和论文写作
+拆分详细规则。工作台不提供模型，而是调用已安装并登录的 Codex CLI。
+
+## 运行模式
+
+信息来源、搜索目标、调度方式、运行期限和研究阶段可以分别选择，不必绑定成固定套餐。
+
+| 维度 | 选项 | 说明 |
+|---|---|---|
+| 信息来源 | `offline`, `connected`, `mixed-isolated` | 决定是否读取外部资料以及如何隔离来源 |
+| Agent 策略 | `single`, `adaptive`, `swarm` | 决定回合内是否使用独立分支；目前不是 runner 配置字段 |
+| 搜索目标 | `affirmative-proof`, `counterexample`, `either` | 决定寻找证明、反例或两者均可 |
+| 调度 | 单回合、公平队列、独立单题 | 决定如何分配多个题目的运行时间 |
+| 期限 | 有界试跑或持续运行 | 由单回合超时、累计回合和后台时限共同控制 |
+| 阶段 | 探索或认证 | 候选结论和高风险引理会触发认证 |
+
+### 信息来源
+
+- `offline` 只使用正式题目、允许的基础事实、内部计算和可追踪状态。它不能用来判断文献
+  状态或新颖性。
+- `connected` 允许联网核查。外部定理必须核对原文、全部假设和归一化。
+- `staged` 是人工流程：先运行若干离线回合并冻结路线快照，再切换为联网核查。
+- `mixed-isolated` 同时运行离线分支和联网分支，最后执行汇合审计。它通常需要三次 Codex
+  调用，并依赖 Linux `bubblewrap`。缺少隔离工具时会拒绝运行，不会静默降级。
+
+全局模式写在 `problems/important-conjectures/runner.toml`，单题可以在自己的
+`config.toml` 中覆盖：
+
+```toml
+information_mode = "offline"
+search_contract = "either"
+```
+
+### 调度方式
+
+| 目标 | 命令 |
+|---|---|
+| 检查但不运行 | `./queue.sh check` |
+| 推进下一题一个回合 | `./queue.sh once` |
+| 公平轮转所有可运行题目 | `./queue.sh start` |
+| 后台专注一道题 | `./queue.sh start --slug <slug>` |
+| 查看指定单题 | `./queue.sh watch --slug <slug>` |
+| 安全停止指定单题 | `./queue.sh stop --slug <slug>` |
+
+不同 slug 可以使用独立 tmux 并行运行。同一 slug 不能重复启动；公平队列也不能和独立
+单题 runner 同时修改同一道题。
+
+### 持续运行
+
+将单题的 `max_attempts` 设为 `0` 可以取消累计回合上限，将全局 `max_wall_hours` 设为 `0`
+可以取消一次后台启动的总时限。单个回合仍建议保留有限超时，以便从 CLI 故障或挂起计算
+中恢复。
+
+只要题目状态为 `queued` 或 `pushing`，Runner 就会继续调度。题目有歧义、需要升级、出现
+运行故障或得到完整候选解答时，它会停下来等待研究者。持续调度不能保证任意数学问题都能
+找到完整解答，也会持续消耗模型额度。
+
+完整配置、常用组合和固定研究提示词见
+[`problems/important-conjectures/README.md`](problems/important-conjectures/README.md)。
+
+## 每道题会生成什么
+
+第一次调度时，Runner 会建立：
+
+```text
+projects/conjecture-<slug>/
+├── README.md
+├── CURRENT_STATE.md
+├── references.md
+├── ideas.md
+├── progress.md
+├── research-tree.md
+├── proof-map.md
+├── verification-ledger.md
+├── notes/
+├── code/
+├── lean/
+├── rethlas/
+├── input-snapshots/
+├── CURRENT_INPUT.md
+└── .conjecture-status
+```
+
+### 短状态与历史
+
+`CURRENT_STATE.md` 是下一回合的默认入口，最多 300 行、32 KiB。Agent 先读正式题目和这份
+摘要，再按稳定 ID 和路径读取直接证据，不必完整重读持续增长的历史文件。
+
+旧项目可以运行：
 
 ```bash
 ./queue.sh state-init
@@ -44,11 +268,10 @@ Agent 先读正式题目和这份摘要，再按稳定 ID、proof-map 节点和�
 ./tools/project_state.py audit
 ```
 
-初始化从不覆盖已有摘要。旧项目先标为 `migration-status: pending`，下一研究回合从当前状态
-段、最近完整回合和引用证据建立保守摘要；未读历史不会被擅自升级或降级。README 只保存
-稳定范围和使用说明，逐回合记录继续追加到 `progress.md`。
+初始化不会覆盖已有摘要。旧项目先标为 `migration-status: pending`，再从最近完整回合和直接
+证据建立保守摘要。未读历史按未知处理，不会自动改变证据等级。
 
-空间治理默认也是只读的：
+### 空间治理
 
 ```bash
 ./queue.sh hygiene report
@@ -56,15 +279,30 @@ Agent 先读正式题目和这份摘要，再按稳定 ID、proof-map 节点和�
 ./queue.sh hygiene logs --older-than-days 30 --keep-latest-per-slug 5
 ```
 
-后两个命令默认只列计划；显式增加 `--apply` 才会删除可再生的 LaTeX 中间文件或无损压缩
-旧 JSONL。项目环境只报告占用，从不自动删除。
+这些命令默认只报告或显示计划。只有显式增加 `--apply`，工具才会删除可再生的 LaTeX
+中间文件或无损压缩旧 JSONL 日志。项目环境只报告占用，不会自动删除。
 
-这个公开仓库只包含框架，不包含我的研究项目、论文、PDF、实验数据、运行日志或登录信息。
+## 证据与安全边界
 
-## 公开源码边界
+### 证据等级
 
-对于公开发布的通用框架，本仓库是规范源。私有研究工作区可以保留运行副本和本地扩展，
-但公开版本的文档、模板、工具与测试以这里为准。发布时不要从私有工作区递归复制目录。
+| 等级 | 含义 |
+|---|---|
+| `conjecture` | 没有证明 |
+| `experimental` | 只有计算证据 |
+| `partial-result` | 只证明特殊情形或较弱结论 |
+| `proof-draft` | 有完整候选证明，尚未严格验证 |
+| `agent-verified` | 通过独立 Agent 或 verifier 审查 |
+| `human-verified` | 研究者逐步复核并明确接受 |
+| `formalized` | 通过 Lean 等形式系统检查 |
+
+计算实验不能直接写成定理。Codex 或 Rethlas 给出的完整论证最高先标为 `proof-draft` 或
+`agent-verified`。只有研究者能够把它升级为 `human-verified`。
+
+### 公开仓库不包含研究数据
+
+这个仓库只发布框架、模板、工具、测试和虚构示例。`projects/`、`archive/`、`shared/`、
+`index/`、`library/` 和 `environments/` 在公开源码中必须保持为空，只保留 `.gitkeep`。
 
 提交前运行：
 
@@ -74,414 +312,35 @@ python tools/update_manifest.py write
 python -m unittest discover -s tools/tests -v
 ```
 
-`--public-source` 要求 `projects/`、`archive/`、`shared/`、`index/`、`library/` 和
-`environments/` 中没有研究数据。校验器也会拒绝 PDF、JSONL、常见密钥文件和未登记的
-源码文件。GitHub Actions 会在每次 push 和 pull request 上重复这些检查，并完整试跑一次
-分发包导出。
-
-## 最小示例
-
-[`examples/tree-edge-count/`](examples/tree-edge-count/) 是一个完全虚构的项目，问题是证明
-有限非空树有 \(n-1\) 条边。它展示正式题目、短状态、方法族、证明依赖、候选证明、验证
-台账和追加式进度怎样互相引用。示例停在 `proof-draft`，用来说明证据升级不会因为证明
-看起来完整而自动发生。
-
-## 先选择运行方式
-
-模式分成六个互相独立的维度。信息来源、Agent 强度、搜索目标、调度方式、运行期限和研究阶段可以分别选择，
-不必捆绑。例如，可以运行“离线 + adaptive + 反例搜索 + 单题专注”，也可以运行
-“混合隔离 + single + 双向搜索 + 公平队列”。
-
-| 维度 | 可选项 | 默认或当前行为 | 在哪里设置 |
-|---|---|---|---|
-| 信息来源 | `offline`、`connected`、`mixed-isolated`，以及人工分阶段的 `staged` | 默认由 `runner.toml` 决定，新工作区通常从离线开始 | `runner.toml` 或单题 `config.toml` 的 `information_mode` |
-| Agent 强度 | `single`、`adaptive`、`swarm` | `adaptive` 是当前提示词策略 | 目前写入题目要求或 `AGENTS.md`；还不是 runner 配置字段 |
-| 搜索目标 | `affirmative-proof`、`counterexample`、`either` | 新题模板默认为 `affirmative-proof` | 单题 `config.toml` 的 `search_contract` |
-| 调度方式 | 单回合、公平后台队列、独立后台单题 | `start` 使用公平队列 | CLI 命令；`start --slug` 为每道题建立独立 tmux |
-| 运行期限 | 有界试跑、持续到完整结果 | 新题累计回合默认不限；一次 `start` 默认运行至多 24 小时 | 单题 `config.toml`、`runner.toml` 与题目状态 |
-| 研究阶段 | 探索、认证 | 先探索；候选结论触发分支认证 | 由工作流自动切换，也可由研究者明确要求审计 |
-
-这些名称并不都代表已经实现的命令行开关。`information_mode` 和 `search_contract` 是正式
-配置字段；`single`、`adaptive`、`swarm` 是 Agent 编排策略；`staged` 是研究者主动切换
-信息模式形成的流程。文档中会明确区分三者。
-
-### 信息来源
-
-| 模式 | 行为 | 适合什么情况 | 额度与限制 |
-|---|---|---|---|
-| `offline` | 禁止公共互联网、连接器和新增外部数据源，只使用题目、允许的基础事实、内部计算与可追踪状态 | 原创证明搜索、担心热门错误路线造成锚定时 | 一次普通 Codex 回合；不能据此判断文献状态或新颖性 |
-| `connected` | 允许联网核查，外部材料必须记录来源并逐项核对假设 | 文献核查、定理接口确认、优先权检查 | 一次普通 Codex 回合；外部路线不能替代关键证明 |
-| `staged` | 先运行若干 `offline` 回合并冻结原创路线快照，再人工改为 `connected` | 希望先独立搜索，之后再吸收文献 | 不是单独配置值，需要研究者在阶段边界改配置 |
-| `mixed-isolated` | 离线探索和联网核查并行，之后运行独立汇合审计 | 同一阶段同时需要原创搜索与外部核查 | 基础成本约为三次 Codex 调用；需要 Linux `bubblewrap`，缺失时拒绝运行 |
-
-全局选择写在 `problems/important-conjectures/runner.toml`：
-
-```toml
-information_mode = "offline"
-```
-
-单题可以覆盖全局设置：
-
-```toml
-information_mode = "mixed-isolated"
-```
-
-`mixed-isolated` 的联网分支只能读取回合开始时的冻结副本。它不能看到离线分支的实时文件，
-也不能写入真实项目。两个分支分别使用临时 Codex 运行目录，不共享旧会话或状态数据库。
-两个分支结束后，runner 才启动汇合审计。
-
-### Agent 强度
-
-| 策略 | 行为 | 相对消耗 |
-|---|---|---:|
-| `single` | 根 Agent 独立完成一个回合，不主动调用子 Agent | 低 |
-| `adaptive` | 根 Agent 深入一条主路线，并按路线分叉、关键缺口和审计需要动态调用少量子 Agent | 中，当前推荐 |
-| `swarm` | 同时保留多个不兼容的探索分支，并持续配置对抗审计 | 高 |
-
-普通队列每次只启动一个根 Agent，但根 Agent 可以在回合内部并行调用子 Agent。因此“队列
-串行”和“回合内多 Agent”并不矛盾。候选引理只冻结依赖它的分支，无依赖的盲分支可以
-继续；完整候选解答才会冻结整个题目。
-
-这三个策略目前不是 `runner.toml` 字段。需要固定 `single` 或启用高强度 `swarm` 时，应把
-要求写入题目或工作区指令。默认长跑提示词采用 `adaptive`，根据额度和信息增益决定是否
-增加分支。
-
-### 搜索目标
-
-单题 `config.toml` 使用 `search_contract`：
-
-```toml
-search_contract = "affirmative-proof"
-```
-
-- `affirmative-proof`：把完整肯定证明作为搜索终点，适合需要避免过早放弃的长跑。
-- `counterexample`：持续寻找并认证足以否定命题的严格反例。
-- `either`：接受完整证明或严格反例中的任一种完整解决。
-
-搜索目标只控制路线选择，不提高证据等级。即使使用 `affirmative-proof`，未经审计的完整
-论证仍然只是 `proof-draft`。
-
-### 调度方式
-
-| 方式 | 命令 | 行为 |
-|---|---|---|
-| 检查下一回合 | `./queue.sh check` | 只做健康检查和 dry run，不调用 Codex |
-| 单回合 | `./queue.sh once` | 前台运行队列中的下一个可运行题目，然后退出 |
-| 公平后台队列 | `./queue.sh start` | 在 tmux 中按优先级完成一轮，每题最多一个回合，再重新扫描 |
-| 前台单题专注 | `./tools/conjecture_queue.sh run --slug <slug>` | 只反复调度指定题目，终端必须保持打开 |
-| 后台单题专注 | `./queue.sh start --slug <slug>` | 为指定题目建立独立 tmux，只读写该题项目 |
-
-不带 `--slug` 的 `start` 仍然公平轮转，`priority` 只决定一轮中的先后次序。不同 slug
-可以分别执行 `start --slug` 并行运行；每道题使用独立的 tmux、锁文件和停止文件。同一
-slug 不能重复启动，公平队列也不能与单题 runner 同时运行。
-
-### 探索与认证
-
-探索是默认阶段，可以提出高风险引理、构造和反例候选，但必须留下明确状态。某个分支
-出现严格中间结果、完整候选证明或高风险公共依赖时，该分支进入认证：冻结下游，执行
-十项检查，并交给独立 Agent 或 verifier 审计。其他无依赖分支可以继续运行。
-
-认证不是“更强的搜索模式”，而是证据升级门。计算结果不能越过 `experimental`，单个
-Agent 的完整自检不能自动成为 `human-verified`。
-
-### 持续运行直到得到完整结果
-
-这里的“持续”是多个可恢复研究回合连续运行，不是让一次 Codex 调用永远不返回。每个
-回合仍须保存严格中间结果、失败路线、精确缺口和下一步。只要题目状态保持 `pushing`，
-runner 就会在后续轮次继续研究。
-
-“完整结果”是以下两种情况之一：
-
-- 给出覆盖原命题全部量词的完整证明，并通过独立对抗审计；
-- 给出严格反例，核对所有对象、边界条件和数值不等式，并通过独立对抗审计。
-
-达到其中一种情况后，Agent 把题目设为 `solved-awaiting-human-verification`。runner 随即
-停止，等待研究者逐步复核。归约到未证明引理、有限参数扫描、候选反例或单个 Agent 的
-自检都不满足终止条件。
-
-单题配置可以这样写：
-
-```toml
-ready = true
-enabled = true
-search_contract = "affirmative-proof"  # 也可改成 counterexample 或 either
-stagnation_rounds_before_blocked = 0
-information_mode = "offline"
-max_attempts = 0
-priority = 1000
-```
-
-全局配置负责取消一次后台启动的总时限：
-
-```toml
-max_wall_hours = 0
-```
-
-不必取消单回合超时。保留有限的 `attempt_timeout_minutes` 更容易从 CLI 故障、挂起计算或
-不完整输出中恢复。长期性来自连续回合和磁盘状态，而不是单次调用时长。
-
-如果队列中只有这道题，可以使用 `./queue.sh start`。如果队列中还有其他题，`start` 会
-公平轮转。前台单题专注命令是：
-
-```bash
-./tools/conjecture_queue.sh run --slug <slug>
-```
-
-需要关闭终端后继续时，直接启动后台单题 runner：
-
-```bash
-./queue.sh start --slug <slug>
-```
-
-查看和退出查看：
-
-```bash
-./queue.sh watch --slug <slug>
-# 按 Ctrl-b，再按 d，只退出查看，不停止研究
-```
-
-安全停止会等当前回合写完文件：
-
-```bash
-./queue.sh stop --slug <slug>
-```
-
-再次执行同一个 `start --slug` 命令即可从项目文件继续。使用 `./queue.sh stop --all`
-可以让公平队列和全部单题 runner 分别在各自当前回合结束后退出。
-
-下面这段可以放进题目的“给研究 Agent 的固定要求”。它适用于离线肯定证明长跑：
-
-```text
-仅使用题目、明确允许的基础事实、内部计算和可追踪的项目状态；不要搜索公共互联网、
-连接器或外部资料。把“存在完整肯定证明”作为搜索工作假定，但不要把该假定当作证据。
-
-持续推进多个可恢复研究回合，直到得到覆盖原命题全部量词的完整证明，并通过独立对抗
-审计。不得因为问题可能公开、当前路线失败或出现定理级缺口而停止。每个回合结束前都要
-保存最强的严格中间结果、失败路线、精确缺口、方法族登记和下一步，并保持题目为
-`pushing`；不要为了等待完整证明而隐去部分进展。
-
-根 Agent 每轮选择一条主路线深入推进，并按信息增益动态调用少量子 Agent。早期盲分支
-只接收独立问题包，不暴露热门路线和失败史。先形成至少三个核心机制不同的方法族。候选
-引理只冻结依赖它的分支，其他无依赖分支可以继续。候选完整证明必须另交独立 Agent
-逐步检查定义、量词、边界情形、隐含假设、循环论证和与原命题等强的未证明引理。
-
-只有完整证明通过审计后，才把状态改为 `solved-awaiting-human-verification`。归约、有限
-计算、未经证明的关键引理和“尽力而为”的总结都不算完成。
-```
-
-寻找反例时，把配置改为：
-
-```toml
-search_contract = "counterexample"
-```
-
-并把提示词中的终点替换为：
-
-```text
-持续寻找足以否定原命题的严格反例。只有显式构造、全部对象与边界条件核对、决定性不等式
-获得严格证书，并通过独立对抗审计后，才把状态改为
-`solved-awaiting-human-verification`。有限扫描和没有证明证书的候选反例不算完成。
-```
-
-这套设置会一直消耗模型额度，直到得到完整候选结果、研究者安全停止，或发生需要人工
-处理的状态，例如题目歧义、运行故障或升级申请。它保证持续调度和完整记录，不保证某个
-数学问题一定存在可找到的解答。
-
-### 常用组合
-
-额度敏感的原创搜索：
-
-```toml
-information_mode = "offline"
-search_contract = "either"
-```
-
-在题目要求中指定 `single`，再用 `./queue.sh once` 做短回合。
-
-持续的原创证明长跑：
-
-```toml
-information_mode = "offline"
-search_contract = "affirmative-proof"
-max_attempts = 0
-stagnation_rounds_before_blocked = 0
-```
-
-采用 `adaptive`，并把 `runner.toml` 的 `max_wall_hours` 设为 `0`。如果只研究一道题，使用
-`start --slug <slug>`；不带 `--slug` 的 `start` 会轮转所有可运行题目。
-
-先原创、后核查：先以 `offline` 运行并保存方法族快照，在阶段边界改为 `connected`。
-需要同回合并行核查时，选择 `mixed-isolated`，并预留约三次普通调用的基础额度。
-
-两道题同时采用隔离混合模式时，分别在各自的 `config.toml` 写入
-`information_mode = "mixed-isolated"`，再运行：
-
-```bash
-./queue.sh start --slug <problem-a>
-./queue.sh start --slug <problem-b>
-```
-
-系统会建立两个题目级 tmux。每个题目级 tmux 又在单个回合内并行运行离线原创分支和
-联网核查分支，随后执行该题自己的汇合审计。
-
-## 工作方式
-
-```mermaid
-flowchart LR
-    A[研究者填写猜想] --> B[队列选择一个可运行题目]
-    B --> C[Codex 推进一个研究回合]
-    C --> D[结果写入项目文件]
-    D --> E{当前状态}
-    E -->|仍有明确下一步| B
-    E -->|需要判断| F[等待研究者]
-    E -->|候选完整解答| G[冻结并进行严格审查]
-```
-
-队列不依赖某一次聊天的上下文。每轮结束后，定义、文献、实验、证明草稿、失败原因和下一步都会保存在项目目录中。下一次 Codex 调用先读这些文件，再从当前最小缺口继续。
-
-一个研究回合不等于只能研究一个思路。根 Agent 会选一条主路线深入推进，并可在额度允许
-时动态启动少量盲探索分支。分支使用各自的问题包和输出目录，根 Agent 仍是共享台账的
-唯一写入者。某条路线得到候选引理时，只冻结依赖该引理的分支并交给对抗审计；无依赖的
-隔离分支可以继续。完整候选解答才会停止全题探索。
-
-队列会公平轮转多个题目，避免一个难题占用所有时间。它只会自动继续 `queued` 和 `pushing` 状态。题目有歧义、需要升级工具、出现运行故障或得到完整候选解答时，会停下来等待研究者。
-
-## 快速开始
-
-### 1. 创建自己的副本
-
-在 GitHub 页面点击 **Use this template**，或者直接克隆：
-
-```bash
-git clone https://github.com/coker412/graph-geometry-research-workspace.git
-cd graph-geometry-research-workspace
-```
-
-### 2. 检查环境
-
-```bash
-./setup.sh --check
-```
-
-常用依赖包括 Git、Bash、Python 3、Codex CLI 和 tmux。计算实验默认使用名为 `graphlab` 的 Conda 环境。Rethlas 是可选组件，不影响普通 Codex 队列运行。
-
-如果需要创建基础 Conda 环境：
-
-```bash
-./setup.sh --bootstrap --without-rethlas
-```
-
-联网安装和账户登录应由使用者自己确认。不要复制其他人的 Codex 登录目录。
-
-### 3. 加入一道猜想
-
-```bash
-./queue.sh add hadwiger "Hadwiger conjecture"
-```
-
-填写题目：
-
-```text
-problems/important-conjectures/items/hadwiger/problem.md
-```
-
-然后把同目录 `config.toml` 中的：
-
-```toml
-ready = false
-```
-
-改为：
-
-```toml
-ready = true
-```
-
-题目原文由研究者维护。Runner 会保存输入快照，研究 Agent 不应改写原题。
-
-### 4. 先运行一个回合
-
-```bash
-./queue.sh check
-./queue.sh once
-```
-
-`once` 只推进一个 Codex 回合，适合检查提示词、权限和项目结构是否符合预期。
-
-### 5. 在后台持续运行
-
-```bash
-./queue.sh start
-```
-
-常用管理命令：
-
-```bash
-./queue.sh status   # 查看队列状态
-./queue.sh watch    # 查看实时输出，按 Ctrl-b 再按 d 退出
-./queue.sh stop     # 当前回合结束后安全停止
-```
-
-后台模式使用 tmux。关闭终端不会终止任务，但关机或系统休眠仍会让任务停止或暂停。队列状态保存在磁盘上，重新启动后可以继续。
-
-## 每道猜想会生成什么
-
-第一次调度某道题时，Runner 会创建：
-
-```text
-projects/conjecture-<slug>/
-├── README.md
-├── references.md
-├── ideas.md
-├── progress.md
-├── verification-ledger.md
-├── research-tree.md
-├── proof-map.md
-├── notes/
-├── code/
-├── lean/
-├── rethlas/
-├── input-snapshots/
-├── CURRENT_INPUT.md
-└── .conjecture-status
-```
-
-这些文件不是为了把研究过程写得很繁琐，而是为了防止几个常见问题：失败路线被忘记，未经验证的引理悄悄变成前提，以及模型换了会话以后从头重复同一条错误路线。
-
-## 证明状态
-
-仓库使用以下证据等级：
-
-1. `conjecture`
-2. `experimental`
-3. `partial-result`
-4. `proof-draft`
-5. `agent-verified`
-6. `human-verified`
-7. `formalized`
-
-计算实验不能直接写成定理。Codex 或 Rethlas 给出的完整论证也只会先记为 `proof-draft` 或 `agent-verified`。只有研究者逐步复核并明确接受，才能标为 `human-verified`；Lean 等形式系统检查通过后才是 `formalized`。
-
-核心规则见 [`AGENTS.md`](AGENTS.md)，具体流程按任务放在 [`agents/instructions/`](agents/instructions/) 中。两者共同规定了定义审计、文献核查、反例搜索、十项证明验证和 Rethlas 升级边界。
+校验器会拒绝数据目录中的非占位文件、PDF、JSONL、常见密钥文件和未登记的源码文件。
+GitHub Actions 会在每次 push 和 pull request 上重复测试、边界检查和完整分发包导出。
+
+对于公开发布的通用框架，本仓库是规范源。私有研究工作区可以保留运行副本和本地扩展，
+但不能把私有目录递归复制进公开仓库。
 
 ## 关于 Rethlas
 
-普通队列只需要 Codex。Rethlas 用于处理已经压缩成精确命题的证明缺口，并且每次运行都需要研究者明确批准。它应安装在本工作区之外，相关命令和目录约定见 [`RETHLAS使用教程.md`](RETHLAS使用教程.md)。
+普通队列只需要 Codex。Rethlas 是可选的证明求解和验证引擎，用于已经压缩成精确命题的
+证明缺口。每次运行都需要研究者明确批准，并且应安装在本工作区之外。
 
-队列不会自行启动 Rethlas，也不会因为模型声称找到证明就宣布问题已经解决。
+队列不会自行启动 Rethlas，也不会因为模型声称找到证明就宣布问题已经解决。安装、tmux
+运行和结果回流见 [`RETHLAS使用教程.md`](RETHLAS使用教程.md)。
 
-## 目前的研究范围
+## 研究范围
 
-当前工作区主要围绕离散几何和几何分析展开，现有规范特别关注图上的曲率、离散 Ricci 曲率与 Einstein 条件、图拉普拉斯与谱几何、离散几何流，以及图的局部变换和极限行为。
+默认规范主要面向离散几何和几何分析，包括图上的曲率、离散 Ricci 曲率与 Einstein 条件、
+图拉普拉斯与谱几何、离散几何流，以及图的局部变换和极限行为。
 
-目录结构和猜想队列并不依赖这些具体方向。修改 `AGENTS.md`、项目模板和证据规则后，也可以用于其他需要长期证明搜索或计算实验的数学问题。
+目录、队列和证据规则不依赖这些具体方向。修改 `AGENTS.md` 和项目模板后，也可以用于其他
+需要长期证明搜索或计算实验的数学问题。
 
-## 更详细的文档
+## 文档
 
-- [队列快速说明](TEACHER_QUEUE_QUICKSTART.md)：日常队列命令的一页说明
-- [环境配置说明](TEACHER_SETUP_README.md)：完整环境配置与交接说明
-- [`problems/important-conjectures/README.md`](problems/important-conjectures/README.md)：调度规则、状态机和恢复方式
-- [`SETUP_AI_PROMPT.md`](SETUP_AI_PROMPT.md)：可以直接交给 Codex 的环境配置任务书
+- [队列快速说明](TEACHER_QUEUE_QUICKSTART.md)：日常命令的一页说明
+- [环境配置说明](TEACHER_SETUP_README.md)：环境配置与交接
+- [重要猜想队列](problems/important-conjectures/README.md)：状态机、运行模式和恢复方式
+- [研究规则](AGENTS.md)：证据、审计与权限边界
+- [AI 配置任务书](SETUP_AI_PROMPT.md)：可以直接交给 Codex 的环境配置说明
 
 ## License
 
