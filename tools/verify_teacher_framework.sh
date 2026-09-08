@@ -17,6 +17,23 @@ elif [[ $# -eq 1 ]] && [[ "$1" == "--public-source" ]]; then
 fi
 
 required_files=(
+  "agents/core/research-core.md"
+  "agents/core/queue-core.md"
+  "agents/protocols/computation.md"
+  "agents/protocols/counterexample-audit.md"
+  "agents/protocols/escalation.md"
+  "agents/protocols/explore.md"
+  "agents/protocols/literature-check.md"
+  "agents/protocols/multi-agent.md"
+  "agents/protocols/proof-audit.md"
+  "agents/protocols/round-result.md"
+  "tools/research_runtime.py"
+  "tools/research_progress.py"
+  "tools/tests/test_research_runtime.py"
+  "tools/tests/test_research_progress.py"
+
+  "shared/runtime-v2-guide.md"
+  "shared/research-progress-guide.md"
   "AGENTS.md"
   "LICENSE"
   "agents/instructions/research-workflow.md"
@@ -92,6 +109,10 @@ done
 if [[ "$verification_mode" != "workspace" ]]; then
   for data_dir in projects archive shared index library environments; do
     while IFS= read -r path; do
+      relative_path="${path#"$WORKSPACE_ROOT/"}"
+      if [[ "$relative_path" == "shared/runtime-v2-guide.md" || "$relative_path" == "shared/research-progress-guide.md" ]]; then
+        continue
+      fi
       if [[ "$(basename "$path")" != ".gitkeep" ]]; then
         echo "分发包数据目录中发现文件：${path#"$WORKSPACE_ROOT/"}" >&2
         failed=true
@@ -144,7 +165,7 @@ fi
 
 echo "框架检查通过。"
 if [[ "$verification_mode" == "distribution" ]]; then
-  echo "数据目录为空，未发现禁止目录、文件类型或常见密钥赋值。"
+  echo "数据目录仅含占位文件与公开运行指南，未发现禁止目录、文件类型或常见密钥赋值。"
 elif [[ "$verification_mode" == "public-source" ]]; then
-  echo "公开源码边界通过：研究数据目录为空，清单与源码一致。"
+  echo "公开源码边界通过：研究数据目录仅含占位文件与公开运行指南，清单与源码一致。"
 fi

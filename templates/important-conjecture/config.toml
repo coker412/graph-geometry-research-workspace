@@ -25,3 +25,7 @@ priority = 100
 
 # 0 表示不限制累计 Codex 回合数。也可先设成 3 或 5 观察质量。
 max_attempts = 0
+
+# 可选阶段覆盖；省略则继承 runner.toml。
+# phase = "research"
+# critical-audit / stuck-escalation 才允许 xhigh。

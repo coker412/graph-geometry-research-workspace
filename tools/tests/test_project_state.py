@@ -47,6 +47,34 @@ class ProjectStateTest(unittest.TestCase):
         self.assertEqual(state.audit(None), 1)
         self.assertTrue(state.validate(path))
 
+    def test_completed_round_heading_variants_are_accepted_without_rewriting(self) -> None:
+        project = state.PROJECTS_ROOT / "sample"
+        project.mkdir()
+        state.initialize("sample")
+        path = project / "CURRENT_STATE.md"
+        original = path.read_text(encoding="utf-8")
+        for canonical, aliases in state.HEADING_ALIASES.items():
+            for alias in aliases:
+                with self.subTest(alias=alias):
+                    content = original.replace(canonical, alias.upper() + " ##")
+                    path.write_text(content, encoding="utf-8")
+                    self.assertEqual(state.validate(path), [])
+                    self.assertEqual(path.read_text(encoding="utf-8"), content)
+
+    def test_mentions_and_fenced_examples_cannot_supply_missing_sections(self) -> None:
+        canonical = "\n".join(state.REQUIRED_HEADINGS)
+        for content in (
+            "```markdown\n" + canonical + "\n```",
+            "~~~~\n" + canonical + "\n~~~~",
+            "\n".join("Mention: " + h for h in state.REQUIRED_HEADINGS),
+        ):
+            with self.subTest(content=content):
+                self.assertEqual(state.missing_headings(content), list(state.REQUIRED_HEADINGS))
+        self.assertEqual(state.missing_headings(canonical), [])
+        self.assertIn("## Evidence pointers", state.missing_headings(
+            canonical.replace("## Evidence pointers", "## Unrelated notes")
+        ))
+
 
 if __name__ == "__main__":
     unittest.main()

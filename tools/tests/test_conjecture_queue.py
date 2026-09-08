@@ -34,7 +34,7 @@ class ConjectureQueueTest(unittest.TestCase):
         queue.LOCK_FILE = queue.RUNTIME_ROOT / "runner.lock"
         queue.ITEMS_ROOT.mkdir(parents=True)
         queue.RUNNER_CONFIG.write_text(
-            'session_name = "test_queue"\nreasoning_effort = "xhigh"\n',
+            'session_name = "test_queue"\nreasoning_effort = "high"\nruntime_version = 1\n',
             encoding="utf-8",
         )
         (root / "projects").mkdir()
@@ -503,6 +503,41 @@ if '--search' in arguments:
         self.assertEqual(queue.read_status("bad-state"), "needs-human-review")
         runtime = queue.read_runtime_state("bad-state")
         self.assertTrue(runtime["current_state_validation_errors"])
+
+    def test_equivalent_headings_do_not_pause_completed_research(self) -> None:
+        queue.add_item(argparse.Namespace(slug="alias-state", title="Alias State"))
+        item = queue.discover_items()[0]
+        config = queue.load_runner_config()
+        config["codex_path"] = "/bin/true"
+
+        def completed_research(*args: object, **kwargs: object) -> dict:
+            project, event_log = Path(args[1]), Path(args[2])
+            event_log.parent.mkdir(parents=True, exist_ok=True)
+            event_log.write_text("ok\n", encoding="utf-8")
+            path = project / "CURRENT_STATE.md"
+            content = path.read_text(encoding="utf-8")
+            for canonical, alias in (
+                ("## Problem and scope", "## Problem and source boundary"),
+                ("## Current mathematical status", "## Mathematical status retained from offline work"),
+                ("## Evidence pointers", "## Precise evidence pointers"),
+            ):
+                content = content.replace(canonical, alias)
+            path.write_text(content, encoding="utf-8")
+            queue.write_status("alias-state", "pushing")
+            return {"return_code": 0, "timed_out": False}
+
+        with mock.patch.object(queue, "run_codex_process", side_effect=completed_research):
+            self.assertEqual(queue.execute_attempt(item, config), 0)
+        self.assertEqual(queue.read_status("alias-state"), "pushing")
+        self.assertNotIn("current_state_validation_errors", queue.read_runtime_state("alias-state"))
+        # The progress hook captures the baseline before the model edits it.
+        runtime = queue.read_runtime_state("alias-state")
+        assessment = runtime["progress_assessment"]
+        self.assertEqual(assessment["status"], "unknown")
+        self.assertEqual(assessment["decision"]["action"], "assess")
+        packet = queue.project_dir("alias-state") / assessment["round"]
+        self.assertIn("## Evidence pointers", (packet / "BEFORE.md").read_text())
+        self.assertTrue((packet / "FINISH.json").is_file())
 
     def test_foreground_restart_clears_old_stop_request(self) -> None:
         queue.RUNTIME_ROOT.mkdir(parents=True)

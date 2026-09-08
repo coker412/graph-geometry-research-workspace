@@ -3,7 +3,10 @@ session_name = "important_conjectures"
 
 # 留空表示使用 Codex CLI 当前默认模型；老师也可明确填写账户可用的 GPT/Codex 模型。
 model = ""
-reasoning_effort = "xhigh"
+reasoning_effort = "high"
+# 普通回合使用 V2；mixed-isolated 保留兼容汇合协议。
+runtime_version = 2
+phase = "research"
 
 # 单个 Codex 回合的硬超时。0 表示不设超时。
 attempt_timeout_minutes = 90
@@ -23,3 +26,20 @@ web_search = false
 
 # 连续 CLI/超时故障达到此数后冻结该题，避免无休止消耗额度。
 max_consecutive_runtime_failures = 3
+
+# xhigh 仅用于显式选择的关键认证或瓶颈升级阶段。
+[phase_effort]
+triage = "medium"
+research = "high"
+experiment = "medium"
+literature = "medium"
+audit = "high"
+critical-audit = "xhigh"
+stuck-escalation = "xhigh"
+
+# 无 tokenizer 时使用 UTF-8 字节数作为保守 token 上界，不是计费量。
+[context_budget]
+packet_target_tokens = 12000
+packet_hard_tokens = 48000
+max_evidence_slices = 8
+max_single_evidence_tokens = 12000

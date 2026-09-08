@@ -2,7 +2,8 @@
 
 This is the bounded entry point for the next research round. It is an index and
 conservative summary, not a replacement for proofs, computations, or the verification
-ledger. Keep it under 300 lines and 32 KiB.
+ledger. Target 6 KiB, warn above 8 KiB, V2 hard limit 12 KiB/300 lines.
+Existing states retain a 32 KiB compatibility limit until explicit migration.
 
 ## Control
 
@@ -40,7 +41,7 @@ ledger. Keep it under 300 lines and 32 KiB.
 
 - Verification ledger IDs:
 - Active proof-map nodes:
-- Direct evidence files:
+- Direct evidence files (file#Lstart-Lend; full-file SHA256):
 
 ## History access
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 from pathlib import Path
+import re
 import sys
 
 
@@ -13,7 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECTS_ROOT = ROOT / "projects"
 TEMPLATE = ROOT / "templates" / "project_template" / "CURRENT_STATE.md"
 MAX_LINES = 300
-MAX_BYTES = 32 * 1024
+MAX_BYTES = 32 * 1024  # Legacy compatibility only; V2 writer uses NEW_MAX_BYTES.
+TARGET_BYTES = 6 * 1024
+WARNING_BYTES = 8 * 1024
+NEW_MAX_BYTES = 12 * 1024
 REQUIRED_HEADINGS = (
     "## Control",
     "## Problem and scope",
@@ -22,6 +26,66 @@ REQUIRED_HEADINGS = (
     "## Next bounded round",
     "## Evidence pointers",
 )
+
+# These are equivalent section names observed in completed research rounds.
+# Keep the vocabulary explicit: an unrelated heading must not hide lost state.
+HEADING_ALIASES = {
+    "## Problem and scope": (
+        "## Problem and normalization",
+        "## Problem and definition boundary",
+        "## Problem and source boundary",
+    ),
+    "## Current mathematical status": (
+        "## Current conclusion and evidence boundary",
+        "## Safely usable analytic chain",
+        "## Strongest usable results at the current frontier",
+        "## Mathematical status retained from offline work",
+        "## Usable inherited results",
+        "## Accepted internal-offline results — provenance unchanged",
+    ),
+    "## Active proof frontier": (
+        "## Active gap",
+        "## Current minimum gap and active routes",
+        "## Frontier and next bounded round",
+    ),
+    "## Next bounded round": (
+        "## Next bounded round and acceptance",
+        "## Frontier and next bounded round",
+    ),
+    "## Evidence pointers": (
+        "## Direct evidence pointers",
+        "## Precise evidence pointers",
+        "## Exact evidence pointers",
+    ),
+}
+
+
+def missing_headings(content: str) -> list[str]:
+    """Accept known equivalent headings, but not mentions or fenced examples."""
+    headings: set[str] = set()
+    fence_char = ""
+    fence_length = 0
+    for line in content.splitlines():
+        fence = re.match(r"^ {0,3}(`{3,}|~{3,})(.*)$", line)
+        if fence_char:
+            if (fence and fence[1][0] == fence_char
+                    and len(fence[1]) >= fence_length and not fence[2].strip()):
+                fence_char = ""
+            continue
+        if fence:
+            fence_char, fence_length = fence[1][0], len(fence[1])
+            continue
+        heading = re.match(r"^ {0,3}##[ \t]+(.+?)\s*$", line)
+        if heading:
+            title = re.sub(r"[ \t]+#+$", "", heading[1])
+            headings.add("## " + " ".join(title.split()).casefold())
+    return [
+        canonical for canonical in REQUIRED_HEADINGS
+        if not any(
+            candidate.casefold() in headings
+            for candidate in (canonical, *HEADING_ALIASES.get(canonical, ()))
+        )
+    ]
 
 
 def projects(name: str | None) -> list[Path]:
@@ -75,9 +139,8 @@ def validate(path: Path) -> list[str]:
         issues.append(f"larger than {MAX_BYTES} bytes")
     if len(content.splitlines()) > MAX_LINES:
         issues.append(f"longer than {MAX_LINES} lines")
-    for heading in REQUIRED_HEADINGS:
-        if heading not in content:
-            issues.append(f"missing heading: {heading}")
+    for heading in missing_headings(content):
+        issues.append(f"missing heading: {heading}")
     if "- schema-version: 1" not in content:
         issues.append("missing schema-version 1")
     if not any(
@@ -119,6 +182,8 @@ def audit(name: str | None) -> int:
                 print(f"FAIL {project.name}: {issue}")
             continue
         content = path.read_text(encoding="utf-8")
+        if len(content.encode()) > WARNING_BYTES:
+            print(f"WARN {project.name}: state above 8 KiB; V2 target 6 KiB, hard limit 12 KiB")
         if "- migration-status: `pending`" in content:
             pending += 1
             print(f"PENDING {project.name}")

@@ -40,8 +40,8 @@ projects/conjecture-<slug>/
 题目原文始终保留在 `problems/important-conjectures/items/<slug>/`。Runner 会建立不可变输入快照，不会让研究 Agent 改写老师的原题。
 
 第一次真正调度某题时，runner 会自动创建这个完整项目骨架。`CURRENT_STATE.md` 是下一回合
-默认读取的短入口，限制为 300 行、32 KiB；历史台账只按其中的 ID 和路径读取。每个回合
-必须追加 `progress.md`、重写 `CURRENT_STATE.md`，并只把实质数学推进、关键失败或证据等级
+默认读取的短入口，目标 6 KiB，超过 8 KiB 提醒；V2 新写入限 12 KiB/300 行，旧摘要兼容上限 32 KiB；历史台账只按其中的 ID 和路径读取。每个回合
+由 researcher 提交结构化结果、runner 追加 `progress.md` 和更新 `CURRENT_STATE.md`；只把实质数学推进、关键失败或证据等级
 变化登记到 `verification-ledger.md`。README 不再承载逐回合日志。
 
 旧项目升级后先运行：
@@ -54,6 +54,20 @@ projects/conjecture-<slug>/
 `state-init` 只补建缺失文件，从不覆盖已有摘要。旧项目会标记为 `migration-status: pending`；
 下一研究回合从当前状态段、最近完整回合和精确证据建立保守摘要，未读历史不会被擅自升级
 或降级。
+
+## V2 运行时
+
+阶段协议、证据片段、ROUND_RESULT 格式、自动写入边界、兼容模式与故障恢复见
+[运行时 V2](../../shared/runtime-v2-guide.md)。根规则已经缩短，普通回合按阶段读取。
+
+```bash
+./queue.sh packet --slug <slug>
+./queue.sh usage
+./queue.sh usage --slug <slug> --json
+```
+
+`packet` 只读预览，不创建项目或调用模型。`status` 同时显示已记录回合的用量。
+旧回合没有 telemetry 时显示未知，不把模型额度与订阅价格简单换算。
 
 ## 老师的最短操作流程
 
@@ -144,6 +158,18 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 
 ## 调度规则
 
+研究进展与运行状态分开查看：
+
+```bash
+./queue.sh progress
+./queue.sh progress --slug problem-a
+```
+
+队列每轮保存开工基线，并要求封存计划、结果和独立进展审查。评估区分核心缺口缩小、有效
+排除、辅助结果、计算线索、重新表述与重复。下一轮读取继续、换路线或策略复核建议。
+材料缺失不算空转；脚本不自动停止整题或改变证据等级。记录格式、判据和局限见
+[研究进展评估](../../shared/research-progress-guide.md)。
+
 - `priority` 数字越大越先运行。
 - 每一轮中，每道可运行题最多获得一个 Codex 回合；然后调度器转到下一题，避免难题独占机器。
 - 一轮结束后重新扫描目录，因此老师可以在 runner 运行时继续添加题目或调整优先级。
@@ -155,24 +181,9 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 
 ## Agent 使用方式与额度
 
-普通研究回合只启动一个根 Agent。根 Agent 可以在回合内部按需调用多个子 Agent，例如
-盲探索者、独立审计者或负责具体子引理的研究者。因此，队列不是固定的单 Agent 证明器，
-也不会始终维持一个多 Agent 群。子 Agent 调用会额外消耗模型额度和运行时间，增加数量
-不等于增加有效进展。`mixed-isolated` 是例外，它由 runner 启动两个隔离分支和一个汇合
-回合。
-
-一个普通回合可以包含一条根 Agent 主路线，以及少量同时运行的独立有界分支。主路线
-决定根 Agent 的深入推进重点，不代表整轮只能研究一个思路。分支数根据额度、路线覆盖和
-预期信息增益动态调整；每个分支都要有独立问题包、具体交付物和停止条件。
-
-可以用下面三个名称描述 Agent 强度。它们目前是工作流策略，不是 `runner.toml` 已实现的
-配置字段：
-
-- `single`：根 Agent 独立完成本轮，不调用子 Agent，适合额度敏感的普通推进。
-- `adaptive`：根 Agent 在路线分叉、关键引理阻塞或需要独立审计时调用少量子 Agent。
-  这是当前长跑提示词对应的实际默认行为。
-- `swarm`：在研究者明确要求高强度多路线搜索时，持续保留多个独立分支。该策略消耗
-  较快，不应作为所有问题的默认设置。
+普通回合只启动一个根 Agent，只有研究者明确要求时才使用多智能体协议。并行授权
+与信息模式分开管理。mixed-isolated 是研究者显式配置的两支加汇合流程，通常三次调用。
+新增 Agent 不自动代表进展，也不能代替独立审查的具体证据。
 
 多 Agent 搜索仍须遵守盲隔离协议。盲问题包不包含热门路线、失败记录或发现过程；创建
 子 Agent 时也不应继承不必要的完整对话。由于所有 Agent 共享工作区，盲隔离目前依靠
@@ -245,7 +256,10 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 全局配置位于 `runner.toml`：
 
 - `model = ""`：使用 Codex CLI 当前默认模型；老师也可填写账户实际可用的 GPT/Codex 模型。
-- `reasoning_effort = "xhigh"`：研究回合的推理强度。
+- `reasoning_effort = "high"`：普通数学研究强度；阶段配置优先。
+- `phase` 与 `[phase_effort]`：triage/experiment/literature 使用 medium，research/audit 使用 high，critical-audit/stuck-escalation 使用 xhigh。单题可覆盖 phase。
+- `runtime_version = 2`：普通回合启用研究包与结构化收尾；mixed-isolated 使用兼容收尾。
+- `[context_budget]`：初始包预算和证据片段上限，详见 V2 说明。
 - `attempt_timeout_minutes`：单回合最长时间，`0` 表示不限制。
 - `max_wall_hours`：一次 `start` 的总运行时间，`0` 表示持续运行。
 - `idle_seconds`：没有可运行题目时的重扫间隔。

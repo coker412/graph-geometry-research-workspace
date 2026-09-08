@@ -7,6 +7,7 @@ import argparse
 import datetime as dt
 import fcntl
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -22,6 +23,28 @@ import time
 import tomllib
 
 
+# Load the same section schema used by the standalone state audit, including
+# when this script is imported by tests or launched outside the workspace.
+_STATE_SPEC = importlib.util.spec_from_file_location(
+    "queue_state_schema", Path(__file__).with_name("project_state.py")
+)
+assert _STATE_SPEC is not None and _STATE_SPEC.loader is not None
+state_schema = importlib.util.module_from_spec(_STATE_SPEC)
+_STATE_SPEC.loader.exec_module(state_schema)
+_PROGRESS_SPEC = importlib.util.spec_from_file_location(
+    "queue_research_progress", Path(__file__).with_name("research_progress.py")
+)
+assert _PROGRESS_SPEC is not None and _PROGRESS_SPEC.loader is not None
+research_progress = importlib.util.module_from_spec(_PROGRESS_SPEC)
+_PROGRESS_SPEC.loader.exec_module(research_progress)
+
+_RUNTIME_SPEC = importlib.util.spec_from_file_location(
+    "queue_research_runtime", Path(__file__).with_name("research_runtime.py")
+)
+assert _RUNTIME_SPEC is not None and _RUNTIME_SPEC.loader is not None
+runtime = importlib.util.module_from_spec(_RUNTIME_SPEC)
+_RUNTIME_SPEC.loader.exec_module(runtime)
+
 ROOT = Path(__file__).resolve().parents[1]
 QUEUE_ROOT = ROOT / "problems" / "important-conjectures"
 ITEMS_ROOT = QUEUE_ROOT / "items"
@@ -34,14 +57,7 @@ LOCK_FILE = RUNTIME_ROOT / "runner.lock"
 CURRENT_STATE_NAME = "CURRENT_STATE.md"
 CURRENT_STATE_MAX_LINES = 300
 CURRENT_STATE_MAX_BYTES = 32 * 1024
-CURRENT_STATE_REQUIRED_HEADINGS = (
-    "## Control",
-    "## Problem and scope",
-    "## Current mathematical status",
-    "## Active proof frontier",
-    "## Next bounded round",
-    "## Evidence pointers",
-)
+CURRENT_STATE_REQUIRED_HEADINGS = state_schema.REQUIRED_HEADINGS
 
 RUNNABLE_STATUSES = {"queued", "pushing"}
 KNOWN_STATUSES = RUNNABLE_STATUSES | {
@@ -83,7 +99,9 @@ def load_runner_config() -> dict:
     defaults = {
         "session_name": "important_conjectures",
         "model": "",
-        "reasoning_effort": "xhigh",
+        "reasoning_effort": "high",
+        "runtime_version": 2,
+        "phase": "research",
         "attempt_timeout_minutes": 90,
         "max_wall_hours": 24,
         "idle_seconds": 60,
@@ -93,6 +111,9 @@ def load_runner_config() -> dict:
         "max_consecutive_runtime_failures": 3,
     }
     defaults.update(config)
+    if defaults["runtime_version"] not in (1, 2):
+        raise ValueError("runtime_version must be 1 or 2")
+    runtime.phase_config(defaults, {})
     resolve_information_mode(defaults)
     return defaults
 
@@ -160,6 +181,9 @@ def discover_items() -> list[dict]:
             config = load_toml(config_path)
         except (OSError, tomllib.TOMLDecodeError) as exc:
             found.append({"slug": directory.name, "invalid": str(exc), "dir": directory})
+            continue
+        if "phase" in config and config["phase"] not in runtime.PHASES:
+            found.append({"slug": directory.name, "invalid": "unknown phase", "dir": directory})
             continue
         search_contract = str(config.get("search_contract", "either")).strip()
         if search_contract not in SEARCH_CONTRACTS:
@@ -264,7 +288,7 @@ def current_state_template(item: dict, *, migration_status: str) -> str:
 
 This is the bounded entry point for the next research round. It summarizes current
 state but does not replace the evidence files it cites. Keep it under
-{CURRENT_STATE_MAX_LINES} lines and {CURRENT_STATE_MAX_BYTES // 1024} KiB.
+{CURRENT_STATE_MAX_LINES} lines; target 6 KiB, warn above 8 KiB, V2 limit 12 KiB (legacy 32 KiB).
 
 ## Control
 
@@ -343,9 +367,8 @@ def validate_current_state(project: Path) -> list[str]:
         issues.append(
             f"{CURRENT_STATE_NAME} is {line_count} lines; limit is {CURRENT_STATE_MAX_LINES}"
         )
-    for heading in CURRENT_STATE_REQUIRED_HEADINGS:
-        if heading not in content:
-            issues.append(f"{CURRENT_STATE_NAME} missing heading: {heading}")
+    for heading in state_schema.missing_headings(content):
+        issues.append(f"{CURRENT_STATE_NAME} missing heading: {heading}")
     if "- schema-version: 1" not in content:
         issues.append(f"{CURRENT_STATE_NAME} missing schema-version 1")
     if "- migration-status: `pending`" not in content and (
@@ -540,14 +563,15 @@ def build_prompt(
             f"2. {project / 'CURRENT_INPUT.md'} 及其指向的 problem.md 和 config.toml；"
             "不要读取快照 references/"
         )
-    return f"""你正在执行“重要猜想队列”的一个独立研究回合。
+    return f"""你正在执行“重要猜想队列”的一个独立研究回合（兼容回合，由根 Agent 收尾）。
 
 题目标识：{slug}
+{item.get('_progress_instruction', '')}
 题目快照：{snapshot / 'problem.md'}
 研究项目：{project}
 
 先完整读取：
-1. {ROOT / 'AGENTS.md'}
+1. 当前阶段的 research-core 与协议（已加载则不重复读）
 {input_instruction}
 3. {project / CURRENT_STATE_NAME}
 4. CURRENT_STATE.md 明确指向的 ledger 行、proof-map 节点、路线和直接证据
@@ -555,6 +579,8 @@ def build_prompt(
 
 渐进读取规则：
 - CURRENT_STATE.md 是下一回合的短入口，必须保持在 {CURRENT_STATE_MAX_LINES} 行和 {CURRENT_STATE_MAX_BYTES // 1024} KiB 以内；它只做索引和当前状态摘要，不替代证据。
+- 保留标准章节名：{'、'.join(CURRENT_STATE_REQUIRED_HEADINGS)}。结束前运行 `./queue.sh state-audit --slug {slug}`，自行修复格式错误；格式检查不构成数学认证。
+- 先执行 CURRENT_STATE.md 的下一有界目标；开工写明原缺口、拟改变的数学机制和证伪测试。结束时用具体命题比较缺口前后，区分真正关闭、条件性改写和仍原样未闭合。分支数量、审计次数、链接检查及台账更新不计作数学推进。
 - 不得默认完整重读 progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger.md。只读取当前目标实际需要的段落、节点和证据。
 - 若 CURRENT_STATE.md 的 migration-status 为 `pending`，先读取 README/proof-map 的当前状态段、最近一个完整 progress 回合和其中引用的 ledger/证据，建立保守摘要；遗漏的旧结果按未知处理，不得自行降低或提高证据等级。随后把 migration-status 改为 `complete`。
 
@@ -575,7 +601,7 @@ def build_prompt(
 - 不写论文，不把计算观察写成定理，不把任何 Agent 结果升级为 human-verified。
 
 证明冻结规则：
-- 如果形成新的候选证明或严格中间结果，立即冻结依赖该结论的分支，逐项执行 AGENTS.md 的十条验证清单并主动寻找反例。审查完成前，该分支不得继续建立下游结论；证据等级最多标为 proof-draft。与该结论没有依赖关系、使用独立问题包且不写共享台账的分支可以继续。不要因为第一条候选引理出现就终止全部探索者。
+- 如果形成新的候选证明或严格中间结果，立即冻结依赖该结论的分支，逐项执行 agents/protocols/proof-audit.md 的十条验证清单并主动寻找反例。审查完成前，该分支不得继续建立下游结论；证据等级最多标为 proof-draft。与该结论没有依赖关系、使用独立问题包且不写共享台账的分支可以继续。不要因为第一条候选引理出现就终止全部探索者。
 - 对抗审计者只接收被冻结分支的正式陈述、证明和依赖清单。根 Agent 在安全汇合点统一写入共享台账，避免审计和探索分支并发覆盖。
 - 经审查成立但尚未完整解决主猜想的中间引理或部分结果，应准确标为 partial-result 或 proof-draft，记录其适用范围和下一缺口；只要仍有明确路线，状态可以保持 pushing，之后继续公平轮询。
 - 如果出现需要老师尽快判断的重要中间结果、潜在可发表现象或无法由当前 Agent 独立裁决的证明审计，把状态设为 needs-human-review。该状态只暂停当前题，不冻结其他猜想的轮询。
@@ -632,6 +658,8 @@ def codex_command(
         web_search = resolve_information_mode(config) == "connected"
     if web_search:
         command.append("--search")
+    else:
+        command.extend(["-c", 'web_search="disabled"'])
     model = str(config.get("model", "")).strip()
     if model:
         command.extend(["-m", model])
@@ -737,6 +765,7 @@ def run_codex_process(
 ) -> dict:
     """Run one Codex process and stream its output to a dedicated event log."""
     event_log.parent.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
     timed_out = False
     return_code = 1
     try:
@@ -783,7 +812,9 @@ def run_codex_process(
     except OSError as exc:
         event_log.write_text(f"runner error: {exc}\n", encoding="utf-8")
         print(f"[{label or 'codex'}] runner error: {exc}", file=sys.stderr, flush=True)
-    return {"return_code": return_code, "timed_out": timed_out}
+    return {"return_code": return_code, "timed_out": timed_out,
+            "duration_seconds": round(time.monotonic() - started, 3),
+            "usage": runtime.telemetry(event_log)}
 
 
 def copy_connected_workspace(
@@ -797,12 +828,18 @@ def copy_connected_workspace(
         Path("AGENTS.md"),
         Path("agents/instructions/research-workflow.md"),
         Path("agents/instructions/queue-and-escalation.md"),
+        Path("shared/research-progress-guide.md"),
     ):
         source = ROOT / relative
         if source.is_file():
             target = lane_root / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
+
+    for protocol_dir in ("agents/core", "agents/protocols"):
+        source = ROOT / protocol_dir
+        if source.is_dir():
+            shutil.copytree(source, lane_root / protocol_dir, dirs_exist_ok=True)
 
     def ignore_untrusted_entries(directory: str, names: list[str]) -> set[str]:
         ignored = {
@@ -856,9 +893,9 @@ def build_connected_lane_prompt(
 冻结项目副本：{lane_project}
 
 先完整读取：
-1. {lane_root / 'AGENTS.md'}
-2. {lane_root / 'agents/instructions/research-workflow.md'}
-3. {lane_root / 'agents/instructions/queue-and-escalation.md'}
+1. {lane_root / 'agents/core/research-core.md'}
+2. {lane_root / 'agents/protocols/literature-check.md'}
+3. {lane_root / 'agents/core/queue-core.md'}
 4. 冻结项目副本中的 CURRENT_STATE.md、它明确指向的证据和直接相关 notes
 
 本分支允许使用公共互联网做文献核查。优先读取论文正文、出版方页面和作者版本，逐项核对
@@ -881,14 +918,16 @@ def build_connected_lane_prompt(
 def build_mixed_integration_prompt(
     item: dict, project: Path, checkpoint: Path
 ) -> str:
-    return f"""你正在执行 mixed-isolated 回合的汇合审计。
+    return f"""你正在执行 mixed-isolated 兼容回合的汇合审计，由根 Agent 收尾。
 
 题目标识：{item['slug']}
+{item.get('_progress_instruction', '')}
+汇合阶段不得重写或重新封存离线 PLAN.json；最终 RESULT 可涵盖汇合实际引入的变化，逐条保持来源标签。
 研究项目：{project}
 联网隔离结果：{checkpoint / 'connected' / 'RESULT.md'}
 隔离清单：{checkpoint / 'CHECKPOINT.json'}
 
-先完整读取 {ROOT / 'AGENTS.md'}、research-workflow.md、queue-and-escalation.md，以及项目的
+按需读取 agents/core/research-core.md、agents/protocols/proof-audit.md、agents/core/queue-core.md，以及项目的
 CURRENT_STATE.md、它明确指向的 ledger 行、proof-map 节点和直接证据。不要默认完整重读
 progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger.md。
 离线分支已经在本项目完成本轮推进。联网分支只看过回合开始时的冻结副本，其结果直到现在
@@ -1006,7 +1045,7 @@ def execute_mixed_isolated_attempt(
         temporary_connected_event = isolated_root / "connected.jsonl"
         temporary_connected_last = isolated_root / "connected-last.md"
         connected_codex_command = codex_command(
-            config,
+            runtime.phase_config({**config, "phase": "literature"}, {}),
             lane_project,
             connected_prompt,
             temporary_connected_last,
@@ -1121,7 +1160,7 @@ def execute_mixed_isolated_attempt(
 
     integration_prompt = build_mixed_integration_prompt(item, project, checkpoint)
     integration_command = codex_command(
-        config,
+        runtime.phase_config({**config, "phase": "audit"}, {}),
         project,
         integration_prompt,
         integration_last,
@@ -1161,6 +1200,12 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     event_log = logs / f"attempt-{attempt_number:04d}-{timestamp}.jsonl"
     last_message = logs / f"attempt-{attempt_number:04d}-{timestamp}-last.md"
     information_mode = effective_information_mode(item, config)
+    config = runtime.phase_config(config, item, state)
+    use_v2 = config.get("runtime_version", 2) == 2 and information_mode != "mixed-isolated"
+    round_id = f"attempt-{attempt_number:08d}-{timestamp}"
+    round_directory = None
+    packet_metadata = None
+    attempt_started = time.monotonic()
 
     if dry_run:
         project = project_dir(slug)
@@ -1169,6 +1214,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         print(f"[dry-run] 项目：{project}")
         print(f"[dry-run] 快照：{snapshot}")
         print(f"[dry-run] 信息模式：{information_mode}")
+        print(f"[dry-run] phase={config['phase']} effort={config['reasoning_effort']} runtime={2 if use_v2 else 1}")
         if information_mode == "mixed-isolated":
             isolated = project / "<temporary-connected-copy>"
             offline_command = codex_command(
@@ -1180,7 +1226,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
                 sandbox="danger-full-access",
             )
             connected_command = codex_command(
-                config,
+                runtime.phase_config({**config, "phase": "literature"}, {}),
                 isolated,
                 "<联网核查提示词>",
                 logs / "<connected-last.md>",
@@ -1188,7 +1234,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
                 sandbox="danger-full-access",
             )
             integration_command = codex_command(
-                config,
+                runtime.phase_config({**config, "phase": "audit"}, {}),
                 project,
                 "<汇合审计提示词>",
                 logs / "<integration-last.md>",
@@ -1219,9 +1265,47 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         return 0
 
     project = ensure_project(item)
+    # A partially applied multi-file commit must never be silently continued.
+    for journal in (project / ".runtime/rounds").glob("*/COMMIT.json"):
+        if not (journal.parent / "APPLIED.json").exists():
+            write_status(slug, "needs-human-review")
+            print(f"Incomplete state transaction: {journal}", file=sys.stderr)
+            return 1
     snapshot = create_input_snapshot(item, project)
+    previous_progress = research_progress.summary(
+        project, search_contract=item.get("search_contract", "either"),
+        stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
+    )
+    progress_round = research_progress.prepare(
+        project, f"attempt-{attempt_number:08d}-{timestamp}", attempt_number,
+    )
+    item = dict(item)
+    item["_progress_instruction"] = research_progress.instruction(
+        project, progress_round, previous_progress,
+    )
     logs.mkdir(parents=True, exist_ok=True)
+    if use_v2:
+        round_directory = project / ".runtime/rounds" / round_id
+        extra = (f"Round directory: {round_directory}\nRound ID: {round_id}\n"
+                 "Read PACKET.json for packet_sha256. Write ROUND_RESULT.json here.\n"
+                 + item["_progress_instruction"])
+        try:
+            issues = validate_current_state(project)
+            if issues:
+                raise ValueError("invalid baseline state: " + "; ".join(issues))
+            packet, packet_metadata = runtime.compile_packet(
+                ROOT, project, snapshot / "problem.md", config, item,
+                information_mode, extra,
+            )
+        except (OSError, ValueError) as exc:
+            state["packet_error"] = str(exc)
+            write_runtime_state(slug, state)
+            write_status(slug, "needs-human-review")
+            print(f"Packet preflight failed, no model called: {exc}", file=sys.stderr)
+            return 1
     write_status(slug, "pushing")
+    if use_v2:
+        runtime.prepare_round(project, round_directory, packet, packet_metadata)
     started_at = now_iso()
     print(
         f"[{started_at}] 开始 {slug}，第 {attempt_number} 回合，"
@@ -1239,11 +1323,14 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             timestamp,
         )
     else:
-        prompt = build_prompt(
-            item,
-            project,
-            snapshot,
-            web_search=information_mode == "connected",
+        prompt = (
+            f"Execute one bounded {config['phase']} round in {project}. "
+            f"Read {round_directory / 'RESEARCH_PACKET.md'} and PACKET.json. "
+            "Included instructions are already loaded; follow evidence slices, not full histories. "
+            "Write ROUND_RESULT.json in that round directory. Do not edit protected state files."
+            if use_v2 else build_prompt(
+                item, project, snapshot, web_search=information_mode == "connected",
+            )
         )
         command = codex_command(
             config,
@@ -1265,6 +1352,41 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
 
     return_code = int(outcome["return_code"])
     timed_out = bool(outcome["timed_out"])
+    result_record = None
+    if use_v2 and return_code == 0 and not timed_out:
+        try:
+            result_record = runtime.apply_result(project, round_directory)
+            state.pop("round_result_error", None)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            state["round_result_error"] = str(exc)
+            write_status(slug, "needs-human-review")
+            return_code = 1
+            print(f"Round result rejected: {exc}", file=sys.stderr)
+    elif use_v2:
+        # Failed processes may have bypassed the writer; retain their artifacts,
+        # require review, and never treat a half-written candidate as complete.
+        baseline = runtime.read_json(round_directory / "BASELINE.json")
+        if any(runtime.digest(project / name) != expected for name, expected in baseline.items()):
+            write_status(slug, "needs-human-review")
+    usage = runtime.aggregate_usage(outcome.get("lane_event_logs", {}))
+    telemetry_record = {
+        "model_requested": config.get("model") or "cli-default (unresolved)",
+        "reasoning_effort": config["reasoning_effort"], "phase": config["phase"],
+        "duration_seconds": round(time.monotonic() - attempt_started, 3),
+        "usage": usage, "packet": packet_metadata, "result": result_record,
+    }
+    runtime.write_json(logs / f"attempt-{attempt_number:04d}-{timestamp}-telemetry.json", telemetry_record)
+    state["last_telemetry"] = telemetry_record
+    research_progress.finish(project, progress_round, return_code, timed_out)
+    progress_report = research_progress.summary(
+        project, search_contract=item.get("search_contract", "either"),
+        stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
+    )
+    state["progress_assessment"] = {
+        "round": str(progress_round.relative_to(project)),
+        "status": (progress_report["latest"] or {}).get("status", "unknown"),
+        "decision": progress_report["decision"],
+    }
     outcome_event_log = Path(outcome["event_log"])
     outcome_last_message = outcome.get("last_message")
 
@@ -1334,6 +1456,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             "information_mode": information_mode,
             "event_log": state["last_event_log"],
             "lane_event_logs": state["last_lane_event_logs"],
+            "telemetry": telemetry_record,
         },
     )
     print(
@@ -1610,6 +1733,8 @@ def audit_project_states(args: argparse.Namespace) -> int:
                 print(f"FAIL {item['slug']}: {issue}")
             continue
         content = (project / CURRENT_STATE_NAME).read_text(encoding="utf-8")
+        if len(content.encode()) > state_schema.WARNING_BYTES:
+            print(f"WARN {item['slug']}: above 8 KiB; V2 target 6 KiB, hard limit 12 KiB")
         if "- migration-status: `pending`" in content:
             pending += 1
             print(f"PENDING {item['slug']}: 下一研究回合先完成保守迁移")
@@ -1861,7 +1986,44 @@ def show_status() -> int:
                 f"stop-requested={focus_stop_file(slug).exists()})"
             )
     print("focused-runners: " + ("; ".join(focus_rows) if focus_rows else "none"))
-    return list_items()
+    list_items()
+    return show_usage(argparse.Namespace(slug=None, json=False))
+
+
+def show_progress(args: argparse.Namespace) -> int:
+    reports = []
+    for item in discover_items():
+        if item.get("invalid") or (args.slug and item["slug"] != args.slug):
+            continue
+        project = project_dir(item["slug"])
+        report = research_progress.summary(
+            project, search_contract=item.get("search_contract", "either"),
+            stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
+        )
+        report["slug"] = item["slug"]
+        reports.append(report)
+    if args.slug and not reports:
+        print(f"错误：找不到题目 {args.slug}", file=sys.stderr)
+        return 2
+    if args.json:
+        print(json.dumps(reports, ensure_ascii=False, indent=2))
+        return 0
+    print("研究进展评估（独立审查记录；脚本不验证数学正确性，不自动停止整题）")
+    for report in reports:
+        latest = report["latest"] or {}
+        verdict = research_progress.KINDS.get(latest.get("kind"), latest.get("status", "unknown"))
+        if latest and not latest.get("prospective"):
+            verdict += "（历史回看）"
+        suggestion = report["decision"]
+        print(f"{report['slug']}: {verdict} | {suggestion['action']} | "
+              f"连续未缩小核心缺口={suggestion['no_frontier_rounds']}")
+        print(f"  {suggestion['reason']}")
+        if latest:
+            print(f"  证据：{project_dir(report['slug']) / research_progress.DIRECTORY / latest['round_id']}")
+        if args.slug:
+            for row in report["rounds"][-args.history:]:
+                print(f"  {row['round_id']}: {row['status']} / {row.get('kind')} / {row['reason']}")
+    return 0
 
 
 def watch_runner(args: argparse.Namespace) -> int:
@@ -1899,6 +2061,62 @@ def set_item_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def show_usage(args: argparse.Namespace) -> int:
+    rows = {}
+    history = RUNTIME_ROOT / "history.jsonl"
+    if history.is_file():
+        with history.open(encoding="utf-8") as handle:
+            for line in handle:
+                try:
+                    event = json.loads(line)
+                except ValueError:
+                    continue
+                if not isinstance(event, dict) or not event.get("slug"):
+                    continue
+                slug = event["slug"]
+                if args.slug and slug != args.slug:
+                    continue
+                row = rows.setdefault(slug, dict(rounds=0, measured=0, input_tokens=None,
+                    output_tokens=None, cached_input_tokens=None, xhigh=None, reported_progress=None))
+                row["rounds"] += 1
+                record = event.get("telemetry") or {}
+                usage = record.get("usage") or {}
+                row["measured"] += int(bool(usage.get("complete")))
+                if record.get("reasoning_effort"):
+                    row["xhigh"] = (row["xhigh"] or 0) + int(record["reasoning_effort"] == "xhigh")
+                for key in ("input_tokens", "output_tokens", "cached_input_tokens"):
+                    if usage.get(key) is not None:
+                        row[key] = (row[key] or 0) + usage[key]
+                if record.get("result"):
+                    row["reported_progress"] = (row["reported_progress"] or 0) + int(record["result"]["result_class"] == "progress")
+    if args.json:
+        print(json.dumps(rows, ensure_ascii=False, indent=2))
+    else:
+        print("usage: historical missing telemetry is unknown; progress is self-reported, not verified")
+        print("slug  rounds  measured  input  cached  output  xhigh  reported-progress")
+        for slug, row in sorted(rows.items()):
+            values = [str(row[k]) for k in ("rounds", "measured")]
+            values += [str(row[k]) if row[k] is not None else "?" for k in
+                       ("input_tokens", "cached_input_tokens", "output_tokens", "xhigh", "reported_progress")]
+            print(slug + "  " + "  ".join(values))
+    return 0
+
+
+def preview_packet(args: argparse.Namespace) -> int:
+    items = [i for i in discover_items() if i["slug"] == args.slug and not i.get("invalid")]
+    if not items:
+        raise ValueError("unknown item")
+    item = items[0]
+    project = project_dir(args.slug)
+    config = runtime.phase_config(load_runner_config(), item)
+    mode = effective_information_mode(item, config)
+    if mode == "mixed-isolated":
+        raise ValueError("mixed-isolated uses the compatibility lane protocol; packet preview is for ordinary rounds")
+    text, metadata = runtime.compile_packet(ROOT, project, item["dir"] / "problem.md", config, item, mode)
+    print(text if args.content else json.dumps(metadata, ensure_ascii=False, indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="重要猜想 Codex 长跑队列")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1926,6 +2144,16 @@ def build_parser() -> argparse.ArgumentParser:
     stop_group.add_argument("--slug", help="只停止指定单题 runner")
     stop_group.add_argument("--all", action="store_true", help="停止公平队列和全部单题 runner")
     sub.add_parser("status", help="显示 runner 和题目状态")
+    usage = sub.add_parser("usage", help="显示已记录回合的用量，缺失数据保持未知")
+    usage.add_argument("--slug")
+    usage.add_argument("--json", action="store_true")
+    packet = sub.add_parser("packet", help="只读预览研究包，不调用模型或写项目")
+    packet.add_argument("--slug", required=True)
+    packet.add_argument("--content", action="store_true")
+    progress = sub.add_parser("progress", help="比较核心缺口与证据，给出继续或换路线建议")
+    progress.add_argument("--slug", help="只查看一个题目")
+    progress.add_argument("--json", action="store_true", help="输出完整评估数据")
+    progress.add_argument("--history", type=int, choices=range(1, 51), default=5)
     watch = sub.add_parser("watch", help="进入队列的 tmux 实时终端")
     watch.add_argument("--slug", help="进入指定单题 runner 的 tmux")
     set_status = sub.add_parser("set-status", help="人工改变题目状态")
@@ -1956,6 +2184,12 @@ def main() -> int:
             return stop_runner(args)
         if args.command == "status":
             return show_status()
+        if args.command == "usage":
+            return show_usage(args)
+        if args.command == "packet":
+            return preview_packet(args)
+        if args.command == "progress":
+            return show_progress(args)
         if args.command == "watch":
             return watch_runner(args)
         if args.command == "set-status":

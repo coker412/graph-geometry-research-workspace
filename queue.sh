@@ -13,6 +13,10 @@ usage() {
   ./queue.sh start                      用 tmux 后台持续轮询
   ./queue.sh start --slug <英文短名>    独立 tmux 持续研究一道题
   ./queue.sh status                     查看队列和各题状态
+  ./queue.sh packet --slug NAME         只读预览研究包大小与证据
+  ./queue.sh usage [--slug NAME]         查看已记录 token 用量
+  ./queue.sh progress                   查看是否推进、证据和路线建议
+  ./queue.sh progress --slug <英文短名> 查看单题近期进展评估
   ./queue.sh state-init [--slug NAME]   给旧项目补建短状态入口，不覆盖现有文件
   ./queue.sh state-audit [--slug NAME]  检查短状态入口的结构与大小
   ./queue.sh hygiene report             只读报告日志、LaTeX 产物和环境占用
@@ -39,7 +43,7 @@ case "$command_name" in
     "$QUEUE" list
     exec "$QUEUE" run --dry-run
     ;;
-  start|status|stop|state-init|state-audit)
+  start|status|stop|state-init|state-audit|progress|packet|usage)
     shift
     exec "$QUEUE" "$command_name" "$@"
     ;;
@@ -48,10 +52,12 @@ case "$command_name" in
     exec "$QUEUE" watch "$@"
     ;;
   once)
-    exec "$QUEUE" run --once
+    shift
+    exec "$QUEUE" run --once "$@"
     ;;
   run)
-    exec "$QUEUE" run
+    shift
+    exec "$QUEUE" run "$@"
     ;;
   hygiene)
     shift
