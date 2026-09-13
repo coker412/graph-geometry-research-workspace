@@ -62,6 +62,89 @@ class ResearchProgressTest(unittest.TestCase):
         review.update(overrides)
         self.put(d / "REVIEW.json", review)
 
+    def v2_packet(self):
+        d = progress.prepare(self.project, "attempt-00000001", 1)
+        plan = progress.read(d / "PLAN.json")
+        plan.update(author_id="author", family_id="F1", obstacle_id="G1",
+                    mechanism="boundary test", gap_before="uniform bound missing",
+                    acceptance_test="include endpoints")
+        self.put(d / "PLAN.json", plan)
+        progress.seal_plan(self.project, d)
+        source = self.project / ".runtime/rounds" / d.name / "ROUND_RESULT.json"
+        source.parent.mkdir(parents=True)
+        self.put(source.parent / "PACKET.json", {"packet_sha256": "a" * 64})
+        (self.project / "proof.md").write_text("Conditional interior bound; endpoint open.")
+        value = {
+            "schema_version": 1, "round_id": d.name, "packet_sha256": "a" * 64,
+            "summary": "interior bound", "active_gap": "endpoint remains",
+            "closed_gaps": ["interior"], "new_gaps": [],
+            "next_target": "bound endpoint", "acceptance": "uniform in the same parameter",
+            "evidence": [{"file": "proof.md", "sha256": progress.digest(self.project / "proof.md")}],
+            "progress": {"claimed_kind": "enabling-result", "main_problem_effect": "interior only",
+                         "scope_limitations": "excludes endpoints", "evidence_level": "proof-draft"},
+        }
+        self.put(source, value)
+        return d, source, value
+
+    def test_v2_view_is_bound_to_source_and_remains_self_report(self):
+        d, source, value = self.v2_packet()
+        progress.import_round_result(self.project, d)
+        result = progress.read(d / "RESULT.json")
+        self.assertEqual(result["claim"], value["summary"])
+        self.assertEqual(result["discharged_obligations"], value["closed_gaps"])
+        self.assertIn("uniform in the same parameter", result["next_test"])
+        self.assertEqual(progress.assess(self.project, d)["status"], "self-report")
+        self.assertFalse((d / "REVIEW.json").exists())
+        value["summary"] = "changed claim"
+        self.put(source, value)
+        self.assertEqual(progress.assess(self.project, d)["status"], "unknown")
+
+    def test_v2_import_preserves_authored_and_sealed_results(self):
+        d, source, value = self.v2_packet()
+        result = progress.read(d / "RESULT.json")
+        result["claim"] = "existing author work"
+        self.put(d / "RESULT.json", result)
+        before = (d / "RESULT.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "authored"):
+            progress.import_round_result(self.project, d)
+        self.assertEqual((d / "RESULT.json").read_bytes(), before)
+        self.put(d / "RESULT.json", progress.empty_result())
+        progress.import_round_result(self.project, d)
+        lock = (d / "RESULT.lock.json").read_bytes()
+        with self.assertRaisesRegex(ValueError, "sealed"):
+            progress.import_round_result(self.project, d)
+        self.assertEqual((d / "RESULT.lock.json").read_bytes(), lock)
+
+    def test_v2_import_rejects_wrong_round_packet_or_upgrade_before_writing(self):
+        d, source, original = self.v2_packet()
+        before = (d / "RESULT.json").read_bytes()
+        for patch in ({"round_id": "other"}, {"packet_sha256": "b" * 64},
+                      {"progress": {**original["progress"], "evidence_level": "agent-verified"}},
+                      {"evidence": [{"file": "../outside.md"}]}):
+            with self.subTest(patch=patch):
+                self.put(source, {**original, **patch})
+                with self.assertRaises(ValueError):
+                    progress.import_round_result(self.project, d)
+                self.assertEqual((d / "RESULT.json").read_bytes(), before)
+                self.assertFalse((d / "RESULT.lock.json").exists())
+
+    def test_v2_import_checks_original_plan_before_writing(self):
+        d, source, value = self.v2_packet()
+        before = (d / "RESULT.json").read_bytes()
+        with (d / "PLAN.json").open("a") as handle:
+            handle.write(" ")
+        with self.assertRaisesRegex(ValueError, "sealed plan"):
+            progress.import_round_result(self.project, d)
+        self.assertEqual((d / "RESULT.json").read_bytes(), before)
+
+    def test_v2_import_does_not_rebind_changed_source_evidence(self):
+        d, source, value = self.v2_packet()
+        before = (d / "RESULT.json").read_bytes()
+        (self.project / "proof.md").write_text("Different statement after runtime validation")
+        with self.assertRaisesRegex(ValueError, "source evidence changed"):
+            progress.import_round_result(self.project, d)
+        self.assertEqual((d / "RESULT.json").read_bytes(), before)
+
     def test_valid_progress_is_reviewed_but_not_formal_verification(self):
         d = self.packet()
         row = progress.assess(self.project, d)

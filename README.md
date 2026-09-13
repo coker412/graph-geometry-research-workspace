@@ -12,6 +12,8 @@
 [快速开始](#快速开始) · [查看示例](#先看一个完整示例) · [核心能力](#核心能力) ·
 [运行模式](#运行模式) · [安全边界](#证据与安全边界)
 
+工作台也提供[成本与用量管理](#成本与用量管理)，以及[论文写作与中文学习稿](#论文写作与中文学习稿)技能。
+
 ## 适合谁
 
 这个工作台适合需要长期推进数学问题，并且希望保留完整研究轨迹的个人研究者或小型团队。
@@ -150,8 +152,9 @@ flowchart LR
 调用无限等待。每轮至少保存一项可复核产物，例如严格中间结果、精确 gap、反例候选、
 已排除路线或可复现实验现象。
 
-一个回合可以包含少量彼此独立的探索分支。根 Agent 选择一条主路线深入推进，并负责统一
-写入共享状态。候选引理只冻结依赖它的分支；完整候选解答才会停止整道题的探索。
+普通回合由一个研究 Agent 沿当前缺口继续推进。只有研究者明确要求多智能体时，才增加
+独立探索或审查 Agent；显式配置的 `mixed-isolated` 保留隔离分支与汇合。认证只冻结受影响
+的依赖分支；完整候选解答会触发队列冻结，等待人工复核。
 
 ## 核心能力
 
@@ -164,6 +167,9 @@ flowchart LR
 | 多题轮转与单题长跑 | `tools/conjecture_queue.*`, `queue.sh` |
 | 离线原创与联网核查隔离 | `offline`, `connected`, `mixed-isolated` |
 | 可选的证明升级 | `tools/rethlas/` |
+| 上下文预算与回合用量 | `tools/research_runtime.py`, `./queue.sh usage` |
+| 计划、结果与进展评估 | `tools/research_progress.py` |
+| 论文写作与中文学习稿 | `.agents/skills/math-paper-writing/`, `.agents/skills/math-paper-study-guide/` |
 | 发布前隐私和完整性检查 | GitHub Actions, `tools/verify_teacher_framework.sh` |
 
 `AGENTS.md` 保存所有任务共用的研究纪律。`agents/instructions/` 按研究、队列升级和论文写作
@@ -251,8 +257,9 @@ projects/conjecture-<slug>/
 
 ### 短状态与历史
 
-`CURRENT_STATE.md` 是下一回合的默认入口，最多 300 行、32 KiB。Agent 先读正式题目和这份
-摘要，再按稳定 ID 和路径读取直接证据，不必完整重读持续增长的历史文件。
+`CURRENT_STATE.md` 是下一回合的默认入口，目标 6 KiB，超过 8 KiB 提醒。V2 新写入上限为
+12 KiB、300 行；旧摘要暂兼容 32 KiB、300 行。Agent 先读正式题目和这份摘要，再按稳定 ID
+和路径读取直接证据，不必完整重读持续增长的历史文件。
 
 旧项目可以运行：
 
@@ -282,6 +289,38 @@ projects/conjecture-<slug>/
 这些命令默认只报告或显示计划。只有显式增加 `--apply`，工具才会删除可再生的 LaTeX
 中间文件或无损压缩旧 JSONL 日志。项目环境只报告占用，不会自动删除。
 
+## 成本与用量管理
+
+Runner 按研究阶段选择推理档位，并把本轮需要的规则、问题、短状态和证据片段组成上下文包。
+包大小超过硬上限时会拒绝调用模型。普通回合不自行增加 Agent，已有路线从当前缺口继续，
+减少重复读取和反复整理历史记录。
+
+```bash
+./queue.sh packet --slug <slug>       # 预览初始上下文大小
+./queue.sh usage                      # 汇总已记录回合的用量
+./queue.sh usage --slug <slug> --json # 查看单题的结构化统计
+```
+
+统计分别记录输入、缓存输入、输出 tokens 和耗时，缺失数据保留为未知。上下文预算使用
+UTF-8 字节数作保守估计，只约束初始包；它不是整轮计费上限。工作台目前不计算货币账单，
+也没有经过对照实验验证的节省比例。配置与统计边界见[运行时 V2 指南](shared/runtime-v2-guide.md)。
+
+[进展评估](shared/research-progress-guide.md)单独记录本轮计划、实际变化和证据，帮助判断
+消耗是否带来数学推进。用量统计、自动格式检查和自报进展都不能提高数学证据等级。
+
+## 论文写作与中文学习稿
+
+仓库与分发包包含两项技能及其参考资料：
+
+- [math-paper-writing](.agents/skills/math-paper-writing/SKILL.md)：组织定理与证明、检查引用、
+  处理中英文一致性、LaTeX、图表和投稿材料。长证明保持主线连续，技术段按依赖拆成引理或附录。
+- [math-paper-study-guide](.agents/skills/math-paper-study-guide/SKILL.md)：从稳定源稿生成中文
+  学习版，加入分遍阅读、基础补充、展开计算、学习检查和证明重构，并提供 LaTeX 模板。
+
+可在工作台会话中明确指定 `$math-paper-writing` 或 `$math-paper-study-guide`，同时说明
+要处理的源文件。论文规范见[数学论文写作规则](agents/instructions/paper-writing.md)。
+修改论文后须重建受影响版本并扫描日志；语言、排版和学习说明均不能替代证明审查。
+
 ## 证据与安全边界
 
 ### 证据等级
@@ -301,8 +340,9 @@ projects/conjecture-<slug>/
 
 ### 公开仓库不包含研究数据
 
-这个仓库只发布框架、模板、工具、测试和虚构示例。`projects/`、`archive/`、`shared/`、
-`index/`、`library/` 和 `environments/` 在公开源码中必须保持为空，只保留 `.gitkeep`。
+这个仓库只发布框架、模板、工具、测试、通用写作技能和虚构示例。`projects/`、`archive/`、
+`index/`、`library/` 和 `environments/` 只保留 `.gitkeep`；`shared/` 另允许两份公开运行指南。
+`.agents/` 只允许校验器列出的技能资源，私人论文、研究记录和登录配置不会进入发布包。
 
 提交前运行：
 
@@ -310,6 +350,7 @@ projects/conjecture-<slug>/
 python tools/update_manifest.py write
 ./tools/verify_teacher_framework.sh --public-source
 python -m unittest discover -s tools/tests -v
+python .agents/skills/math-paper-writing/scripts/check_skill_resources.py
 ```
 
 校验器会拒绝数据目录中的非占位文件、PDF、JSONL、常见密钥文件和未登记的源码文件。

@@ -16,7 +16,28 @@ elif [[ $# -eq 1 ]] && [[ "$1" == "--public-source" ]]; then
   verification_mode="public-source"
 fi
 
+public_skill_files=(
+  ".agents/skills/math-paper-study-guide/SKILL.md"
+  ".agents/skills/math-paper-study-guide/agents/openai.yaml"
+  ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex"
+  ".agents/skills/math-paper-study-guide/references/chinese-study-edition-method.md"
+  ".agents/skills/math-paper-writing/SKILL.md"
+  ".agents/skills/math-paper-writing/agents/openai.yaml"
+  ".agents/skills/math-paper-writing/references/evaluation-baseline.md"
+  ".agents/skills/math-paper-writing/references/evaluation-suite.md"
+  ".agents/skills/math-paper-writing/references/exposition-and-structure.md"
+  ".agents/skills/math-paper-writing/references/figures-tables-and-diagrams.md"
+  ".agents/skills/math-paper-writing/references/humanizer-interface.md"
+  ".agents/skills/math-paper-writing/references/latex-and-bilingual-writing.md"
+  ".agents/skills/math-paper-writing/references/mathematical-integrity.md"
+  ".agents/skills/math-paper-writing/references/sources.md"
+  ".agents/skills/math-paper-writing/references/submission-and-peer-review.md"
+  ".agents/skills/math-paper-writing/references/voice-and-genre.md"
+  ".agents/skills/math-paper-writing/scripts/check_skill_resources.py"
+)
+
 required_files=(
+  "${public_skill_files[@]}"
   "agents/core/research-core.md"
   "agents/core/queue-core.md"
   "agents/protocols/computation.md"
@@ -99,12 +120,30 @@ for relative in "${required_dirs[@]}"; do
   fi
 done
 
-for forbidden in .git .codex .claude .agents .vscode; do
+for forbidden in .git .codex .claude .vscode; do
   if [[ "$verification_mode" == "distribution" ]] && [[ -e "$WORKSPACE_ROOT/$forbidden" ]]; then
     echo "分发包不应包含：$forbidden" >&2
     failed=true
   fi
 done
+
+# The hidden skill directory is public source only for this explicit allowlist.
+if [[ "$verification_mode" != "workspace" ]] && [[ -d "$WORKSPACE_ROOT/.agents" ]]; then
+  while IFS= read -r path; do
+    relative="${path#"$WORKSPACE_ROOT/"}"
+    allowed=false
+    for skill_file in "${public_skill_files[@]}"; do
+      if [[ "$relative" == "$skill_file" ]] && [[ ! -L "$path" ]]; then
+        allowed=true
+        break
+      fi
+    done
+    if [[ "$allowed" != true ]]; then
+      echo "技能目录中发现未获准的文件或链接：$relative" >&2
+      failed=true
+    fi
+  done < <(find "$WORKSPACE_ROOT/.agents" \( -type f -o -type l \) -print)
+fi
 
 if [[ "$verification_mode" != "workspace" ]]; then
   for data_dir in projects archive shared index library environments; do
@@ -136,7 +175,7 @@ done < <(
 
 secret_pattern='(OPENAI_API_KEY|ANTHROPIC_API_KEY|DANUS_CODEX_API_KEY|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)[[:space:]]*[=:]'
 if command -v rg >/dev/null 2>&1; then
-  if rg -n -I "$secret_pattern" "$WORKSPACE_ROOT" \
+  if rg --hidden -n -I "$secret_pattern" "$WORKSPACE_ROOT" \
       -g '!.git/**' -g '!exports/**' \
       -g '!tools/verify_teacher_framework.sh' >/dev/null; then
     echo "发现疑似密钥赋值；请运行 rg 手工检查。" >&2

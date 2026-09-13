@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mathematical Paper Writing"
+  short_description: "Draft and audit papers and submission materials"
+  default_prompt: "Use $math-paper-writing to revise this paper or its submission materials without changing unsupported mathematical claims."

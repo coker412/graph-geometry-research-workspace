@@ -52,6 +52,25 @@ copy_executable() {
 }
 
 mkdir -p "$package_root"
+# Publish only the reviewed, reusable writing skill resources.
+copy_file ".agents/skills/math-paper-study-guide/SKILL.md" ".agents/skills/math-paper-study-guide/SKILL.md"
+copy_file ".agents/skills/math-paper-study-guide/agents/openai.yaml" ".agents/skills/math-paper-study-guide/agents/openai.yaml"
+copy_file ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex" ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex"
+copy_file ".agents/skills/math-paper-study-guide/references/chinese-study-edition-method.md" ".agents/skills/math-paper-study-guide/references/chinese-study-edition-method.md"
+copy_file ".agents/skills/math-paper-writing/SKILL.md" ".agents/skills/math-paper-writing/SKILL.md"
+copy_file ".agents/skills/math-paper-writing/agents/openai.yaml" ".agents/skills/math-paper-writing/agents/openai.yaml"
+copy_file ".agents/skills/math-paper-writing/references/evaluation-baseline.md" ".agents/skills/math-paper-writing/references/evaluation-baseline.md"
+copy_file ".agents/skills/math-paper-writing/references/evaluation-suite.md" ".agents/skills/math-paper-writing/references/evaluation-suite.md"
+copy_file ".agents/skills/math-paper-writing/references/exposition-and-structure.md" ".agents/skills/math-paper-writing/references/exposition-and-structure.md"
+copy_file ".agents/skills/math-paper-writing/references/figures-tables-and-diagrams.md" ".agents/skills/math-paper-writing/references/figures-tables-and-diagrams.md"
+copy_file ".agents/skills/math-paper-writing/references/humanizer-interface.md" ".agents/skills/math-paper-writing/references/humanizer-interface.md"
+copy_file ".agents/skills/math-paper-writing/references/latex-and-bilingual-writing.md" ".agents/skills/math-paper-writing/references/latex-and-bilingual-writing.md"
+copy_file ".agents/skills/math-paper-writing/references/mathematical-integrity.md" ".agents/skills/math-paper-writing/references/mathematical-integrity.md"
+copy_file ".agents/skills/math-paper-writing/references/sources.md" ".agents/skills/math-paper-writing/references/sources.md"
+copy_file ".agents/skills/math-paper-writing/references/submission-and-peer-review.md" ".agents/skills/math-paper-writing/references/submission-and-peer-review.md"
+copy_file ".agents/skills/math-paper-writing/references/voice-and-genre.md" ".agents/skills/math-paper-writing/references/voice-and-genre.md"
+copy_file ".agents/skills/math-paper-writing/scripts/check_skill_resources.py" ".agents/skills/math-paper-writing/scripts/check_skill_resources.py"
+
 copy_file "agents/core/research-core.md" "agents/core/research-core.md"
 copy_file "agents/core/queue-core.md" "agents/core/queue-core.md"
 copy_file "agents/protocols/computation.md" "agents/protocols/computation.md"

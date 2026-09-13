@@ -239,6 +239,35 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(state['last_telemetry']['result']['new_claims'], 1)
         self.assertEqual(queue.read_status('sample'), 'pushing')
 
+    def test_queue_derives_assessment_from_one_model_result(self):
+        def process(command, project, event_log, timeout_seconds):
+            outcome = self.fake_process(command, project, event_log, timeout_seconds)
+            directory = next((project / '.runtime/rounds').iterdir())
+            assessment = queue.research_progress.round_dir(project, directory.name)
+            plan = queue.research_progress.read(assessment / 'PLAN.json')
+            plan.update(author_id='author', family_id='F1', obstacle_id='G1',
+                        mechanism='special case', gap_before='all n unresolved',
+                        acceptance_test='direct multiplication')
+            runtime.write_json(assessment / 'PLAN.json', plan)
+            queue.research_progress.seal_plan(project, assessment)
+            value = runtime.read_json(directory / 'ROUND_RESULT.json')
+            value['progress'] = dict(claimed_kind='enabling-result',
+                main_problem_effect='n=1 case only', scope_limitations='n=1', evidence_level='proof-draft')
+            runtime.write_json(directory / 'ROUND_RESULT.json', value)
+            packet = (directory / 'RESEARCH_PACKET.md').read_text()
+            self.assertIn('不重复填写 RESULT.json', packet)
+            return outcome
+        with mock.patch.object(queue, 'run_codex_process', side_effect=process) as model:
+            self.assertEqual(queue.execute_attempt(self.item, self.config), 0)
+            self.assertEqual(model.call_count, 1)
+        state = queue.read_runtime_state('sample')
+        self.assertNotIn('progress_import_error', state)
+        self.assertEqual(state['progress_assessment']['status'], 'self-report')
+        self.assertEqual(state['progress_assessment']['decision']['no_frontier_rounds'], 0)
+        assessment = self.project / state['progress_assessment']['round']
+        self.assertTrue((assessment / 'RESULT.lock.json').exists())
+        self.assertFalse((assessment / 'REVIEW.json').exists())
+
     def test_invalid_result_and_preflight_never_silently_continue(self):
         def no_result(command, project, event_log, timeout_seconds):
             event_log.write_text('')
@@ -250,6 +279,23 @@ class RuntimeTest(unittest.TestCase):
         with mock.patch.object(queue, 'run_codex_process') as process:
             self.assertEqual(queue.execute_attempt(self.item, config), 1)
             process.assert_not_called()
+
+    def test_assessment_import_failure_is_not_a_failed_research_round(self):
+        def process(command, project, event_log, timeout_seconds):
+            outcome = self.fake_process(command, project, event_log, timeout_seconds)
+            directory = next((project / '.runtime/rounds').iterdir())
+            value = runtime.read_json(directory / 'ROUND_RESULT.json')
+            value['progress'] = {}  # Missing author assessment, not a failed proof.
+            runtime.write_json(directory / 'ROUND_RESULT.json', value)
+            return outcome
+        with mock.patch.object(queue, 'run_codex_process', side_effect=process) as model:
+            self.assertEqual(queue.execute_attempt(self.item, self.config), 0)
+            self.assertEqual(model.call_count, 1)
+        state = queue.read_runtime_state('sample')
+        self.assertIn('progress_import_error', state)
+        self.assertEqual(state['consecutive_runtime_failures'], 0)
+        self.assertEqual(state['progress_assessment']['status'], 'unknown')
+        self.assertEqual(queue.read_status('sample'), 'pushing')
 
 
 if __name__ == '__main__':

@@ -578,7 +578,7 @@ def build_prompt(
 5. notes/ 中与当前最小缺口直接相关的材料
 
 渐进读取规则：
-- CURRENT_STATE.md 是下一回合的短入口，必须保持在 {CURRENT_STATE_MAX_LINES} 行和 {CURRENT_STATE_MAX_BYTES // 1024} KiB 以内；它只做索引和当前状态摘要，不替代证据。
+- CURRENT_STATE.md 是下一回合的短入口，目标 6 KiB，超过 8 KiB 提醒，新摘要至多 12 KiB/{CURRENT_STATE_MAX_LINES} 行；旧摘要暂兼容 {CURRENT_STATE_MAX_BYTES // 1024} KiB。保留量词、假设、等级和证据指针，不截断证明来满足大小。
 - 保留标准章节名：{'、'.join(CURRENT_STATE_REQUIRED_HEADINGS)}。结束前运行 `./queue.sh state-audit --slug {slug}`，自行修复格式错误；格式检查不构成数学认证。
 - 先执行 CURRENT_STATE.md 的下一有界目标；开工写明原缺口、拟改变的数学机制和证伪测试。结束时用具体命题比较缺口前后，区分真正关闭、条件性改写和仍原样未闭合。分支数量、审计次数、链接检查及台账更新不计作数学推进。
 - 不得默认完整重读 progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger.md。只读取当前目标实际需要的段落、节点和证据。
@@ -590,19 +590,19 @@ def build_prompt(
 
 本回合要求：
 - 直接推进搜索承诺指定的目标；不得以问题可能公开为理由停止。
-- 根 Agent 选择一个最有价值的主路线深入推进。初始阶段先审计定义、量词、归一化和最小例子；随后至少形成三个实质不同的方法族。若有编排能力且额度允许，独立探索分支可同时推进其他相互不兼容的有界路线；“一个主路线”不是“整个回合只能研究一个思路”。
-- 在 ideas.md 维护方法族登记表，按核心机制而不是表面措辞归类；记录信息来源、暴露范围、决定性子目标、证伪测试、结构性障碍和重开条件。若路线只是把主问题改写成等强引理，不视为取得进展。
-- 若研究者已要求多智能体长跑且编排能力可用，按 research-workflow.md 动态分派：早期探索者使用不含热门路线和失败史的盲问题包；优先覆盖不足的方法族；在信息增益足够时维持少量独立分支，不设永久固定配额；候选证明另交对抗审计。子 Agent 只写独立分支产物，根 Agent 统一同步共享台账。
+- 普通回合使用一个 researcher，选择一个主路线深入。只在初始发散或重新规划时比较至少三个方法族，已有路线直接从当前 gap 接续。未经研究者明确要求，不新增探索或审查 Agent；保留显式配置的 mixed-isolated 两支与汇合。当前不开展形式化。
+- ideas.md 方法族登记表只在机制或结构改变时更新；等强改写不计缺口缩小。
+- 研究者明确要求多智能体时，按 agents/protocols/multi-agent.md 执行；子 Agent 只写独立产物，根 Agent 统一收尾。
 - 优先产生可复用的严格中间结果、反例测试、计算证据或精确缺口。{evidence_instruction}
-- 推进要大胆：可以提出高风险引理、非常规构造和反例候选，并主动尝试修复失败路线。认证要保守：本回合新增的每一条数学推进都必须立即做与其强度相称的严格审查，明确检查定义、隐含假设、逻辑推出、反例、边界/除零/符号、外部定理假设以及是否只证明了弱化版本；把审查过程和结论写入 progress.md 或对应 notes 文件。
+- 探索可沿明确标为 conditional/GAP 的引理继续；局部自检检查实际变化的假设、推导和边界，证明细节写充分。自检不构成独立验证；新探索结果最多 proof-draft。
 - 只允许修改本研究项目 {project}；不得修改题目源目录、其他项目、AGENTS.md 或工作区规则；不得提交 Git。
 - 普通计算实验使用 graphlab 环境，记录命令、参数、随机种子和误差风险。
 - 不得自动调用 Rethlas、网页端 Pro 或其他付费升级。若 Codex 层面同一精确缺口两次失败且适合升级，只准备完整交接稿，并把状态设为 needs-escalation-approval。
 - 不写论文，不把计算观察写成定理，不把任何 Agent 结果升级为 human-verified。
 
 证明冻结规则：
-- 如果形成新的候选证明或严格中间结果，立即冻结依赖该结论的分支，逐项执行 agents/protocols/proof-audit.md 的十条验证清单并主动寻找反例。审查完成前，该分支不得继续建立下游结论；证据等级最多标为 proof-draft。与该结论没有依赖关系、使用独立问题包且不写共享台账的分支可以继续。不要因为第一条候选引理出现就终止全部探索者。
-- 对抗审计者只接收被冻结分支的正式陈述、证明和依赖清单。根 Agent 在安全汇合点统一写入共享台账，避免审计和探索分支并发覆盖。
+- 完整候选解、决定性反例、高风险共同依赖或证据升级触发认证：冻结依赖该结论的分支，执行 agents/protocols/proof-audit.md；反例另读 counterexample-audit.md。普通条件引理不默认触发完整十项审计。不要因为第一条候选引理出现就终止全部探索者。
+- 需要独立验证但没有获授权的审查者时，保存冻结材料并如实报待审查，不冒充独立 REVIEW。
 - 经审查成立但尚未完整解决主猜想的中间引理或部分结果，应准确标为 partial-result 或 proof-draft，记录其适用范围和下一缺口；只要仍有明确路线，状态可以保持 pushing，之后继续公平轮询。
 - 如果出现需要老师尽快判断的重要中间结果、潜在可发表现象或无法由当前 Agent 独立裁决的证明审计，把状态设为 needs-human-review。该状态只暂停当前题，不冻结其他猜想的轮询。
 - 只有在已经给出主猜想的完整候选证明，或者给出并严格核验了足以彻底否定主猜想的反例，而且十项验证清单全部通过时，才把 {project / '.conjecture-status'} 改成单独一行 solved-awaiting-human-verification。这会冻结整个队列，等待老师逐步复核。单个 Codex 回合即使自检通过也最多是 proof-draft；只有独立 Agent/Rethlas 审查通过后才可标为 agent-verified。
@@ -901,7 +901,7 @@ def build_connected_lane_prompt(
 本分支允许使用公共互联网做文献核查。优先读取论文正文、出版方页面和作者版本，逐项核对
 定理的定义、归一化与全部假设。每条外部结论都要给出可追踪链接并标记 `web-source`。
 
-这是隔离分支。离线分支与本分支并行运行，汇合点之前看不到你的结果。你只能修改冻结项目
+本分支不再派生 Agent，不开展形式化。离线分支与本分支并行运行，汇合点之前看不到你的结果。你只能修改冻结项目
 副本，不得访问或修改原研究项目、题目源目录或 Git 仓库，不得调用 Rethlas 或网页端 Pro。
 不要改写共享台账或状态文件，也不要把文献中的断言当作已经证明的当前结论。
 
@@ -921,7 +921,7 @@ def build_mixed_integration_prompt(
     return f"""你正在执行 mixed-isolated 兼容回合的汇合审计，由根 Agent 收尾。
 
 题目标识：{item['slug']}
-{item.get('_progress_instruction', '')}
+{item.get('_progress_integration_instruction', '')}
 汇合阶段不得重写或重新封存离线 PLAN.json；最终 RESULT 可涵盖汇合实际引入的变化，逐条保持来源标签。
 研究项目：{project}
 联网隔离结果：{checkpoint / 'connected' / 'RESULT.md'}
@@ -933,7 +933,7 @@ progress.md、ideas.md、research-tree.md、proof-map.md 或 verification-ledger
 离线分支已经在本项目完成本轮推进。联网分支只看过回合开始时的冻结副本，其结果直到现在
 才被复制到项目中。
 
-本汇合回合不允许新增互联网检索。逐条审计联网结果，核对来源、定义、假设和归一化；外部
+本汇合回合不新增 Agent，不开展形式化，也不新增互联网检索。只审计拟导入的联网结果，核对来源、定义、假设和归一化；外部
 材料只能关闭它实际证明的步骤。保留离线独立得到的节点为 `internal-offline`。从联网材料
 导入的节点标为 `web-source`，受其影响的新推导标为 `mixed`。不得追溯性地把 mixed 节点
 记为独立发现。
@@ -1281,8 +1281,12 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     )
     item = dict(item)
     item["_progress_instruction"] = research_progress.instruction(
-        project, progress_round, previous_progress,
+        project, progress_round, previous_progress, round_result=use_v2,
     )
+    if information_mode == "mixed-isolated":
+        item["_progress_integration_instruction"] = research_progress.instruction(
+            project, progress_round, previous_progress, integration=True,
+        )
     logs.mkdir(parents=True, exist_ok=True)
     if use_v2:
         round_directory = project / ".runtime/rounds" / round_id
@@ -1362,6 +1366,16 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             write_status(slug, "needs-human-review")
             return_code = 1
             print(f"Round result rejected: {exc}", file=sys.stderr)
+        if result_record is not None:
+            try:
+                value = runtime.read_json(round_directory / "ROUND_RESULT.json")
+                if "progress" in value:
+                    research_progress.import_round_result(project, progress_round)
+                state.pop("progress_import_error", None)
+            except (OSError, ValueError, TypeError, KeyError) as exc:
+                # An assessment bookkeeping failure is not a mathematical failure.
+                state["progress_import_error"] = str(exc)
+                print(f"Progress view unavailable; preserve existing assessment: {exc}", file=sys.stderr)
     elif use_v2:
         # Failed processes may have bypassed the writer; retain their artifacts,
         # require review, and never treat a half-written candidate as complete.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "数学论文中文学习版"
+  short_description: "把数学论文整理为分层讲解、可复算和可重建的中文学习稿"
+  default_prompt: "Use $math-paper-study-guide to turn this mathematical paper into a detailed Chinese study edition."

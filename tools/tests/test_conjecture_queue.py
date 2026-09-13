@@ -123,6 +123,11 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertIn("CURRENT_STATE.md 是下一回合的短入口", prompt)
         self.assertIn("不得默认完整重读 progress.md", prompt)
         self.assertIn("禁止向 README 追加逐回合日志", prompt)
+        self.assertIn("当前不开展形式化", prompt)
+        self.assertIn("未经研究者明确要求", prompt)
+        self.assertIn("conditional/GAP", prompt)
+        self.assertNotIn("若有编排能力且额度允许", prompt)
+        self.assertNotIn("每一条数学推进都必须立即", prompt)
         self.assertNotIn("每回合只深入一个路线", prompt)
         self.assertNotIn("停止本回合的其他研究动作", prompt)
 
@@ -403,6 +408,11 @@ from pathlib import Path
 import sys
 
 arguments = sys.argv[1:]
+prompt = arguments[-1]
+if 'mixed-isolated 兼容回合的汇合审计' in prompt:
+    assert ' seal-plan ' not in prompt
+    assert ' seal-result ' in prompt
+    assert '不新增独立评审调用' in prompt
 output = Path(arguments[arguments.index('--output-last-message') + 1])
 output.parent.mkdir(parents=True, exist_ok=True)
 output.write_text('fake final message\\n', encoding='utf-8')

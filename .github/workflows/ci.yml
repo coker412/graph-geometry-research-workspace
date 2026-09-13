@@ -34,6 +34,9 @@ jobs:
       - name: Run unit tests
         run: python -m unittest discover -s tools/tests -v
 
+      - name: Check writing skill resources
+        run: python .agents/skills/math-paper-writing/scripts/check_skill_resources.py
+
       - name: Check shell syntax
         run: bash -n setup.sh queue.sh tools/*.sh tools/rethlas/*.sh
 

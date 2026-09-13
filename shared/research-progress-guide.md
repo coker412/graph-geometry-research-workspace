@@ -6,7 +6,7 @@
 ```bash
 ./queue.sh progress
 ./queue.sh progress --slug alexandrov-isodiametric-offline
-./queue.sh progress --slug yau-first-eigenvalue-counterexample --json
+./queue.sh progress --slug my-problem --json
 ```
 
 评估不使用完成百分比、综合分数、字数、Agent 数量或文件数。它比较一个有明确范围的数学
@@ -62,7 +62,12 @@ conda run -n graphlab python tools/research_progress.py seal-plan \
   --project projects/<project> --round <round>
 ```
 
-完成后填写 RESULT.json，列出准确命题、剩余缺口、消除及新增的证明义务、范围限制、
+V2 回合只填写 ROUND_RESULT.json，并在 progress 对象写进展类型、主问题影响、范围及等级；
+runner 从同一份事实生成并封存评估 RESULT。PLAN 仍须事前封存，证明正文只写一次。
+派生记录绑定本轮 ID、研究包及源结果哈希，不改写已有手填 RESULT 或旧锁；缺项保留未知，
+不自动升级证据，也不新增审查调用。旧版结果仍兼容。
+
+兼容回合完成后填写 RESULT.json，列出准确命题、剩余缺口、消除及新增的证明义务、范围限制、
 原证据等级和项目内证据路径，再封存结果：
 
 ```bash
@@ -83,7 +88,7 @@ conda run -n graphlab python tools/research_progress.py seal-result \
 审查可以否定作者的分类。例如，作者声称 `frontier-advance`，审查者可判为
 `enabling-result` 或 `reformulation`。脚本保留二者，不用多数投票决定数学真假。
 
-独立审查由现有研究流程安排；本功能不会自行启动额外付费模型。没有审查者时，结果显示
+独立审查按研究者授权安排，普通回合不默认新增评审调用；本功能不会自行启动模型。没有审查者时，结果显示
 `self-report`，不能计为已确认推进。审查身份是流程声明，JSON 和哈希不能验证人的真实身份
 或证明 Agent 的上下文完全独立。
 

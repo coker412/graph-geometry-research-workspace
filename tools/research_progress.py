@@ -27,6 +27,15 @@ LEVELS = {"conjecture", "experimental", "partial-result", "proof-draft",
 ASSESSMENT_LIMIT = 128 * 1024
 
 
+def empty_result() -> dict:
+    return {
+        "claimed_kind": "inconclusive", "claim": "", "gap_after": "",
+        "discharged_obligations": [], "new_obligations": [],
+        "main_problem_effect": "", "scope_limitations": "",
+        "evidence_level": "proof-draft", "evidence": [], "next_test": "",
+    }
+
+
 def digest(path: Path) -> str:
     value = hashlib.sha256()
     with path.open("rb") as handle:
@@ -102,13 +111,7 @@ def prepare(project: Path, round_id: str, attempt: int, *, retrospective=False,
         "reopening_basis": "none",
         "strategy_review": "none",
     })
-    write_new(directory / "RESULT.json", {
-        "claimed_kind": "inconclusive", "claim": "", "gap_after": "",
-        "discharged_obligations": [], "new_obligations": [],
-        "main_problem_effect": "", "scope_limitations": "",
-        "evidence_level": "proof-draft", "evidence": [],
-        "next_test": "",
-    })
+    write_new(directory / "RESULT.json", empty_result())
     return directory
 
 
@@ -181,6 +184,57 @@ def seal_result(project: Path, directory: Path) -> None:
         "whole_family_eliminated": False,
         "report": "", "report_sha256": "",
     })
+
+
+def import_round_result(project: Path, directory: Path) -> None:
+    """Derive a self-report view, never a review or mathematical certification.
+
+    The queue calls this after V2 validation/application. Historical hand-written
+    results and locks are immutable; absent progress metadata keeps the old path.
+    The source result is itself hashed evidence, so changing it invalidates the view.
+    """
+    if any((directory / name).exists() for name in
+           ("RESULT.lock.json", "REVIEW.template.json", "REVIEW.json")):
+        raise ValueError("assessment already sealed or reviewed; preserve the original")
+    target = directory / "RESULT.json"
+    if read(target) != empty_result():
+        raise ValueError("refusing to overwrite an authored RESULT.json")
+    source = local_file(project, f".runtime/rounds/{directory.name}/ROUND_RESULT.json")
+    value = read(source)
+    packet = read(source.parent / "PACKET.json")
+    if (value.get("schema_version") != 1 or value.get("round_id") != directory.name
+            or value.get("packet_sha256") != packet.get("packet_sha256")
+            or not packet.get("packet_sha256")):
+        raise ValueError("round result identity or packet mismatch")
+    meta = value.get("progress")
+    if not isinstance(meta, dict):
+        raise ValueError("ROUND_RESULT.progress must be an object")
+    text_fields(meta, ("claimed_kind", "main_problem_effect", "scope_limitations", "evidence_level"))
+    if meta["evidence_level"] not in {"conjecture", "experimental", "partial-result", "proof-draft"}:
+        raise ValueError("derived self-report cannot claim an evidence upgrade")
+    text_fields(value, ("summary", "active_gap", "next_target", "acceptance"))
+    for entry in value["evidence"]:
+        if digest(local_file(project, entry["file"])) != entry.get("sha256"):
+            raise ValueError("source evidence changed before assessment import")
+    result = {
+        **{key: meta[key] for key in ("claimed_kind", "main_problem_effect", "scope_limitations", "evidence_level")},
+        "claim": value["summary"], "gap_after": value["active_gap"],
+        "discharged_obligations": value["closed_gaps"], "new_obligations": value["new_gaps"],
+        "next_test": value["next_target"] + "\nAcceptance: " + value["acceptance"],
+        "evidence": list(dict.fromkeys([entry["file"] for entry in value["evidence"]]
+                                      + [str(source.relative_to(project.resolve()))])),
+    }
+    validate_result(result)
+    for name in result["evidence"]:
+        local_file(project, name)
+    # Check the sealed plan before replacing even the empty generated template.
+    start, lock = read(directory / "START.json"), read(directory / "PLAN.lock.json")
+    if (digest(directory / "BEFORE.md") != start["before_sha256"]
+            or lock["before_sha256"] != start["before_sha256"]
+            or digest(directory / "PLAN.json") != lock["sha256"]):
+        raise ValueError("baseline or sealed plan changed")
+    target.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    seal_result(project, directory)
 
 
 def assess(project: Path, directory: Path) -> dict:
@@ -347,28 +401,35 @@ def finish(project: Path, directory: Path, return_code: int, timed_out: bool) ->
     })
 
 
-def instruction(project: Path, directory: Path, previous: dict) -> str:
+def instruction(project: Path, directory: Path, previous: dict, *, round_result: bool = False,
+                integration: bool = False) -> str:
+    if integration:
+        return f"""
+进展包：{directory}。离线 PLAN 已封存，不重新计划或封存；汇合实际变化记入最终 RESULT.json，
+逐条保留来源标签，引用稳定证明文件，不锁定 live CHECKPOINT、状态或台账。完成后执行
+`python {Path(__file__).resolve()} seal-result --project {project} --round {directory.name}`。
+不新增独立评审调用；缺少获授权的独立 REVIEW 时保留 self-report，不计已验证推进或停滞。
+原计划、旧锁及旧证据不可覆盖；关键候选仍按认证协议处理。
+"""
+    delivery = (
+        "结束只填写 ROUND_RESULT.json，另在 progress 对象填 claimed_kind、main_problem_effect、"
+        "scope_limitations、evidence_level（至多 proof-draft）。runner 从同一份结果生成并封存评估 RESULT；"
+        "不重复填写 RESULT.json，不手动 seal-result。"
+        if round_result else
+        "结束填写 RESULT.json 的实际变化、范围、义务和稳定证据，用同一命令的 seal-result 封存。"
+    )
     return f"""
-本轮进展评估目录：{directory}
-上轮建议：{json.dumps(previous['decision'], ensure_ascii=False)}
-在证明探索前填写 PLAN.json（稳定 family_id/obstacle_id、实际机制、原缺口、可证伪验收），
-运行 `python {Path(__file__).resolve()} seal-plan --project {project} --round {directory.name}`。
-已封存计划不能事后修改；临时改变方向如实记录在 RESULT.json，不能重写原验收标准。
-完成后填写 RESULT.json：区分核心缺口缩小、有效排除、工具/条件结果、计算线索、重新表述、
-重复、无结论、回退和完整候选；列出消除及新增义务、适用范围、主问题关联和项目内直接证据路径。
-运行同一脚本的 seal-result 命令生成 REVIEW.template.json。独立审查者读取 BEFORE.md、封存
-计划、结果和直接证据，比较本轮与既有材料；其判断写入 REVIEW.json，并给独立 REVIEW.md
-及 SHA256。作者不能自行充当独立审查者；无法取得独立审查时留空并报待评估。
-审查者必须检查新结果是否已存在、核心量词是否推进、是否只是把困难移到更强假设、是否存在
-scope损失，以及原障碍是否仍在。用语义比较，不能靠改名重置停滞。需对更正后的 RESULT
-重新封存并重新审查，旧版本保存在独立轮次目录，不覆盖旧证据。
-START.json 的 previous_round_id 指向上一次已提交评估；有该值时还需读取该包的计划、结果和
-审查，核对是否重复同一机制。没有完整前一轮证据时，不臆造连续停滞或全历史新颖性判断。
-switch-route 要求本轮换机制或给出具体重开依据；review-strategy 要求比较替代方法族并记录
-继续/暂停建议。同族重开须在 reopening_basis 填写实际机制说明文件路径；策略复核须在
-strategy_review 填写比较报告路径，否则 seal-plan 拒绝沿旧计划开工。不能靠方法族改名绕过，
-独立审查者需核对数学机制。脚本建议不是数学证明，不自动升级证据、不取消搜索承诺、不替研究者停止整题。
-mixed-isolated：离线阶段只封存计划；最终汇合完成后才封存 RESULT 并审查，不读取隔离联网材料。
+进展包：{directory}；上轮动作：{previous['decision']['action']}。
+开工填写 PLAN.json（作者、稳定方法族/障碍 ID、机制、原缺口、验收）；执行
+`python {Path(__file__).resolve()} seal-plan --project {project} --round {directory.name}`。
+PLAN 封存后不改；临时转向写入结果。{delivery}
+证明正文只写一次，评估引用它；勿锁定仍会改写的状态/台账/CHECKPOINT。
+普通回合不新增独立评审调用：没有获授权的独立审查者则保留 self-report，不填 REVIEW，
+不计作已验证推进或数学停滞。候选解、决定性反例、高风险共同依赖及等级升级仍按认证协议处理。
+START.previous_round_id 非空时按需比较该轮封存结果与直接证据，缺件按未知，不臆断全历史。
+switch-route 须换机制或在 reopening_basis 给重开报告路径；review-strategy 另在 strategy_review
+给策略比较报告路径。两者由 seal-plan 校验；改名不能绕过原障碍。建议不自动停题。
+mixed-isolated 离线只封存 PLAN；汇合后才封存最终 RESULT，保持来源隔离。
 """
 
 
@@ -381,7 +442,11 @@ def main() -> int:
     parser.add_argument("--retrospective", action="store_true",
                         help="historical/corrected assessment; excluded from stagnation streaks")
     parser.add_argument("--baseline", help="project-relative historical baseline, retrospective only")
+    parser.add_argument("--from-round-result", action="store_true",
+                        help="seal-result: derive the empty assessment from this round's V2 result")
     args = parser.parse_args()
+    if args.from_round_result and args.command != "seal-result":
+        parser.error("--from-round-result requires seal-result")
     project = args.project.resolve()
     if not project.is_dir():
         parser.error("project directory does not exist")
@@ -399,7 +464,10 @@ def main() -> int:
             elif args.command == "seal-plan":
                 seal_plan(project, directory)
             else:
-                seal_result(project, directory)
+                if args.from_round_result:
+                    import_round_result(project, directory)
+                else:
+                    seal_result(project, directory)
             print(directory)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         print(f"ERROR: {exc}")

@@ -1,0 +1,84 @@
+\documentclass[11pt]{article}
+
+\usepackage[UTF8]{ctex}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{booktabs,array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{studyblue}{RGB}{35,90,145}
+\definecolor{studyteal}{RGB}{25,115,105}
+\definecolor{studyorange}{RGB}{185,95,20}
+
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注}
+
+\newenvironment{prerequisite}[1]
+  {\par\medskip\noindent\color{studyteal}\textbf{基础补充：#1}\par\smallskip\color{black}}
+  {\par\medskip}
+\newenvironment{calculation}[1]
+  {\par\medskip\noindent\color{studyblue}\textbf{计算补充：#1}\par\smallskip\color{black}}
+  {\par\medskip}
+\newenvironment{checkpoint}[1]
+  {\par\medskip\noindent\color{studyorange}\textbf{学习检查：#1}\par\smallskip\color{black}}
+  {\par\medskip}
+
+\title{数学论文中文学习版}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\fcolorbox{studyblue}{blue!4}{%
+  \parbox{0.9\linewidth}{\small
+  \textbf{来源与状态。}
+  本学习版依据指定的源论文快照编写。这里填写源文件、版本日期、数学证据等级，
+  并说明新增解释和计算是否经过独立核验。}}
+\end{center}
+
+\tableofcontents
+
+\section*{快速学习指南}
+\addcontentsline{toc}{section}{快速学习指南}
+
+用一段话写出全文的核心机制，再给出分遍阅读计划、证明依赖关系和少量关键量。
+
+\begin{checkpoint}{读正文前}
+列出读者开始第一遍前应能回答的两至四个实质问题。
+\end{checkpoint}
+
+\section{问题、主结果与证明主线}
+
+准确说明对象、假设、维数、量词、目标量和主定理，然后解释各证明模块之间的关系。
+
+\section{第一个证明模块}
+
+\begin{prerequisite}{本节最低限度的背景}
+解释马上要使用的定义、标准公式及其几何意义。
+\end{prerequisite}
+
+这里放与源论文对应的定义、命题和证明主干。
+
+\begin{calculation}{决定结论的一步}
+逐行展开变量、求导对象、符号、缩放或边界项，并在结尾说明该计算解决了什么障碍。
+\end{calculation}
+
+\begin{checkpoint}{本模块}
+要求读者不看正文重建本节的输入、关键估计和输出。
+\end{checkpoint}
+
+\section*{证明重构清单}
+\addcontentsline{toc}{section}{证明重构清单}
+
+按数学依赖列出从精确目标到最终闭合的步骤，并注明最长技术核查的位置。
+
+\begin{checkpoint}{最终掌握标准}
+写出读者合上稿件后应能口头解释和在纸上推导的内容。
+\end{checkpoint}
+
+\end{document}
