@@ -1,9 +1,6 @@
-# Current State
+# Current research state
 
-This is the bounded entry point for the next research round. It is an index and
-conservative summary, not a replacement for proofs, computations, or the verification
-ledger. Target 6 KiB, warn above 8 KiB, V2 hard limit 12 KiB/300 lines.
-Existing states retain a 32 KiB compatibility limit until explicit migration.
+Short entry point for the next round, not a replacement for proofs, computations, or ledgers. Target 6 KiB; warn above 8 KiB. V2 writes allow at most 12 KiB/300 lines; 32 KiB is a legacy compatibility limit.
 
 ## Control
 
@@ -17,20 +14,22 @@ Existing states retain a 32 KiB compatibility limit until explicit migration.
 ## Problem and scope
 
 - Formal statement:
+- Geometric objects and dimension, if applicable:
 - Definitions and normalization:
+- Applicable regularity, boundary, completeness/compactness, or finiteness:
 - Scope exclusions:
 
 ## Current mathematical status
 
-- Strongest usable results:
+- Usable results:
 - Current conclusion:
-- Human decisions pending:
+- Researcher decisions pending:
 
 ## Active proof frontier
 
-- Smallest open gap:
+- Current gap:
 - Active routes:
-- Blocked routes worth remembering:
+- Blocked routes:
 
 ## Next bounded round
 
@@ -39,12 +38,10 @@ Existing states retain a 32 KiB compatibility limit until explicit migration.
 
 ## Evidence pointers
 
-- Verification ledger IDs:
-- Active proof-map nodes:
+- Ledger IDs:
+- Proof-map nodes:
 - Direct evidence files (file#Lstart-Lend; full-file SHA256):
 
 ## History access
 
-- Read historical files only for a named gap, node, route, or evidence pointer.
-- If this summary conflicts with direct evidence, the evidence controls and this file
-  must be corrected without changing the evidence level silently.
+Read history only for a named gap, node, route, or evidence pointer. Direct evidence controls when it conflicts with this summary. Correcting the summary must not silently change evidence levels.

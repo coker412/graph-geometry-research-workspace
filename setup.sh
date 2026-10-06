@@ -7,13 +7,13 @@ with_rethlas=true
 
 usage() {
   cat <<'EOF'
-用法：
+Usage:
   ./setup.sh --check
   ./setup.sh --bootstrap [--without-rethlas]
 
---check             本地配置与健康检查，不联网安装（默认）
---bootstrap         明确授权创建 Conda 环境；默认还会在工作区外部克隆并安装 Rethlas
---without-rethlas   bootstrap 时只准备普通 Codex 队列，不安装 Rethlas
+--check             Local configuration and health checks, without downloads (default)
+--bootstrap         Authorized environment bootstrap; also installs external Rethlas by default
+--without-rethlas   Bootstrap the Codex queue without Rethlas
 EOF
 }
 
@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
       exit 0
       ;;
     *)
-      echo "错误：未知参数 $1" >&2
+      echo "Error: unknown argument $1" >&2
       usage >&2
       exit 2
       ;;
@@ -42,7 +42,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ "$mode" == "check" ]] && [[ "$with_rethlas" == false ]]; then
-  echo "错误：--without-rethlas 只与 --bootstrap 一起使用。" >&2
+  echo "Error: --without-rethlas requires --bootstrap." >&2
   exit 2
 fi
 
@@ -67,7 +67,7 @@ if [[ -z "$setup_python" ]] && [[ -n "$conda_root" ]] && [[ -x "$conda_root/bin/
   setup_python="$conda_root/bin/python"
 fi
 if [[ -z "$setup_python" ]]; then
-  echo "错误：需要 Python 3。macOS 可先安装 Miniforge，再重新运行本脚本。" >&2
+  echo "Error: Python 3 is required. Install it or Miniforge, then rerun this script." >&2
   exit 1
 fi
 rethlas_root="${RETHLAS_ROOT:-$(cd "$WORKSPACE_ROOT/.." && pwd -P)/Rethlas}"
@@ -81,15 +81,19 @@ PY
 
 case "$rethlas_root/" in
   "$WORKSPACE_ROOT/"*)
-    echo "错误：RETHLAS_ROOT 必须位于 graph-geometry 工作区外部：$rethlas_root" >&2
+    echo "Error: RETHLAS_ROOT must be outside the workspace:$rethlas_root" >&2
     exit 1
     ;;
 esac
 
 if [[ -f "$WORKSPACE_ROOT/MANIFEST.sha256" ]] && \
    grep -q '__WORKSPACE_ROOT__' "$WORKSPACE_ROOT/AGENTS.md"; then
+  setup_verification_mode="--distribution"
+  if [[ -e "$WORKSPACE_ROOT/.git" ]]; then
+    setup_verification_mode="--public-source"
+  fi
   PYTHON_BIN="$setup_python" \
-    "$WORKSPACE_ROOT/tools/verify_teacher_framework.sh" --distribution
+    "$WORKSPACE_ROOT/tools/verify_teacher_framework.sh" "$setup_verification_mode"
 fi
 
 PYTHON_BIN="$setup_python" CONDA_ROOT="$conda_root" RETHLAS_ROOT="$rethlas_root" \
@@ -98,7 +102,7 @@ PYTHON_BIN="$setup_python" "$WORKSPACE_ROOT/tools/verify_teacher_framework.sh"
 
 if [[ "$mode" == "bootstrap" ]]; then
   if [[ -z "$conda_root" ]] || [[ ! -x "$conda_root/bin/conda" ]]; then
-    echo "错误：bootstrap 需要 Conda/Miniforge。请先安装并设置 CONDA_ROOT。" >&2
+    echo "Error: bootstrap requires Conda/Miniforge. Install it and set CONDA_ROOT." >&2
     exit 1
   fi
 
@@ -109,14 +113,14 @@ if [[ "$mode" == "bootstrap" ]]; then
   if [[ "$with_rethlas" == true ]]; then
     if [[ ! -d "$rethlas_root" ]]; then
       if ! command -v git >/dev/null 2>&1; then
-        echo "错误：安装 Rethlas 需要 git。" >&2
+        echo "Error: installing Rethlas requires git." >&2
         exit 1
       fi
       git clone https://github.com/frenzymath/Rethlas.git "$rethlas_root"
     fi
     if [[ ! -f "$rethlas_root/agents/verification/api/requirements.txt" ]] || \
        [[ ! -f "$rethlas_root/agents/generation/mcp/requirements.txt" ]]; then
-      echo "错误：RETHLAS_ROOT 不是预期的干净 Rethlas 布局：$rethlas_root" >&2
+      echo "Error: RETHLAS_ROOT does not have the expected Rethlas layout:$rethlas_root" >&2
       exit 1
     fi
 
@@ -187,38 +191,38 @@ fi
 cat > "$report" <<EOF
 # Setup Report
 
-- 生成时间：$setup_timestamp
-- 模式：$mode
-- 工作区：$WORKSPACE_ROOT
-- Conda 根目录：${conda_root:-未找到}
-- graphlab：$graphlab_status
-- Codex：$codex_status
-- Codex 登录：$codex_login
-- tmux：$tmux_status
-- 外置 Rethlas：$rethlas_root
-- Rethlas 布局：$rethlas_status
-- rethlas-verification：$verification_env_status
-- rethlas-generation：$generation_env_status
-- 猜想队列 doctor：$queue_doctor_status
+- Generated at: $setup_timestamp
+- Mode: $mode
+- Workspace: $WORKSPACE_ROOT
+- Conda root: ${conda_root:-not found}
+- graphlab: $graphlab_status
+- Codex: $codex_status
+- Codex login: $codex_login
+- tmux: $tmux_status
+- External Rethlas: $rethlas_root
+- Rethlas layout: $rethlas_status
+- rethlas-verification: $verification_env_status
+- rethlas-generation: $generation_env_status
+- Queue doctor: $queue_doctor_status
 
-## 边界
+## Boundaries
 
-- Rethlas 必须保持在工作区外部；本次路径检查已通过。
-- 本脚本没有复制或打印任何认证信息。
-- 本脚本没有启动 Codex 队列、Rethlas verifier 或 Rethlas generation。
-- Rethlas 即使安装完成，仍须针对每次证明升级取得导师明确许可。
+- Rethlas must remain outside the workspace; the path check passed.
+- This script did not copy or print authentication secrets.
+- This script did not start the Codex queue, Rethlas verifier, or generation.
+- Every Rethlas run still requires explicit researcher authorization.
 
-## 下一步
+## Next steps
 
-1. 如果 Codex 未安装或未登录，由导师按 OpenAI 官方文档安装并亲自登录。
-2. 如果 graphlab 缺失，取得联网安装许可后运行 ./setup.sh --bootstrap --without-rethlas。
-3. 如果需要 Rethlas，取得联网安装许可后运行 ./setup.sh --bootstrap。
-4. 全部就绪后运行 ./tools/conjecture_queue.sh doctor；不要自动启动队列。
+1. If Codex is missing or not authenticated, install it using official instructions and sign in personally.
+2. If graphlab is missing, authorize installation and run ./setup.sh --bootstrap --without-rethlas.
+3. If Rethlas is needed, authorize installation and run ./setup.sh --bootstrap.
+4. When ready, run ./tools/conjecture_queue.sh doctor; do not start the queue automatically.
 EOF
 
-echo "已生成：$report"
-echo "工作区：$WORKSPACE_ROOT"
-echo "外置 Rethlas：$rethlas_root"
-echo "Codex：$codex_status；登录：$codex_login"
-echo "graphlab：$graphlab_status；tmux：$tmux_status"
-echo "请把 SETUP_REPORT.md 交给导师或配置 AI 审阅。"
+echo "Created: $report"
+echo "Workspace: $WORKSPACE_ROOT"
+echo "External Rethlas: $rethlas_root"
+echo "Codex: $codex_status; login: $codex_login"
+echo "graphlab: $graphlab_status；tmux: $tmux_status"
+echo "Review SETUP_REPORT.md with the researcher or setup assistant."

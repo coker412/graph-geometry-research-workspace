@@ -1,312 +1,212 @@
-# 数学论文写作规则
+# Mathematical paper writing rules
 
-本文件适用于论文、摘要、引言、LaTeX、数学英语和面向公开读者的研究文字。先读根目录 `AGENTS.md`。
+This file covers manuscripts, abstracts, introductions, LaTeX, mathematical English, and research writing for public readers. Read root `AGENTS.md` first.
 
-## 写作前的证据门槛
+## Evidence required before writing
 
-正式投稿稿件的主结果只有同时满足以下条件，才能作为无保留结论写入摘要、主定理和结论：
+An unqualified main result in a submission manuscript's abstract, main theorem, or conclusion requires all of the following:
 
-- 证据等级达到 `human-verified` 或 `formalized`；
-- proof map 的依赖已经关闭；
-- 关键文献及定理原文已经核对；
-- 计算材料可复现；
-- 研究者明确批准写入。
+- `human-verified` or `formalized` evidence;
+- Closed proof-map dependencies;
+- Checked original sources for essential literature and theorems;
+- Reproducible computational material;
+- Explicit researcher authorization.
 
-经研究者明确允许，`agent-verified` 结果可以进入内部草稿，但必须用统一红色宏或环境标明：
+With explicit permission, an internal draft may contain `agent-verified` results, but use a consistent red macro or environment stating:
 
 > agent-verified, not human-verified
 
-同时注明对应 verifier 或审查记录。润色、排版和结构调整不能提高证据等级。
+Identify the verifier/review record. Editing, formatting, and restructuring cannot raise evidence levels.
 
-## humanizer 的使用
+## Humanizer
 
-当前会话提供 `humanizer` skill 时，以下任务优先使用它：
+When available, prefer the humanizer skill for README files, project descriptions, public prose, English polishing, abstract/introduction/conclusion review, and removal of inflated or formulaic language.
 
-- README、项目说明和面向公开读者的文字；
-- 论文英文段落的润色；
-- 摘要、引言和结论的语言审查；
-- 删除空泛、夸张、模板化或明显由 AI 生成的表达。
+Change expression only. Preserve mathematical meaning, hypotheses, quantifiers, definitions, formulas, and symbols. Invent no facts, citations, theorems, authors, dates, or history. Do not turn conjectural, experimental, conditional, or proof-draft statements into proved claims, or remove necessary qualifications. Recheck mathematics, citations, and levels afterward. The same boundaries apply if polishing manually without the skill.
 
-使用边界：
+## Files and builds
 
-- 只改表达，不改数学含义；
-- 不改变假设、量词、定义、公式或符号；
-- 不发明事实、引用、定理、作者、年份或历史背景；
-- 不把 `conjectural`、`experimental`、`conditional` 或 `proof-draft` 改写成已证结论；
-- 不删掉理解定理所必需的限定条件；
-- 润色后重新检查数学陈述、引用和证据等级。
-
-如果 skill 不可用，也按这些边界人工润色。自然语言质量不能绕过证明验证。
-
-## 文件与编译
-
-论文位于 `projects/<项目名>/paper/`：
+Keep manuscripts in `projects/<project>/paper/`. The researcher's preference recorded on 2026-09-15 is a simple single-main-file structure:
 
 ```text
 paper/
 ├── main.tex
-├── sections/
-├── figures/
+├── figures/          # Create only when needed.
 └── references.bib
 ```
 
-- `main.tex` 从 `sections/` 导入各节。
-- 每个主要 section 使用独立 `.tex` 文件。
-- 证明统一使用 `\begin{proof} ... \end{proof}`。
-- BibTeX 条目集中保存在 `references.bib`。
-- 在 `paper/` 目录运行 `latexmk -g -xelatex main.tex`，强制重建而不是只依赖旧的
-  辅助文件。
-- 每次修改任何 `.tex`、`.bib`、图表或被 `\input`/`\include` 的文件后，都必须重新
-  编译所有受影响版本，包括英文稿、正式中文译稿、中文内部审阅稿和引用该内容的总览。
-- 编译成功后还要严格扫描日志，至少排除：TeX error、undefined citation/reference、
-  duplicate/multiply-defined label、BibTeX warning、package warning、overfull box 和
-  underfull box。仅有 `latexmk` 退出码为零不算完成。
+The location rule applies from the first write:
 
-优先使用 AMS 数学论文格式，至少包含：
+- New, uploaded, or received active/candidate TeX, Bib, included manuscript files, and build outputs go directly under the owning project's `paper/`, never temporarily at the project root.
+- Teacher-supplied editable sources and frozen manuscript baselines belong in `paper/teacher-sources/`; internal manuscript variants use clearly named subdirectories of `paper/`.
+- Source literature, notes, reports, talks, posters, and explicitly identified study editions may remain in their designated directories when they are not the active manuscript.
+- Before and after paper work, run `python tools/workspace_hygiene.py paper-layout`. Legacy exceptions are frozen, not permission for new exceptions. Correct new location violations before continuing the text.
+
+Put the body, proofs, acknowledgments, and appendices in `main.tex` by default. Do not fragment sections for agent assignments or internal administration. Organize sections around the mathematics, not each short paragraph or proof step. Preserve theorem environments and semantic cross-references.
+
+Use a few included files only for a long manuscript or actual reuse, explaining the maintenance benefit. Keep existing paths until authorized to reorganize that manuscript; do not bulk-edit frozen manuscripts or proof snapshots.
+
+Use `\begin{proof} ... \end{proof}` and keep BibTeX entries in `references.bib`. Public manuscripts use `\date{}` unless the researcher explicitly requests a visible date.
+
+Build in `paper/`:
+
+```bash
+latexmk -g -xelatex main.tex
+```
+
+Rebuild every affected version after any TeX, Bib, figure, or included-file change, including English, formal Chinese, internal Chinese review, and overviews that consume the changed material. Inspect logs for TeX errors, undefined references/citations, duplicate labels, BibTeX/package warnings, and overfull/underfull boxes. A zero exit code alone is insufficient.
+
+Prefer AMS formatting, including:
 
 ```latex
 \usepackage{amssymb,amsmath,amsfonts,amsthm}
 ```
 
-通过 `amsthm` 统一 theorem、lemma、proposition、remark、example、conjecture 和 problem 环境的编号与样式。
+Use amsthm for consistent theorem, lemma, proposition, remark, example, conjecture, and problem numbering and style.
 
-## 写作顺序
+## arXiv sources and submission checks
 
-默认顺序：
+The researcher selected these guides on 2026-09-15 as arXiv-linked reading. Apply relevant advice as a delivery standard rather than relying on what a server merely accepts:
 
-1. 完成预备知识、主要证明和应用；
-2. 整理结论与开放问题；
-3. 写摘要；
-4. 最后写引言；
-5. 通读全文，检查叙事、术语、证据等级和引用。
+- [Why Submit TeX?](https://info.arxiv.org/help/faq/whytex.html): reproducible, convertible semantic sources; remove private source comments.
+- [Common Mistakes](https://info.arxiv.org/help/faq/mistakes.html): paths, filenames, styles/fonts, image formats, package conflicts, bibliography compatibility, and untested last-minute edits.
+- [Trevor Campbell's guide](https://trevorcampbell.me/html/arxiv.html): clean a copy, simplify layout, combine body/appendices, include the bibliography, and check metadata/server PDF.
+- [Ian Huston's checklist](https://www.ianhuston.net/2011/03/checklist-for-arxiv-submission/): rendered bibliography, publication details, mathematical punctuation, names/spelling, and removal of revisions/obsolete material.
 
-摘要和引言不能先于证据状态夸大结果。
+Requirements:
 
-## 题目
+1. Preserve maintainable sources and history in the working manuscript. Create a separate submission copy, normally one main.tex with a flat directory and necessary images/styles. Merge sections into one valid document; do not concatenate complete documents.
+2. Include only required files. Exclude old drafts, study editions, internal reviews, version control, logs, disposable intermediates, and the generated full-paper PDF. Keep PDFs actually used as figures. Inspect the package contents.
+3. Remove internal comments, obsolete commented text, TODOs, revision markup, and unused macros. Preserve TeX semantics when handling percent signs, including whitespace suppression, escaped percent signs, and verbatim content. Do not remove mathematical qualifications, attribution, or author-approved AI disclosure. Rebuild after cleanup.
+4. Normally include a final `main.bbl` matching the main filename. After a clean independent build, the submission copy may omit unneeded Bib/BST files; retain them in the working source. Inspect each rendered entry and citation. Check whether a published version changes the cited conclusion before updating metadata. For biblatex, check backend and BBL-format compatibility separately.
+5. Produce one PDF for the body and necessary appendices. Without venue instructions, put references before appendices. Use standard packages, portable fonts, relative paths, simple filenames without spaces, and engine-compatible images. Do not depend on absolute local paths, interactive input, or missing generation steps.
+6. Unpack into a clean temporary directory and build with the submission engine until references stabilize. Scan logs and inspect the PDF page by page: punctuation, bibliography, figures, page breaks, links, title, abstract, and names. Any final edit invalidates the old build check. Workspace XeLaTeX validation does not replace target-engine compatibility testing.
+7. Prepare metadata matching the final text. Remove inappropriate formatting and whitespace while preserving necessary mathematics under field rules. After authorized upload, check server file lists, logs, and PDF. If unfinished, report this explicitly; local success is not completed server acceptance.
+8. Single-file structure, restrained sectioning, and compact packages are workspace preferences. Before using old claims about AutoTeX, engine support, BibTeX, or fixed compilation passes, consult the [current TeX submission instructions](https://info.arxiv.org/help/submit_tex.html) and linked TeX Live information. Do not apply obsolete patches mechanically. Preparation does not alter evidence, authorship, or publication authorization.
 
-题目应让本领域读者快速识别核心对象、问题或方法。使用有辨识度的关键词，避免宣传语和超过正文证据的结论。
+## Writing order
 
-## 摘要
+Write prerequisites, proofs, and applications first; then conclusions/open questions; then the abstract; then the introduction. Finally read the whole paper for narrative, terminology, levels, and citations. The abstract and introduction must not outrun the evidence.
 
-摘要必须能独立阅读，并简洁说明：
+## Title, abstract, and introduction
 
-- 研究什么问题；
-- 使用什么主要方法；
-- 得到什么经过相应等级验证的结果。
+The title should identify the core object, problem, or method through useful terms, without publicity or claims beyond the body.
 
-摘要不放证明细节，不写未经正文支持的新颖性或重要性声明，也不把计算观察说成定理。
+The abstract must stand alone: state the problem, main method, and results at their actual verified level. Omit proof details, unsupported novelty/significance claims, and theorem language for computational observations.
 
-## 引言
+Write the introduction last, explaining checked history/current knowledge, setting and problem, results and evidence status, method and obstacles, and scope. Before claiming to resolve an open problem, improve a best bound, or introduce a new framework, complete the literature comparison. Remove unsupported claims rather than replacing them with vague attribution.
 
-引言最后写，但应独立讲清：
+## Main text
 
-- 历史背景和已核对的研究现状；
-- 基本设定与问题陈述；
-- 主要结果及其证据状态；
-- 证明方法和技术障碍；
-- 结果的适用范围。
+Organize by mathematical dependency: setting and notation, directly checkable preliminary results, needed lemmas, main proof, applications/limitations, and precise open problems.
 
-声称解决公开问题、改进最优界或提出新理论框架前，必须完成文献核查。没有来源时删掉主张，不用含糊措辞代替证据。
+Open major sections with connected prose explaining purpose, idea, dependencies, and output. Explain which obstacle a key lemma addresses and how its conclusion is used next.
 
-## 论文主体
+Keep material needed to understand and verify the main theorem. Failed routes, agent verdicts, debugging, evidence administration, and version history belong in research records. Long calculations, parameter cases, and computational certificates can become technical lemmas or appendices.
 
-正文按数学依赖组织：
+## Introduce objects before using them
 
-1. 建立基本设定、定义和符号；
-2. 给出可直接验证的初步结果；
-3. 引入服务于主定理的引理；
-4. 集中组织主证明；
-5. 给出应用、限制和精确定义的开放问题。
+At first appearance, explain each object's type, space, parameter range, definition/characterization, and role. A symbol alone is not an introduction.
 
-每个主要章节开头用连贯文字说明目标、主思路、依赖和结论。关键引理前说明它解决哪个障碍，证明后说明下一步如何使用。
+- Sets: specify their elements. Maps: domain, codomain, and arguments. Operators: spaces, domain, sign, and normalization. Measures: underlying space. Stochastic processes: generator, clock, and lifetime conventions.
+- Define unfamiliar terminology or give a precise short explanation. Names, abbreviations, and citations alone do not explain subordinate processes, regular symmetric Dirichlet forms, relative Faber-Krahn inequalities, Bochner derivatives, spectral projections, capacity, or recurrence.
+- A formula is a definition only when its symbols are explained. Do not postpone spaces, measures, indices, or boundary conditions for pages.
+- Define nonstandard objects before theorem statements that use them. Apply the same rule to local indices, cutoffs, spectral bands, level/exceptional sets, and auxiliary constants.
+- Before delivery, audit first appearances in source order for type, definition, and role. Search supports but does not replace a sequential reading.
 
-正文只保留理解和验证主定理所需的材料。失败路线、Agent verdict、调试记录、证据管理和历史版本留在项目研究文件中。长计算、参数分情形和计算机辅助证书可以放入技术引理或附录。
+For a Chinese review edition intended for collaborators from other fields, also explain intuition and the object's place in the proof using standard Chinese, without changing mathematics or assuming internal terminology.
 
-## 对象首次出现门
+## Hypotheses, quantifiers, and strength
 
-论文中的每个数学对象都必须先介绍、后使用。这里的“介绍”不只是写出一个符号，还要让
-目标读者知道它是什么以及为什么出现。
+Maintain a hypothesis record from the original problem through the main theorem and lemmas. Identify whether connectedness, completeness, no boundary, dimension, regularity, finiteness, and parameter ranges come from the problem, a cited theorem, or new restrictions.
 
-- 首次出现时说明对象的类型、所在空间、参数范围、定义或刻画性质以及在证明中的作用。
-- 集合要说明它由什么元素组成；映射要说明定义域、值域和自变量；算子要说明作用空间、
-  定义域、符号和归一化；测度要说明底空间；随机过程要说明生成元、时钟和生存期约定。
-- 第一次使用不常见术语时给出数学定义或一两句准确解释。只给英文名称、缩写或引用不能
-  代替解释。例如 subordinate process、regular symmetric Dirichlet form、relative
-  Faber--Krahn inequality、Bochner derivative、spectral projection、capacity 和
-  recurrence 都不能凭空出现。
-- 公式只有在同时说明各符号含义时才算定义。不能先写一个大型公式，数页以后才解释其中
-  的空间、测度、指标或边界条件。
-- 定理陈述中使用的每个非标准对象必须已在定理之前定义；定理不能依赖读者从后文倒推
-  记号。
-- 局部证明中新引入的索引、截断函数、谱带、水平集、例外集和辅助常数也遵守同一规则。
-- 完稿前建立“首次出现审计”：按源码顺序列出符号、术语和对象，逐一确认首次出现处包含
-  类型、定义和作用。全文搜索只能辅助，不能代替按阅读顺序通读。
+Before repairing a proof with an added assumption, check whether it narrows the original problem. If so, describe a special case or partial result. Translation, polishing, and merging must not silently add assumptions or omit qualifications.
 
-面向跨领域老师或合作者的中文审阅稿还要多做一步：在不改变数学内容的前提下，用标准
-中文解释对象的直观意义和它在证明链中的位置。不能假定读者熟悉本项目内部术语。
+Match every use of complete answer, counterexample, criterion, if and only if, necessary, sufficient, sharp, or optimal to the proof. For sharpness/optimality, specify parameter, object class, and comparison. In Chinese, retain a standard mathematical expression for sharpness instead of a literal everyday adjective.
 
-## 假设、量词和结果强度
+Distinguish a literal answer to the original question, a strengthened version, a special model, a background theorem, and a direct corollary. Keep these classifications consistent in abstracts, introductions, theorem titles, conclusions, and project overviews.
 
-- 建立从原问题到主定理再到各引理的假设台账。connected、complete、without boundary、
-  维数、正则性、有限性和参数区间都要说明是原问题约定、已有定理假设还是本文新增假设。
-- 为了修补证明而增加假设前，先确认它是否缩小原问题。若确实缩小，只能把结果写成特殊
-  情形或部分结果，不能仍声称完整解决。
-- 中文解释、语言润色和合并论文不得暗中增加假设，也不得通过省略限定词扩大结论。
-- `complete answer`、`counterexample`、`criterion`、`if and only if`、`necessary`、
-  `sufficient`、`sharp` 和 `optimal` 必须逐一对应正文证明。使用 `sharp` 或 `optimal`
-  时必须写清参数、对象类和比较意义；中文使用“sharp”“达到临界阈值”或准确的数学
-  表述，不机械翻译成“锋利”。
-- 区分原题的字面回答、加强版本、特殊模型、背景定理和直接推论。摘要、引言、定理标题、
-  结论和项目总览中的分类必须一致。
+## Submission manuscript and internal review
 
-## 正式论文与内部审阅材料分轨
+The English submission source is a research paper, not a verification report, teaching handout, or agent log. Its introduction should explain the original question, prior work, remaining gap, contribution, method, scope, and limits.
 
-英文投稿母稿必须按正常研究论文组织，不能写成验证报告、教学讲义或 Agent 工作日志。
+Keep definitions, statements, proofs, and necessary explanations in the body. Put self-audit lists, verifier dialogue, repair history, hashes, task status, and claims of finding no errors in project notes or a separate internal review.
 
-- 引言主线依次回答：原问题是什么，前人已经证明什么，缺口在哪里，本文证明什么，方法
-  是什么，结论范围和限制是什么。
-- 正文只保留定义、命题、证明及理解证明所需的说明。逐项自我审计、verifier 对话、修复
-  历史、哈希、内部任务状态和“没有发现错误”等元叙述放在项目笔记或独立内部审阅稿。
-- 内部证据警告集中在一个统一状态框中，不散布到摘要、定理和证明。正式公开版只有在证据
-  与优先权门均获研究者批准后才能移除该框。
-- 教学性解释若为理解对象所必需，应自然写入定义或证明动机；若只是帮助内部逐行复核，
-  放入中文内部审阅版的术语表、证明依赖图或检查表。
-- 每节必须服务于主线。删除重复的背景、无下游用途的定义和仅用于证明“我们检查过”的
-  段落。
+Concentrate internal evidence warnings in one status box. Remove it from the formal public version only after the researcher approves evidence and priority checks. Essential teaching explanations belong naturally beside definitions/motivation; line-by-line review aids belong in the internal edition. Remove repeated background, unused definitions, and paragraphs whose only purpose is to say a check occurred.
 
-## 英文母稿与中文版本同步
+## English source and Chinese editions
 
-研究者明确限定“只改英文版”等单一版本时，优先遵守该范围；隔离共用输入对其他版本的影响，不修改或重编其他版本，不将原有中英文差异宣称为已同步。
+An explicit single-version scope, such as English only, takes precedence. Isolate shared-input effects, do not modify/rebuild other editions, and do not claim pre-existing differences are synchronized.
 
-英文稿是投稿数学内容的唯一母稿。所有数学修正必须遵循以下顺序：
+Otherwise, the English manuscript is the authoritative mathematical submission source:
 
-1. 先修改并核对英文定义、命题、证明、假设、引用和交叉引用；
-2. 英文数学内容稳定后，再逐节翻译正式中文稿；
-3. 最后更新中文内部审阅稿中的术语解释、证明路线和检查表；
-4. 编译全部版本并做双语语义对照。
+1. Correct and check English definitions, statements, proofs, assumptions, citations, and cross-references.
+2. Once stable, translate the formal Chinese edition section by section.
+3. Update terminology, proof routes, and checklists in the Chinese internal review.
+4. Build all affected editions and compare mathematical meaning.
 
-正式中文稿必须是当前英文稿的忠实对应翻译：
+The formal Chinese version must neither add nor omit assumptions, definitions, lemmas, proof steps, citations, quantifiers, exceptions, evidence limits, or scope. Preserve theorem order, formulas, labels, and citation keys where possible. Natural sentence splitting and faithful explanatory wording are allowed; strengthening, weakening, or reinterpretation is not. Internal review may add a glossary, reading guide, dependency diagram, and audit questions while reusing the formal mathematical body.
 
-- 不得出现“中文写了但英文没写”的数学假设、定义、引理、证明步骤、引用或结论；
-- 也不得遗漏英文中的量词、例外情形、证据边界、引用接口或限制条件；
-- 定理顺序、公式、标签、交叉引用和 citation keys 应尽可能一一对应；
-- 中文可以为了语序自然拆分句子或增加不改变内容的释义，但不能加强、削弱或重新解释
-  数学结论；
-- 中文内部审阅版可以增加术语表、阅读指南、依赖图和审核问题，但应复用正式中文数学
-  正文，不能维护另一套会漂移的定理与证明。
+Compare each theorem's assumptions/quantifiers/conclusion, each proof's logic, and each citation's role. Counting environments is insufficient. An English proof-bearing change makes the Chinese editions unsynchronized until comparison and rebuilding finish.
 
-交付前必须做一次双语逐项对照，而不只是比较环境数量：逐一定理比较假设、量词和结论，
-逐一证明比较逻辑步骤，逐一引用比较其承担的作用。若英文再次修改，原中文译稿立即视为
-未同步，直到完成上述对照和重新编译。
+## Mathematical environments
 
-## 数学陈述环境
+- `theorem`: main contribution.
+- `lemma`: an auxiliary statement needed for a main result.
+- `proposition`: a relatively direct property or intermediate result worth recording.
+- `remark`: scope, meaning, differences, or limits; never conceal a gap.
+- `example`: tests assumptions, boundaries, or constructions.
+- `conjecture` and `problem`: unresolved questions with precise definitions, quantifiers, and background.
 
-- `theorem`：论文的主要数学贡献。
-- `lemma`：服务于主要结果的辅助命题。
-- `proposition`：相对直接但值得单独记录的性质或中间结果。
-- `remark`：解释适用范围、意义、差异或限制，不能隐藏 gap。
-- `example`：检验假设、展示边界或说明构造。
-- `conjecture` 与 `problem`：尚未解决且量词、定义和背景清楚的问题。
+By default, omit descriptive bracketed titles on theorem/proposition/lemma/definition/remark environments. Explain role and context before the formal statement.
 
-默认不在 theorem、proposition、lemma、definition 或 remark 的方括号中加入说明性标题。作用和背景写在环境之前，环境内保留正式陈述。
+State the original objective and core conclusion first. Put regularity, uniqueness, approximation, or other auxiliary properties after the main existence/classification conclusion and explain why they matter.
 
-主定理先陈述原始研究目标和核心结论。正则性、唯一性、逼近或其他辅助性质放在核心存在性或分类结论之后，并说明它们为何必要。
+## Notation and differentiation
 
-## 符号与求导
+Define symbols, abbreviations, and objects at first use. Avoid a large detached notation list at the start of an abstract/introduction. Rename only when a local ambiguity requires it.
 
-- 每个符号、缩写和对象在首次使用处说明类型、取值范围或所在空间。
-- 不在摘要或引言开头堆放与叙事脱节的大型符号清单。
-- 同一局部语境可能混淆时才更换符号，不为形式统一做无必要重命名。
-- 多个自变量或参数并存时，显式写求导变量，例如 `dx/ds`、`dW/d\rho` 和 `\partial X/\partial t`。
-- 单变量函数使用普通导数，多变量函数或函数族使用偏导数。
-- 撇号或圆点只有在自变量唯一且紧邻处已经说明时才使用。
-- 修改符号后同步检查公式、图注、交叉引用、中英文版本和证明依赖。
+With several variables or parameters, write the differentiation variable explicitly: `dx/ds`, `dW/d\rho`, `\partial X/\partial t`. Use ordinary derivatives for one-variable functions and partial derivatives for multivariable functions/families. Primes/dots require a unique, nearby specified variable. After notation changes, check equations, captions, references, versions, and dependencies.
 
-## 数学术语
+## Terminology and prose
 
-使用与当前领域原始论文一致的标准术语。近义表达不确定时，核对最接近的原始研究文献，不能只按一般英语习惯替换。
+Use terminology consistent with the closest original research sources. Check uncertain near-synonyms rather than applying general English substitutions. Distinguish generating/profile curves, ordinary curves, parameter values versus dynamical time, solution orbits, plane curves, arcs, graphs, immersions, embeddings, transversality, compactness, and principal curvature.
 
-例如应区分：
+Pronouns must have a unique referent; repeat the object's name when needed. Write precise, natural, concise English. Explain strategy before technical steps, give each paragraph a mathematical purpose, and avoid generic openings/endings, exaggerated importance, vague consensus, mechanical three-part arguments, or synonym variation at the expense of precision.
 
-- `generating curve`、`profile curve` 与普通 `curve`；
-- `parameter value` 与动力系统中的 `time`；
-- `solution orbit`、平面曲线、曲线段 `arc` 和函数图像 `graph`；
-- immersion、embedding、transversality、compactness 和 principal curvature。
+## References
 
-指示词必须有唯一指向。对象较多时，直接重复对象名称，避免含糊的 `it`、`this`、`the former` 或 `the latter`。
+Keep audit records out of the paper and rendered bibliography: read/downloaded versions, verification verdicts, agent records, hashes, and task IDs belong in project notes, not printable note/addendum fields, footnotes, body, or appendices. This also applies to an internal edition's bibliography; detailed audits stay separate.
 
-## 语言与叙事
+Citations usually need the reference number and relevant theorem/section/page. If version matters for location, use the shortest necessary version identifier without audit narration. Render DOI/URL/preprint identifiers according to the target style; do not duplicate them in notes to force a link. Check the final PDF as well as BibTeX. Do not mistake mathematical qualifications, attribution, or author-approved AI disclosure for removable audit text.
 
-- 数学英语准确、自然、简洁。
-- 先说明证明战略，再进入技术步骤。
-- 每段承担清楚的数学功能，不用泛泛的开场和结尾。
-- 不夸大重要性，不编造“众所周知”“研究者普遍认为”等来源不明的判断。
-- 避免把三点机械排列成看似完整的论证。
-- 句子长短可以变化，但逻辑主语和指代必须明确。
-- 保留必要重复，不为追求同义词变化而牺牲精确性。
+Prefer standard MathSciNet BibTeX. Check arXiv author/title/year/identifier and reliable journal volume/pages/DOI metadata. Keep body citations, references.bib, and project references.md consistent. Do not cite unread sources or sources whose support is unconfirmed.
 
-## 参考文献
+Distinguish proof-bearing citations from contextual background. At every theorem use, give a nearby citation and check original hypotheses, conclusion, notation, normalization, and theorem number. A reference only in the introduction cannot support a later proof step. State the part used and how the present objects satisfy it.
 
-- 正文和排印书目不包含审计过程：核读/下载版本说明、验证结论、Agent 审查记录、哈希、任务 ID 等保存在论文外的项目笔记中，不能写入可排印的 `note`/`addendum`，也不能转移到正文、脚注或论文附录。内部审阅版的书目同样遵守此规则；专门的内部审查材料另行保存。
-- 正文引用保持简洁，通常只需文献编号和必要的定理、节或页码。版本确实影响定位时，仅保留最短的版本标识及对应书目编号，不加“核查时采用某版本”等解释，不机械地给所有引用加版本。
-- DOI、URL 和预印本编号属于书目信息，按目标样式显示；不为强制打印链接而在备注中重复 DOI。检查最终 PDF，不能只检查 `.bib`。
-- 必须保留的证据状态只作简短说明，详细审查路径留在内部记录；不得把数学限定条件、来源归属或经作者确认的 AI 使用披露当作审计文字删除。
+Distinguish known results, direct use, reproving, original combinations, and pending priority checks in the introduction/conclusion. A long bibliography is no substitute for theorem-level comparison. Missing key full text creates an explicit GAP; abstracts/snippets/secondary accounts cannot support strong novelty claims.
 
-- 优先采用 MathSciNet 的标准 BibTeX 条目。
-- arXiv 论文核对作者、题名、年份和编号。
-- 其他文献从可靠数据库核对期刊、卷期、页码和 DOI。
-- 正文引用、`references.bib` 与项目 `references.md` 保持一致。
-- 不引用未读或无法确认支持相应主张的文献。
-- 区分 proof-bearing citation 与 contextual citation。前者承担某个证明步骤，后者只
-  说明历史或方法背景，正文不能让二者的作用含糊。
-- 每次调用外部定理时，在调用处或紧邻段落给出引用，并核对原文的全部假设、结论、符号、
-  归一化和定理编号。只在引言列出文献，不能支持正文中的证明调用。
-- 若本文只使用外部定理的一部分，要写清使用的具体部分以及本文对象如何满足其假设。
-- 引言和结论必须明确区分“前人已知”“本文直接使用”“本文重新证明”“本文原创组合”
-  和“仍待优先权核查”。参考文献数量不能代替逐定理比较。
-- 无法取得关键全文时，把相应优先权或定理接口记录为明确 GAP；不得以摘要、搜索片段或
-  二手转述支撑强新颖性声明。
+## Evidence and source snapshots
 
-## 证据状态与源码快照同步
+Keep evidence levels consistent across English, formal Chinese, internal review, paper README, project overview, proof map, and ledger.
 
-- `proof-draft`、`agent-verified`、`human-verified` 和 `formalized` 必须在英文稿、
-  正式中文稿、中文内部审阅稿、paper README、项目总览、proof map 和 verification
-  ledger 中保持一致。
-- verifier 只认证实际提交的源码快照。任何 proof-bearing 文件在验证后发生变化，都要
-  对受影响结论降级或重新验证，不能沿用旧 verdict。
-- 提交 verifier 前记录输入文件、顺序、哈希和正式 statement；返回后保存原始响应、
-  verdict、critical errors、gaps 和 manifest。
-- verdict 后仅更新首页证据状态时，要记录这是 presentation-only/status-only 变化，
-  保留精确提交快照，并确认定理、证明章节和参考文献哈希未改变。
-- 不得因语言润色、同一 Agent 再读一遍、编译成功或参考文献增多而提高数学证据等级。
+A verifier certifies only the submitted snapshot. Proof-bearing changes require reassessment or re-verification of affected conclusions. Before submission, record input files, order, hashes, and formal statement; afterward preserve raw response, verdict, errors, gaps, and manifest.
 
-## 致谢与作者信息
+A later status-only front-page update must be recorded as presentation-only/status-only, preserve the exact submitted snapshot, and confirm theorem/proof/bibliography hashes are unchanged. Polishing, rereading by the same agent, successful compilation, and more references do not raise evidence levels.
 
-致谢只记录真实的讨论、建议、实质帮助和适用的基金信息。作者信息列出单位和长期可用的联系邮箱。不要公开不应发布的个人信息。
+## Acknowledgments and authors
 
-## 交付前检查
+Record only real discussions, advice, help, and applicable funding. Use affiliations and a durable contact email. Do not disclose personal information that should remain private.
 
-提交论文修改前检查：
+## Delivery checks
 
-1. 所有定理的假设、量词和证据等级是否准确；
-2. 摘要、引言和结论是否超过正文结论；
-3. 符号、术语、图注和交叉引用是否一致；
-4. 每个引用是否支持对应主张；
-5. LaTeX 是否成功编译；
-6. humanizer 或语言润色是否改变数学含义；
-7. 内部日志和未验证 verdict 是否误入发表稿；
-8. 所有 `agent-verified` 内容是否保留醒目标记。
+Before delivery, check assumptions/quantifiers/levels; claims in abstract/introduction/conclusion against the body; notation/captions/references; citation support; builds; semantic changes from polishing; accidental internal logs or unverified verdicts in public text; and visible labels for agent-verified material.
 
-此外，必须完成以下四个独立通读；少一个都不能报告“论文已经写好”：
+Complete four distinct reading passes before reporting a finished paper:
 
-1. **数学通读**：从第一行开始重建定义、定理和证明，主动检查反例、边界情形、除零、
-   极限交换、符号和隐含假设；
-2. **读者通读**：按首次阅读顺序检查每个对象是否先定义并解释、主线是否清楚、段落是否
-   有明确功能；
-3. **引用与原创性通读**：检查每个外部证明接口及“前人做了什么、本文做了什么”；
-4. **版本与构建通读**：比较英文、正式中文、内部审阅版和项目状态，强制编译并严格扫描
-   全部日志。
+1. Mathematics: reconstruct definitions and proofs from the beginning, testing counterexamples, boundaries, division by zero, limit exchanges, signs, and hidden assumptions.
+2. Reader experience: first-use definitions, explanations, main argument, and paragraph purpose.
+3. Citations and originality: each external proof dependency and the division between prior work and this paper.
+4. Versions and builds: compare all in-scope editions/state, force rebuilds, and inspect every log.
 
-最终交付报告必须列出：修改过的文件、数学假设、运行过的验证与编译、尚未关闭的证明或
-文献风险、证据等级，以及下一项人工审核重点。不能只说“已经同步”“已经验证”或“可以
-投稿”。
+Report changed files, mathematical assumptions, checks/builds, unresolved proof or literature risks, evidence level, and the next human-review focus. Bare claims that the paper is synchronized, verified, or ready to submit are insufficient.

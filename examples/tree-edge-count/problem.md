@@ -1,24 +1,24 @@
-# 有限树的边数
+# Edge count of a finite tree
 
-## 正式陈述
+## Formal statement
 
-设 \(T=(V,E)\) 是有限、非空、无向简单图。假设 \(T\) 连通且无圈。证明
+Let $T=(V,E)$ be a finite, nonempty, undirected simple graph. Assume it is connected and acyclic. Prove
 
-\[
+$$
 |E|=|V|-1.
-\]
+$$
 
-## 定义与边界
+## Definitions and scope
 
-- 图无向、无环边、无重边。
-- 路径和圈均按简单图的通常组合定义理解。
-- 树指连通且无圈的图。
-- 非空假设排除 \(|V|=0\) 的约定差异。
+- Graphs are undirected, without loops or multiple edges.
+- Paths and cycles have their usual simple-graph combinatorial meanings.
+- A tree is a connected acyclic graph.
+- Nonemptiness excludes convention differences at $|V|=0$.
 
-## 允许使用的基础事实
+## Allowed background
 
-- 有限非空集合的基数是非负整数。
-- 有限图中存在最长的简单路径。
-- 数学归纳法。
+- The cardinality of a finite nonempty set is a nonnegative integer.
+- A finite graph has a longest simple path.
+- Mathematical induction.
 
-最长路径端点为叶子的论证必须在证明中给出，不能仅作为未说明的外部定理引用。
+Prove that an endpoint of a longest path is a leaf; do not cite it as an unexplained external theorem.

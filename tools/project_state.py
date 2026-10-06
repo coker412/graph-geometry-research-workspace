@@ -30,12 +30,17 @@ REQUIRED_HEADINGS = (
 # These are equivalent section names observed in completed research rounds.
 # Keep the vocabulary explicit: an unrelated heading must not hide lost state.
 HEADING_ALIASES = {
+    "## Control": ("## 控制信息",),
     "## Problem and scope": (
+        "## 问题与范围",
+        "## 工作范围与认证边界",
         "## Problem and normalization",
         "## Problem and definition boundary",
         "## Problem and source boundary",
     ),
     "## Current mathematical status": (
+        "## 当前数学状态",
+        "## 本轮结果与来源",
         "## Current conclusion and evidence boundary",
         "## Safely usable analytic chain",
         "## Strongest usable results at the current frontier",
@@ -44,15 +49,21 @@ HEADING_ALIASES = {
         "## Accepted internal-offline results — provenance unchanged",
     ),
     "## Active proof frontier": (
+        "## 当前证明缺口",
+        "## 核心缺口与下一步",
         "## Active gap",
         "## Current minimum gap and active routes",
         "## Frontier and next bounded round",
     ),
     "## Next bounded round": (
+        "## 下一有界回合",
+        "## 核心缺口与下一步",
         "## Next bounded round and acceptance",
         "## Frontier and next bounded round",
     ),
     "## Evidence pointers": (
+        "## 证据指针",
+        "## 证据与运行入口",
         "## Direct evidence pointers",
         "## Precise evidence pointers",
         "## Exact evidence pointers",
@@ -121,11 +132,11 @@ def pending_template(project: Path) -> str:
         "- evidence-ceiling: `unmigrated-see-verification-ledger`",
     )
     content = content.replace(
-        "- Formal statement:", f"- Formal statement: see `{project.name}/README.md` and project sources."
+        "- 正式陈述：", f"- 正式陈述：见 `{project.name}/README.md` 及项目原始材料。"
     )
     content = content.replace(
-        "- Strongest usable results:",
-        "- Strongest usable results: see existing evidence; migration changes no evidence level.",
+        "- 可用结果：",
+        "- 可用结果：见既有证据；迁移不改变任何证据等级。",
     )
     return content
 
@@ -133,10 +144,14 @@ def pending_template(project: Path) -> str:
 def validate(path: Path) -> list[str]:
     if not path.is_file():
         return ["missing CURRENT_STATE.md"]
-    content = path.read_text(encoding="utf-8")
+    return validate_content(path.read_text(encoding="utf-8"))
+
+
+def validate_content(content: str, *, max_bytes: int = MAX_BYTES) -> list[str]:
+    """Validate a saved or prospective state using the same schema."""
     issues: list[str] = []
-    if len(content.encode("utf-8")) > MAX_BYTES:
-        issues.append(f"larger than {MAX_BYTES} bytes")
+    if len(content.encode("utf-8")) > max_bytes:
+        issues.append(f"larger than {max_bytes} bytes")
     if len(content.splitlines()) > MAX_LINES:
         issues.append(f"longer than {MAX_LINES} lines")
     for heading in missing_headings(content):

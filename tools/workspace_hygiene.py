@@ -24,6 +24,24 @@ LATEX_SUFFIXES = {
     ".xdv",
 }
 AMBIGUOUS_LATEX_SUFFIXES = {".log", ".out"}
+PAPER_SOURCE_SUFFIXES = {".tex", ".bib"}
+PAPER_LAYOUT_EXEMPT_PARTS = {
+    "code",
+    "environments",
+    "lean",
+    "notes",
+    "posters",
+    "reports",
+    "rethlas",
+    "slides",
+    "sources",
+    "talks",
+    "templates",
+    "third-party",
+    "vendor",
+}
+# Public distributions contain no private legacy manuscript exceptions.
+LEGACY_PAPER_LAYOUT_EXCEPTIONS = frozenset()
 
 
 class Usage(NamedTuple):
@@ -112,6 +130,64 @@ def human_bytes(size: int) -> str:
     raise AssertionError("unreachable")
 
 
+def paper_layout_candidates(root: Path) -> list[Path]:
+    """Return manuscript-like sources outside a project's paper directory.
+
+    The check intentionally excludes directories with a distinct documented
+    role, such as notes, reports, study editions, source literature, and talks.
+    It is a location gate for active/candidate manuscript sources, not a claim
+    that every LaTeX document in the workspace is a paper.
+    """
+
+    projects = root / "projects"
+    if not projects.is_dir():
+        return []
+    found: list[Path] = []
+    for path in projects.rglob("*"):
+        if not path.is_file() or path.is_symlink():
+            continue
+        if path.suffix.lower() not in PAPER_SOURCE_SUFFIXES:
+            continue
+        relative_parts = path.relative_to(projects).parts
+        directory_parts = relative_parts[:-1]
+        if "paper" in directory_parts:
+            continue
+        if any(part in PAPER_LAYOUT_EXEMPT_PARTS for part in directory_parts):
+            continue
+        if any(part == "study" or part.startswith("study-") for part in directory_parts):
+            continue
+        found.append(path)
+    return sorted(found)
+
+
+def check_paper_layout(root: Path, *, show_legacy: bool) -> int:
+    candidates = paper_layout_candidates(root)
+    legacy: list[Path] = []
+    violations: list[Path] = []
+    for path in candidates:
+        relative = path.relative_to(root).as_posix()
+        if relative in LEGACY_PAPER_LAYOUT_EXCEPTIONS:
+            legacy.append(path)
+        else:
+            violations.append(path)
+    if show_legacy:
+        for path in legacy:
+            print(f"LEGACY {path.relative_to(root)}")
+    for path in violations:
+        print(f"VIOLATION {path.relative_to(root)}")
+    print(
+        "paper-layout: "
+        f"violations={len(violations)} legacy-exceptions={len(legacy)}"
+    )
+    if violations:
+        print(
+            "Move each active/candidate manuscript source and bibliography "
+            "under the owning project's paper/ directory."
+        )
+        return 1
+    return 0
+
+
 def report(root: Path) -> int:
     latex = file_usage(latex_artifacts(root))
     logs = file_usage(queue_logs(root))
@@ -189,6 +265,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("report", help="report generated artifacts and environment sizes")
+    paper_layout = sub.add_parser(
+        "paper-layout",
+        help="reject new manuscript TeX/Bib sources outside project paper directories",
+    )
+    paper_layout.add_argument(
+        "--show-legacy",
+        action="store_true",
+        help="also list frozen pre-existing exceptions",
+    )
     latex = sub.add_parser("latex", help="list or remove regenerable LaTeX artifacts")
     latex.add_argument("--apply", action="store_true", help="perform the removal")
     logs = sub.add_parser("logs", help="list or gzip older queue JSONL logs")
@@ -202,6 +287,8 @@ def main() -> int:
     args = build_parser().parse_args()
     if args.command == "report":
         return report(ROOT)
+    if args.command == "paper-layout":
+        return check_paper_layout(ROOT, show_legacy=args.show_legacy)
     if args.command == "latex":
         return clean_latex(ROOT, apply=args.apply)
     if args.older_than_days < 0 or args.keep_latest_per_slug < 0:

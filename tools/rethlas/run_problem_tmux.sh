@@ -26,6 +26,11 @@ fi
 
 project_name="$1"
 problem_name="$2"
+if [[ ! "$project_name" =~ ^[A-Za-z0-9._-]+$ || "$project_name" == . || "$project_name" == .. ]] ||
+   [[ ! "$problem_name" =~ ^[A-Za-z0-9._-]+$ || "$problem_name" == . || "$problem_name" == .. ]]; then
+  echo "错误：项目名和问题名必须为单个合法名称，不能是 . 或 ..。" >&2
+  exit 2
+fi
 session_name="${3:-rethlas_${project_name}_${problem_name}}"
 session_name="${session_name//[^A-Za-z0-9_.-]/_}"
 max_iterations="${MAX_ITERATIONS:-6}"
@@ -46,7 +51,9 @@ if tmux has-session -t "$session_name" 2>/dev/null; then
   exit 0
 fi
 
-cmd="cd '$WORKSPACE_ROOT' && MAX_ITERATIONS='$max_iterations' ./tools/rethlas/run_problem.sh '$project_name' '$problem_name'; echo; echo '[Rethlas finished] press Ctrl-b then d to detach, or exit to close'; exec bash"
+printf -v cmd 'cd %q && MAX_ITERATIONS=%q ./tools/rethlas/run_problem.sh %q %q; echo; echo %q; exec bash' \
+  "$WORKSPACE_ROOT" "$max_iterations" "$project_name" "$problem_name" \
+  '[Rethlas finished] press Ctrl-b then d to detach, or exit to close'
 
 tmux new-session -d -s "$session_name" "$cmd"
 

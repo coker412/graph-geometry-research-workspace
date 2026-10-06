@@ -1,11 +1,22 @@
-# 队列回合
+# Queue rounds
 
-只读正式题目快照，只修改指定项目。当前不开展形式化。普通回合单 researcher；多智能体须研究者明确要求。mixed-isolated 只在配置明确选择时运行，两支后汇合，通常三次调用。
+Read the formal problem snapshot; modify only the assigned project. No formalization in queue rounds. One researcher by default; delegation follows root AGENTS.md authorization. Run mixed-isolated only when configured: two branches then integration, usually three calls.
 
-queued/pushing 自动轮转；其他状态等人工处理。needs-human-review 只暂停当前题。完整主问题候选证明或决定性反例经过十项认证后才进入 solved-awaiting-human-verification，全局冻结，仍不是人类确认。审计不完整先 needs-human-review。题意歧义用 needs-human-input；申请 Rethlas 用 needs-escalation-approval，不能运行。
+Only queued/pushing rotate automatically. needs-human-review pauses this problem, so do not set it merely for an important auxiliary result, publication potential, or missing independent review. Strengthen self-checks and continue pushing with explicit conditional dependencies or independent routes; notify the researcher of significance and remaining checks. Use a human hold only when a specific researcher decision actually blocks authorized work, or for the existing integrity/runtime recovery cases. A complete main proof/counterexample requires all ten audit checks before solved-awaiting-human-verification and global freeze; this is not human verification. An incomplete audit of a complete main candidate uses needs-human-review. Ambiguous problem: needs-human-input. Use needs-escalation-approval only when further work depends on an external call lacking authorization; preparing a Rethlas packet alone does not pause eligible research. Do not launch without the required approval.
 
-affirmative-proof 路线耗尽后必须按题目 stagnation_rounds_before_blocked 再发散；0 表示不因停滞自动 blocked，正整数要达到连续无新机制门槛并保存停滞证书。新机制重置计数。V2 writer 不判断证书真实性，需停滞裁决时提交 needs-human-review。
+After affirmative-proof routes fail, continue exploration per stagnation_rounds_before_blocked: 0 forbids automatic stagnation blocking; positive thresholds require that many consecutive rounds without a new mechanism and a stagnation certificate. New mechanisms reset the count. V2 cannot judge certificates; request needs-human-review for adjudication.
 
-本轮包给出的进展评估规则继续适用：先封存 PLAN；V2 的 RESULT 由 runner 从 ROUND_RESULT 派生封存，兼容回合自行封存 RESULT。普通回合不默认新增独立审查调用；独立 REVIEW 缺失则保留自报/未知，不伪造失败或数学进展。重复障碍需换机制；状态维护不能代替研究。
+Follow the packet's progress assessment: seal PLAN first. V2 runner derives/seals RESULT from ROUND_RESULT; mixed integration fills RESULT for runner sealing; other compatibility rounds seal RESULT themselves. No default independent review calls. Missing independent REVIEW means self-report/unknown, not verified progress or failure. Repeated obstacles follow agents/protocols/explore.md; mathematical progress is defined in agents/core/research-core.md.
 
-V2 回合只写 notes/code 等研究产物和指定目录的 ROUND_RESULT.json、进展评估材料；不直接修改共享台账、CURRENT_STATE 或 .conjecture-status。runner 校验后写入。兼容回合由根 Agent 追加 progress、登记实质结果、重写短状态；只在结构变化时改 proof-map/ideas/research-tree，禁止向 README 追加回合日志。
+At task/strategy/batch decisions reuse the scoped comparison (literature-check.md); carry the usable known inputs, remaining difference and evidence pointer in existing summary/progress fields. Preserve relevant inherited comparisons for the next target. Covered results are inputs; reproduction needs a stated verification/concrete-extension purpose and cannot alone justify extra rounds. Authorized literature tasks may deliver a checked coverage decision without an artificial new lemma, but cannot replace sealed proof acceptance. A checkpoint is not a new search. Offline-first handoffs wait for an authorized connected boundary. Preserve sealed tasks, packets, modes and quotas; mixed-isolated integration does not browse. No automatic literature hold.
+
+V2 writes research artifacts (notes/code), designated ROUND_RESULT.json and assessments only, not shared ledgers, CURRENT_STATE or .conjecture-status; runner validates/writes those. In manual/compatibility rounds the root appends progress, registers substantive ledger results and rewrites short state. File roles and structural-update conditions follow root AGENTS.md.
+
+When PACKET (or mixed START) enables research_task_version=1, an ordinary call (or one full mixed integration) is an execution step within
+one persistent mathematical task. Follow round-result's task contract: auxiliary
+success requires an actual bridge attempt, not task closure. Task exhaustion
+requires failure derivation and a tested alternative. Budgets still count calls;
+reaching them leaves mathematical obligations pending, never implies completion.
+Two consecutive self-reports at the same unresolved obstacle within the same task, regardless of progress label, or three auxiliary/
+inconclusive steps, trigger a sealed strategy comparison before the next step.
+This is scheduling feedback, not independent evidence of stagnation or a hold.

@@ -3,11 +3,17 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
 import re
+
+
+_TASK_SPEC = importlib.util.spec_from_file_location("progress_tasks", Path(__file__).with_name("research_tasks.py"))
+tasks = importlib.util.module_from_spec(_TASK_SPEC)
+_TASK_SPEC.loader.exec_module(tasks)
 
 
 DIRECTORY = Path("notes/progress-assessment")
@@ -85,7 +91,8 @@ def round_dir(project: Path, round_id: str) -> Path:
 
 
 def prepare(project: Path, round_id: str, attempt: int, *, retrospective=False,
-            baseline: Path | None = None) -> Path:
+            baseline: Path | None = None, research_task_version: int = 0,
+            problem_sha256: str = "") -> Path:
     if baseline is not None and not retrospective:
         raise ValueError("prospective baseline must be the live CURRENT_STATE.md")
     previous = summary(project)
@@ -101,16 +108,23 @@ def prepare(project: Path, round_id: str, attempt: int, *, retrospective=False,
         "baseline_source": str(baseline),
         "started_at": datetime.now(timezone.utc).isoformat(),
         "before_sha256": digest(directory / "BEFORE.md"),
-        "previous_decision": previous["decision"],
+        "previous_decision": scheduling_decision(previous),
+        "verified_decision": previous["decision"],
+        "research_task_version": research_task_version,
+        "research_task": tasks.contract(project, round_id, problem_sha256) if research_task_version else None,
+        "task_state_sha256": digest(project / tasks.TASK_FILE) if (project / tasks.TASK_FILE).exists() else None,
         "previous_family": (previous["latest"] or {}).get("family"),
         "previous_round_id": (previous["latest"] or {}).get("round_id"),
     })
-    write_new(directory / "PLAN.json", {
+    plan = {
         "author_id": "", "family_id": "", "obstacle_id": "",
         "mechanism": "", "gap_before": "", "acceptance_test": "",
         "reopening_basis": "none",
         "strategy_review": "none",
-    })
+    }
+    if research_task_version:
+        plan["research_task"] = tasks.contract(project, round_id, problem_sha256)
+    write_new(directory / "PLAN.json", plan)
     write_new(directory / "RESULT.json", empty_result())
     return directory
 
@@ -122,6 +136,8 @@ def seal_plan(project: Path, directory: Path) -> None:
     start = read(directory / "START.json")
     if digest(directory / "BEFORE.md") != start["before_sha256"]:
         raise ValueError("baseline changed")
+    tasks.validate_plan(plan, start)
+    support = {}
     if start["kind"] == "prospective":
         action = start.get("previous_decision", {}).get("action")
         if action == "switch-route" and plan["family_id"] == start.get("previous_family"):
@@ -130,7 +146,12 @@ def seal_plan(project: Path, directory: Path) -> None:
             local_file(project, plan["reopening_basis"])
         if action == "review-strategy":
             local_file(project, plan.get("strategy_review", ""))
+    for key in ("strategy_review", "reopening_basis"):
+        name = plan.get(key, "none")
+        if name != "none":
+            support[name] = digest(local_file(project, name))
     write_new(directory / "PLAN.lock.json", {
+        "supporting_evidence_sha256": support,
         "sha256": digest(directory / "PLAN.json"),
         "before_sha256": start["before_sha256"],
         "sealed_at": datetime.now(timezone.utc).isoformat(),
@@ -160,6 +181,9 @@ def sealed_bundle(project: Path, directory: Path) -> dict:
         raise ValueError("plan baseline mismatch")
     if digest(directory / "PLAN.json") != lock["sha256"]:
         raise ValueError("plan changed after sealing; record a new plan instead")
+    for name, expected in lock.get("supporting_evidence_sha256", {}).items():
+        if digest(local_file(project, name)) != expected:
+            raise ValueError("sealed strategy/reopening evidence changed")
     result = read(directory / "RESULT.json")
     validate_result(result)
     evidence = {name: digest(local_file(project, name)) for name in result["evidence"]}
@@ -224,6 +248,8 @@ def import_round_result(project: Path, directory: Path) -> None:
         "evidence": list(dict.fromkeys([entry["file"] for entry in value["evidence"]]
                                       + [str(source.relative_to(project.resolve()))])),
     }
+    if "research_task" in value:
+        result["research_task"] = value["research_task"]
     validate_result(result)
     for name in result["evidence"]:
         local_file(project, name)
@@ -239,7 +265,7 @@ def import_round_result(project: Path, directory: Path) -> None:
 
 def assess(project: Path, directory: Path) -> dict:
     assessment = {"round_id": directory.name, "status": "unknown", "kind": None,
-                  "attempt": 0, "prospective": False, "reason": "尚无完整评估"}
+                  "attempt": 0, "prospective": False, "finished": False, "reason": "尚无完整评估"}
     try:
         start = read(directory / "START.json")
         if type(start.get("attempt")) is not int or start["attempt"] < 0:
@@ -247,12 +273,15 @@ def assess(project: Path, directory: Path) -> dict:
         assessment.update(attempt=start["attempt"], prospective=start["kind"] == "prospective")
         if (directory / "FINISH.json").is_file():
             finished = read(directory / "FINISH.json")
+            assessment["finished"] = True
             if finished.get("return_code") != 0 or finished.get("timed_out"):
                 assessment.update(status="execution-error", reason="本轮执行失败或超时，不据此判定数学停滞")
                 return assessment
         plan = read(directory / "PLAN.json")
         assessment.update(family=plan.get("family_id", ""), obstacle=plan.get("obstacle_id", ""),
-                          mechanism=plan.get("mechanism", ""))
+                          mechanism=plan.get("mechanism", ""),
+                          strategy_review=plan.get("strategy_review", "none"),
+                          task_id=(plan.get("research_task") or {}).get("id"))
         if not (directory / "RESULT.lock.json").is_file():
             assessment["reason"] = "本轮尚未提交或封存结果；不计作空转"
             return assessment
@@ -295,9 +324,9 @@ def assess(project: Path, directory: Path) -> dict:
         if kind == "frontier-advance":
             if not result["discharged_obligations"]:
                 raise ValueError("frontier advance must identify a discharged obligation")
-            if result["evidence_level"] in {"conjecture", "experimental", "proof-draft"}:
+            if result["evidence_level"] not in {"agent-verified", "human-verified", "formalized"}:
                 raise ValueError("unverified candidate/experiment cannot certify frontier advance")
-        if kind == "route-elimination" and result["evidence_level"] in {"conjecture", "experimental", "proof-draft"}:
+        if kind == "route-elimination" and result["evidence_level"] not in {"agent-verified", "human-verified", "formalized"}:
             raise ValueError("route elimination requires reviewed proof evidence")
         assessment.update(
             status="reviewed", kind=kind, reason=review["critical_path_effect"],
@@ -381,6 +410,47 @@ def decision(rows: list[dict], *, search_contract="either", stagnation_limit=0) 
     return result
 
 
+def self_report_signal(rows: list[dict]) -> dict:
+    """Scheduling feedback only; never verified stagnation or an automatic hold."""
+    signal = dict(action=None, basis="self-report", steps=0, same_obstacle_steps=0, auxiliary_steps=0,
+                  reason="无作者自报复盘触发", automatic_pause=False)
+    if not rows:
+        return signal
+    latest = rows[-1]
+    expected = latest["attempt"]
+    auxiliary_prefix = True
+    kinds = {"enabling-result", "experimental-signal", "route-elimination",
+             "repeat", "reformulation", "inconclusive", "frontier-advance"}
+    for row in reversed(rows):
+        if (row["attempt"] != expected or row["status"] != "self-report" or
+                not row.get("finished") or not row.get("prospective") or
+                row.get("claimed_kind") not in kinds or
+                (latest.get('task_id') and row.get('task_id') != latest['task_id'])):
+            break
+        # A sealed, hashed strategy report starts a new observation window.
+        if row.get("strategy_review", "none") != "none":
+            break
+        signal["steps"] += 1
+        auxiliary_prefix = auxiliary_prefix and row['claimed_kind'] != 'frontier-advance'
+        if auxiliary_prefix:
+            signal['auxiliary_steps'] += 1
+        if (signal["same_obstacle_steps"] == signal["steps"] - 1 and
+                row.get("obstacle") and row.get("obstacle") == latest.get("obstacle")):
+            signal["same_obstacle_steps"] += 1
+        expected -= 1
+    if signal["same_obstacle_steps"] >= 2 or signal["auxiliary_steps"] >= 3:
+        signal.update(action="review-strategy", reason="作者自报持续未达核心验收：提交机制比较及回传测试；不认定数学停滞")
+    return signal
+
+
+def scheduling_decision(report: dict) -> dict:
+    verified = report["decision"]
+    signal = report.get("scheduling", {})
+    if signal.get("action") and verified["action"] not in {"certify", "switch-route", "review-strategy"}:
+        return {**verified, **signal}
+    return verified
+
+
 def summary(project: Path, **policy) -> dict:
     rows = records(project)
     # In-flight packets do not erase the most recent completed assessment.
@@ -391,6 +461,8 @@ def summary(project: Path, **policy) -> dict:
     latest = completed[-1] if completed else (rows[-1] if rows else None)
     return {"project": project.name, "latest": latest,
             "decision": decision(completed, **policy),
+            "scheduling": self_report_signal(completed),
+            "research_tasks": tasks.read(project, tasks.TASK_FILE),
             "in_flight": [r["round_id"] for r in rows if r not in completed], "rounds": rows}
 
 
@@ -401,15 +473,37 @@ def finish(project: Path, directory: Path, return_code: int, timed_out: bool) ->
     })
 
 
+def finalize_result(project: Path, directory: Path) -> dict:
+    """Mechanical sealing only; never create an independent review or upgrade evidence."""
+    result = read(directory / 'RESULT.json')
+    if result.get('evidence_level') not in {'conjecture', 'experimental', 'partial-result', 'proof-draft'}:
+        raise ValueError('automatic closure cannot certify or upgrade evidence')
+    bundle = sealed_bundle(project, directory)
+    lock = directory / 'RESULT.lock.json'
+    if lock.exists():
+        if read(lock) != bundle:
+            raise ValueError('sealed result or evidence changed; refusing to reseal')
+    else:
+        seal_result(project, directory)
+    return {'sealed': True, 'result_sha256': bundle['result_sha256'],
+            'evidence_files': len(bundle['evidence_sha256']),
+            'mathematical_verification': False}
+
+
 def instruction(project: Path, directory: Path, previous: dict, *, round_result: bool = False,
                 integration: bool = False) -> str:
     if integration:
         return f"""
 进展包：{directory}。离线 PLAN 已封存，不重新计划或封存；汇合实际变化记入最终 RESULT.json，
-逐条保留来源标签，引用稳定证明文件，不锁定 live CHECKPOINT、状态或台账。完成后执行
-`python {Path(__file__).resolve()} seal-result --project {project} --round {directory.name}`。
+逐条保留来源标签，引用稳定证明文件，不锁定 live CHECKPOINT、状态或台账。
+只填写 RESULT.json；runner 在模型退出后执行格式校验、证据哈希与自动封存，
+不要手动 seal-result、重复编写哈希检查脚本或宣称尚未执行的封存已成功。
 不新增独立评审调用；缺少获授权的独立 REVIEW 时保留 self-report，不计已验证推进或停滞。
 原计划、旧锁及旧证据不可覆盖；关键候选仍按认证协议处理。
+若 START.research_task_version=1，在 RESULT.json 中填写 research_task，字段和验收规则见
+agents/protocols/round-result.md 的 Research task protocol 1；路径引用 RESULT.evidence 中
+的稳定 notes/code 文件。runner 维护跨轮任务，不直接改 .runtime/research-task.json；
+mix 暂不接收 route_changes，结构变化仍按兼容模式的路线记录规则保存。
 """
     delivery = (
         "结束只填写 ROUND_RESULT.json，另在 progress 对象填 claimed_kind、main_problem_effect、"
@@ -419,10 +513,12 @@ def instruction(project: Path, directory: Path, previous: dict, *, round_result:
         "结束填写 RESULT.json 的实际变化、范围、义务和稳定证据，用同一命令的 seal-result 封存。"
     )
     return f"""
-进展包：{directory}；上轮动作：{previous['decision']['action']}。
+进展包：{directory}；上轮动作：{scheduling_decision(previous)['action']}。
 开工填写 PLAN.json（作者、稳定方法族/障碍 ID、机制、原缺口、验收）；执行
 `python {Path(__file__).resolve()} seal-plan --project {project} --round {directory.name}`。
 PLAN 封存后不改；临时转向写入结果。{delivery}
+若START.research_task_version=1，填写/保留PLAN.research_task的跨步骤目标与原验收；
+辅助步骤不另开任务，结果须给实际回传或失败证据。自报复盘要求不代表数学停滞认证。
 证明正文只写一次，评估引用它；勿锁定仍会改写的状态/台账/CHECKPOINT。
 普通回合不新增独立评审调用：没有获授权的独立审查者则保留 self-report，不填 REVIEW，
 不计作已验证推进或数学停滞。候选解、决定性反例、高风险共同依赖及等级升级仍按认证协议处理。

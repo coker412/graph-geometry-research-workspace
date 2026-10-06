@@ -1,51 +1,45 @@
-# Blind Research Packet
+# Blind research packet
 
-> 根 Agent 为独立探索分支填写。探索者只能读取本文件“允许输入”列出的材料，并只写入
-> 自己的分支目录。共享文件系统不构成强安全隔离；这是可审计的研究协议。
+> The root fills this in for an authorized independent exploration branch. Read only listed inputs and write only in the branch directory. A shared filesystem is not strong isolation; this is an auditable research protocol.
 
-## 身份
+## Identity
 
-- Round：
-- Branch ID：
-- 输出目录：`notes/branches/<round>/<branch-id>/`
-- 信息模式：`offline` / `connected`
-- 暴露范围：`blind`
-- 搜索承诺：`affirmative-proof` / `counterexample` / `either`
+- Round:
+- Branch ID:
+- Output directory: `notes/branches/<round>/<branch-id>/`
+- Information mode: `offline` / `connected`
+- Exposure: `blind`
+- Search contract: `affirmative-proof` / `counterexample` / `either`
 
-## 正式问题
+## Formal problem
 
-[完整陈述、全部量词、定义和归一化。]
+[Complete statement, quantifiers, definitions, and normalizations.]
 
-## 允许输入
+## Allowed inputs
 
-- 本问题包；
-- [明确列出的基础事实或文件；未列出的内容禁止读取。]
+- This packet.
+- [Explicitly listed facts/files; unlisted material must not be read.]
 
-## 隔离约束
+## Isolation
 
-- 不读取 `ideas.md`、`progress.md`、`research-tree.md`、`proof-map.md`、其他分支产物、
-  当前热门方法或失败路线。
-- `offline` 时不使用公共互联网、连接器、外部文献或记忆中的未核验外部定理。
-- 不与其他探索分支交换中间结果；由根 Agent 在本轮结束后综合。
+Do not read ideas, progress, research-tree, proof-map, other branch outputs, favored approaches, or failed routes. In offline mode, use no public internet, connectors, external literature, or unverified recalled external theorems. Do not exchange intermediate results with other explorers; the root integrates after the round.
 
-## 探索要求
+## Exploration
 
-- 提出并实际推进一个核心数学机制；不要只换记号或复述目标。
-- 返回具体引理、构造、方程、不变量、反例或精确 gap。
-- 主动测试最小例子、边界情形、隐含假设、循环论证和等强归约。
-- 若归约到一个引理，必须说明该引理为何严格更易，并实际给出新机制；否则标为 GAP。
-- 不因问题可能公开、困难或已有路线失败而停止。若搜索承诺为 `affirmative-proof`，在探索
-  调度上假定完整肯定证明存在并持续寻找新机制；该假定不是证明，不能提高证据等级。
-- 任何主命题反例候选都必须返回给根 Agent 做认证，不得因搜索承诺而隐瞒。
+Develop and actually test a mathematical mechanism, rather than rename notation or restate the objective. Return concrete lemmas, constructions, equations, invariants, counterexamples, or precise gaps. Test minimal examples, boundaries, hidden assumptions, circularity, and reductions of equivalent strength.
 
-## 输出契约
+For a reduction, state its direction back to the original problem, outstanding obligations, and next discriminating test. Mark unproved connections GAP. An equivalent reduction may expose useful structure; it need not be demonstrably easier in advance, but its mechanism must be tested. Renaming is not progress.
 
-在本分支的 `RESULT.md` 写明：
+Do not stop because a problem may be open, difficult, or resistant to previous approaches. Under affirmative-proof, search with a complete affirmative proof as the working objective and keep seeking mechanisms. This assumption is not evidence. Return any main-claim counterexample candidate to the root for certification, regardless of the search contract.
 
-1. 方法族及核心机制；
-2. 完整推导或反例；
-3. 最强严格中间结果及证据等级；
-4. 精确 gap、反例测试和结构性障碍；
-5. 是否与原问题等强或循环；
-6. 可供下一轮复用的新机制；
-7. 若 blocked，唯一允许的重开条件。
+## Output
+
+In the branch's RESULT.md, record:
+
+1. Method family and mechanism.
+2. Full derivation or counterexample.
+3. Strongest rigorous intermediate claim and evidence level.
+4. Precise gaps, counterexample tests, and structural obstacles.
+5. Equivalent-strength or circular dependencies.
+6. New mechanisms reusable next round.
+7. If blocked, the specific condition permitting reopening.

@@ -32,8 +32,8 @@ fi
 project_name="$1"
 problem_name="$2"
 
-if [[ ! "$project_name" =~ ^[A-Za-z0-9._-]+$ ]] ||
-   [[ ! "$problem_name" =~ ^[A-Za-z0-9._-]+$ ]]; then
+if [[ ! "$project_name" =~ ^[A-Za-z0-9._-]+$ || "$project_name" == . || "$project_name" == .. ]] ||
+   [[ ! "$problem_name" =~ ^[A-Za-z0-9._-]+$ || "$problem_name" == . || "$problem_name" == .. ]]; then
   echo "错误：项目名和问题名只能包含字母、数字、点、下划线和连字符。" >&2
   exit 2
 fi

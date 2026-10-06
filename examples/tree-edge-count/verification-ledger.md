@@ -1,14 +1,14 @@
-# Verification Ledger
+# Verification ledger
 
 ## VL-1
 
-- **对象**: `P0` 及其依赖 `A1`、`S1`、`S2`。
-- **结论**: 有限非空无向简单树满足 \(|E|=|V|-1\)。
-- **证据等级**: `proof-draft`。
-- **来源**: `internal-offline`。
-- **证据文件**: `problem.md`, `notes/proof.md`, `proof-map.md`。
-- **已做边界检查**: 单顶点树和两顶点树与公式一致；空图已从题目中排除。
-- **已做反例检查**: 路径和星图符合公式；这些例子不构成一般证明。
-- **依赖**: 最长路径端点为叶子；删叶保持连通和无圈。
-- **当前缺口**: 候选证明尚未交给独立审查者执行完整认证。
-- **影响范围**: 在审查完成前，`P0` 不得升级为 `agent-verified` 或 `human-verified`。
+- Object: `P0` and dependencies `A1`, `S1`, `S2`.
+- Conclusion: a finite nonempty undirected simple tree satisfies $|E|=|V|-1$.
+- Evidence level: `proof-draft`.
+- Source: `internal-offline`.
+- Evidence: `problem.md`, `notes/proof.md`, `proof-map.md`.
+- Boundary checks recorded: one- and two-vertex trees agree with the formula; empty graphs are excluded.
+- Counterexample checks recorded: paths and stars agree with the formula; these examples are not a general proof.
+- Dependencies: longest-path endpoints are leaves; leaf deletion preserves connectedness and acyclicity.
+- Remaining gap: no complete independent certification of the candidate yet.
+- Consequence: do not upgrade `P0` to `agent-verified` or `human-verified` before the required review.

@@ -52,7 +52,15 @@ copy_executable() {
 }
 
 mkdir -p "$package_root"
+copy_file "agents/protocols/geometry-scope.md" "agents/protocols/geometry-scope.md"
+copy_file "agents/protocols/cross-field.md" "agents/protocols/cross-field.md"
+copy_file "agents/instructions/personal-research.md" "agents/instructions/personal-research.md"
+copy_file "tools/research_tasks.py" "tools/research_tasks.py"
+copy_file "tools/tests/test_research_tasks.py" "tools/tests/test_research_tasks.py"
+copy_file "tools/tests/test_setup.py" "tools/tests/test_setup.py"
+
 # Publish only the reviewed, reusable writing skill resources.
+copy_file ".agents/skills/math-paper-writing/references/delivery-checks.md" ".agents/skills/math-paper-writing/references/delivery-checks.md"
 copy_file ".agents/skills/math-paper-study-guide/SKILL.md" ".agents/skills/math-paper-study-guide/SKILL.md"
 copy_file ".agents/skills/math-paper-study-guide/agents/openai.yaml" ".agents/skills/math-paper-study-guide/agents/openai.yaml"
 copy_file ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex" ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex"
@@ -93,7 +101,7 @@ copy_file "agents/instructions/research-workflow.md" "agents/instructions/resear
 copy_file "agents/instructions/queue-and-escalation.md" "agents/instructions/queue-and-escalation.md"
 copy_file "agents/instructions/paper-writing.md" "agents/instructions/paper-writing.md"
 copy_file ".gitignore" ".gitignore"
-copy_file "TEACHER_FRAMEWORK_HANDOFF.md" "README.md"
+copy_file "README.md" "README.md"
 copy_file "TEACHER_FRAMEWORK_HANDOFF.md" "TEACHER_FRAMEWORK_HANDOFF.md"
 copy_file "TEACHER_SETUP_README.md" "TEACHER_SETUP_README.md"
 copy_file "RETHLAS使用教程.md" "RETHLAS使用教程.md"

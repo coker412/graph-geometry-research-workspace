@@ -1,34 +1,34 @@
-# 问题标题
+# Problem title
 
-## 问题陈述
+## Statement
 
-请在这里写出完整、准确的问题陈述。不要只写“证明上面的结论”，因为本文件会被单独交给 agent。
+Write a complete, precise, standalone statement. Do not refer only to "the conclusion above": this file is supplied separately to an agent.
 
-## 定义与记号
+## Definitions and notation
 
-- 写清楚所有非标准定义。
-- 指定图是有限图、简单图、连通图、有向图还是加权图。
-- 写清楚变量的取值范围和量词。
+- Define every nonstandard term.
+- Specify the object class. For graphs, state finiteness, simplicity, connectedness, orientation, and weights.
+- Give variable ranges and quantifiers.
 
-## 已知条件
+## Assumptions
 
-1. 条件一。
-2. 条件二。
+1. First assumption.
+2. Second assumption.
 
-## 目标
+## Goal
 
-证明或反驳：
+Prove or refute:
 
-> 在这里完整写出目标结论。
+> Complete target conclusion.
 
-## 已知进展（可选）
+## Known progress (optional)
 
-- 已经证明的引理。
-- 做过的计算实验。
-- 失败的证明路线及其失败位置。
+- Proved lemmas and their evidence.
+- Computational experiments.
+- Failed approaches and exact failure points.
 
-## 对 agent 的要求（可选）
+## Agent requirements (optional)
 
-- 区分完整证明、部分结果和猜测。
-- 发现反例或证明缺口时明确报告。
-- 引用外部定理时给出来源和完整适用条件。
+- Distinguish complete proofs, partial results, and conjectures.
+- Report counterexamples and proof gaps explicitly.
+- Give sources and all applicability conditions for external theorems.

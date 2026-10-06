@@ -1,38 +1,37 @@
 # Progress
 
-## 2026-09-04 想法：删除叶子的归纳
+## 2026-09-04: induction by deleting a leaf
 
-### 信息模式与来源
+### Information mode and source
 
-`offline`; `internal-offline`。
+`offline`; `internal-offline`.
 
-### 搜索承诺
+### Search contract
 
-`affirmative-proof`。
+`affirmative-proof`.
 
-### 状态
+### Status
 
-`proof-draft`。
+`proof-draft`.
 
-### 本轮目标与验收标准
+### Goal and acceptance
 
-写出覆盖所有有限非空简单树的候选证明。证明必须包含叶子存在性和删叶后连通性的论证。
+Write a candidate covering every finite nonempty simple tree, including leaf existence and connectedness after deletion.
 
-### 推进过程
+### Work
 
-登记了三个方法族，选择删叶归纳。最长简单路径给出叶子。删除叶子及其唯一关联边后，
-剩余图仍然连通且无圈，因此可以应用归纳假设。
+Registered three families and chose leaf-deletion induction. A longest simple path supplies a leaf. Removing it and its unique incident edge preserves connectedness and acyclicity, allowing induction.
 
-### 证据
+### Evidence
 
 - `notes/proof.md`
 - `proof-map.md`
 - `verification-ledger.md#vl-1`
 
-### 中间结果
+### Result
 
-得到完整候选证明，尚未经过独立审查。
+Complete candidate proof, not independently reviewed.
 
-### 下一步
+### Next step
 
-把正式陈述、定义、候选证明和依赖清单交给独立审查者，检查边界情形与隐含假设。
+Supply the formal statement, definitions, candidate, and dependencies to an authorized independent reviewer for boundary and hidden-assumption checks.

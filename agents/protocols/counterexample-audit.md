@@ -1,3 +1,3 @@
-# 反例认证
+# Counterexample certification
 
-先读 proof-audit.md，完成同一十项审查。给出完整可构造对象，逐条满足原题全部假设，并严格证明违反原结论；否定加强版或子引理不等于否定主问题。核查量词、参数边界、连通/完备等条件及归一化。有限浮点搜索只算 experimental，需精确算术或独立严格论证。主问题决定性反例经过认证触发全局冻结，保存后等研究者确认。
+Read proof-audit.md and complete the same ten checks. Give a fully constructible object, check every hypothesis of the original problem, and rigorously prove failure of its conclusion. Refuting a stronger variant or an auxiliary lemma does not refute the main problem. Check quantifiers, parameter boundaries, connectedness/completeness, and normalizations. Finite floating-point searches are only experimental; use exact arithmetic or an independent rigorous argument. Certification of a decisive main counterexample triggers a global hold. Save the evidence and await researcher acceptance.

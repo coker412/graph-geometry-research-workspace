@@ -1,19 +1,23 @@
-# 证明认证
+# Proof certification
 
-完整候选解、决定性反例、高风险共同依赖、证据升级、论文主结果或研究者要求审查时进入认证。冻结依赖该结论的分支；无依赖隔离分支可继续，主问题完整候选进入全题认证。
+Trigger on complete candidates, decisive counterexamples, high-risk shared dependencies, evidence upgrades, paper main results or requested review. For auxiliary candidates, first perform stronger stepwise self-checks, adversarial examples and relevant calculations, saving exact evidence. Freeze use as certified premises, not all exploration: downstream work may explicitly assume the candidate and keep every dependent conclusion conditional, or use an independent route. Never count a conditional bridge as closed; propagate any error to its descendants. Importance or missing independent review alone does not justify a whole-problem pause. Report important findings and pending certification while continuing authorized research. A complete main-problem candidate requires whole-problem certification and a pause.
 
-审计正文逐项给精确位置、证据和结论：
-1. 每一步是否逻辑推出？
-2. 是否有隐藏假设？
-3. 前提是否足以得到结论？
-4. 能否构造反例？
-5. 定义与记号是否正确？
-6. 是否循环论证或自引用？
-7. 对象是否构造或已证存在？
-8. 外部定理的全部假设和归一化是否一致？
-9. 除零、极限交换、符号、边界是否处理？
-10. 是否仅得到特殊情形或较弱命题？
+For each check give exact locations, evidence and conclusions:
+1. Does every step follow logically?
+2. Are assumptions hidden?
+3. Are premises sufficient?
+4. Can a counterexample be constructed?
+5. Are definitions and notation correct?
+6. Is reasoning circular or self-referential?
+7. Are objects constructed or proved to exist?
+8. Do all external theorem hypotheses and normalizations match?
+9. Are division by zero, limit exchanges, signs and boundaries handled?
+10. Is the result only a special case or weaker claim?
 
-记录输入快照/哈希、依赖、反例测试及审查人。自检最多 proof-draft；独立 verifier/Agent 才可支持 agent-verified，研究者才可授予 human-verified。软件检查 JSON 不是数学验证。
+Record input snapshots/hashes, dependencies, counterexample tests and reviewer. Self-review supports at most proof-draft; independent verifier/Agent review supports agent-verified; only the researcher grants human-verified. JSON validation is not mathematical verification.
 
-局部错误修复后重查受影响步骤；关键错误降级受影响节点并记录影响范围。主结果认证通过后保存候选与报告，等待研究者逐步确认，不写论文主结论或公开宣称已解决。
+Provide the formal statement, full candidate proof, original dependencies and reproducible checks. Do not prime reviewers with author confidence, model names or others' endorsements. Independent reviewers form their own stepwise conclusions before consulting old reviews. Role-playing a reviewer in the same session is self-review. Review calls require existing authorization; without independent review retain proof-draft and continue eligible exploration rather than waiting solely for reviewer authorization. Self-checking never upgrades the evidence level.
+
+The current workflow does not use Lean; lack of formalization is not a review gap or a reason to pause. Retain historical formalized labels only for their original checked statements. A formalized lemma does not upgrade the main theorem. Any future formalization work requires an explicit change requested by the researcher.
+
+After local repairs recheck affected steps. Critical errors downgrade affected nodes with impact recorded. After main-result certification save candidate/report for researcher stepwise acceptance; do not write paper main conclusions or publicly claim a solution.

@@ -54,6 +54,8 @@ class ProjectStateTest(unittest.TestCase):
         path = project / "CURRENT_STATE.md"
         original = path.read_text(encoding="utf-8")
         for canonical, aliases in state.HEADING_ALIASES.items():
+            original = original.replace(aliases[0], canonical)
+        for canonical, aliases in state.HEADING_ALIASES.items():
             for alias in aliases:
                 with self.subTest(alias=alias):
                     content = original.replace(canonical, alias.upper() + " ##")
@@ -74,6 +76,19 @@ class ProjectStateTest(unittest.TestCase):
         self.assertIn("## Evidence pointers", state.missing_headings(
             canonical.replace("## Evidence pointers", "## Unrelated notes")
         ))
+
+    def test_chinese_round_state_accepts_combined_frontier_without_weakening_checks(self) -> None:
+        headings = ["## Control", "## 工作范围与认证边界", "## 本轮结果与来源",
+                    "## 核心缺口与下一步", "## 证据与运行入口"]
+        content = "- schema-version: 1\n- migration-status: `complete`\n" + "\n\n".join(headings)
+        path = state.PROJECTS_ROOT / "CURRENT_STATE.md"
+        path.write_text(content, encoding="utf-8")
+        self.assertEqual(state.validate(path), [])
+        self.assertEqual(path.read_text(encoding="utf-8"), content)
+        self.assertEqual(state.missing_headings(content.replace("## 核心缺口与下一步", "## 一般说明")),
+                         ["## Active proof frontier", "## Next bounded round"])
+        self.assertIn("## Evidence pointers", state.missing_headings(
+            content.replace("## 证据与运行入口", "```\n## 证据与运行入口\n```")))
 
 
 if __name__ == "__main__":

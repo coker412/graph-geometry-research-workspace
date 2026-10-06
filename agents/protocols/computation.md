@@ -1,5 +1,15 @@
-# 可复现实验
+# Reproducible experiments
 
-使用 graphlab；从最小/对称例子检验真实断言，如路径、圈、星、树、完全图及小加权图。记录命令、版本、参数、随机种子、精度、误差和边界。优先用反例测试脆弱引理，找不到反例不是证明。
+Choose an experiment to answer a mathematical question relevant to route selection or an active proof obligation. Before a substantial search, identify the claim it tests, what a hit or no hit would establish, and the bounded resource limit in the existing note/plan. A small falsification check or symbolic check need not create a separate planning artifact. Explicitly authorized computational construction/search remains valid research.
 
-代码和输出保存在项目 code/ 或 notes/ 并登记证据；数值观察只标 experimental。修改代码后按风险运行语法检查、单元测试和真实输入复现。精确枚举也只能推出覆盖范围内的结论，不能自动外推无限类。
+After a batch, interpret the result before expanding parameters, precision or mesh size. Continue when it tests a new mechanism, resolves a relevant uncertainty or pursues an explicit computational target; repeated no-hits or numerical closeness alone do not justify expansion. For an unresolved general implication, derive the required quantifiers and error/transfer conditions in text. Do not substitute more samples for them, or ban experiments that could discriminate between credible routes.
+
+A vague request for stricter or machine checking does not change the existing no-Lean workflow. First inspect the current proof for applicable exact arithmetic, symbolic identities or finite checks and explain their coverage; do not make clarification about formalization a prerequisite for these authorized checks. Ask only when a material unresolved scope or tool choice actually blocks the next step.
+
+Use graphlab. Test actual claims on admissible minimal/symmetric examples: paths, cycles, stars, trees, small weighted graphs; for Riemannian problems, standard spaces, product/conformal/warped families satisfying completeness, regularity and other hypotheses. Record commands, versions, parameters, seeds, precision, errors and boundaries. Attack fragile lemmas with counterexamples; finding none is not proof.
+
+Save code/output in project code/ or notes/ and register evidence. Numerical observations are experimental. After code changes run risk-appropriate syntax/unit checks and reproduce real inputs. Exact enumeration establishes only its covered range, not an infinite class.
+
+For candidate-generation/evaluation searches, fix the evaluator, feasibility constraints, objective and resource limits first. Search code must not change the evaluator or lower thresholds. Check feasibility before scoring; retain best candidates and evaluator versions, then check unused parameters/precisions to avoid sample overfitting.
+
+For discretized continuous geometry, distinguish geometric, discretization and floating-point errors. Mesh refinement/high-precision stability remain experimental. Rational reconstruction, symbolic conversion or interval estimates still require error control and a justification connecting finite computation to the original claim; assign levels through certification.

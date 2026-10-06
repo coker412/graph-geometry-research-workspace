@@ -1,15 +1,15 @@
-# 数学研究运行时 V2
+# Mathematics research runtime V2
 
-普通回合使用 `high` 推进数学，runner 负责准备上下文包与整理结构化结果。
-`CURRENT_STATE + proof-map + verification-ledger + progress` 继续保存长期记忆。
+An ordinary call is a research step. The runner prepares its context packet and applies structured results. The synchronized configuration sets ordinary research to `medium`; first decisions and steps requiring a mechanism review use `high`. `CURRENT_STATE`, proof-map, verification-ledger, and progress retain long-term memory.
 
-## 阶段与配置
+## Phases and configuration
 
-`problems/important-conjectures/runner.toml` 设置默认 `phase = "research"`。
-单题 `config.toml` 可用 `phase` 覆盖；阶段不会由模型自行升级。
+`problems/important-conjectures/runner.toml` sets `phase = "research"` by default. An item's `config.toml` may override it. The model cannot promote its own phase.
 
-| phase | effort | 加载协议 |
-| --- | --- | --- |
+These are built-in defaults; actual runs use `[phase_effort]` and decision overrides:
+
+| Phase | Default effort | Protocol |
+|---|---|---|
 | triage | medium | explore |
 | research | high | explore |
 | experiment | medium | computation |
@@ -18,17 +18,13 @@
 | critical-audit | xhigh | proof-audit |
 | stuck-escalation | xhigh | explore |
 
-普通阶段配置 xhigh 会报错。literature 必须同时明确选择 connected；切换阶段不会自行打开网络。
-`model = ""` 继续使用 CLI 默认模型，记录为未解析，不能据此推算某型号的价格。
-当前 CLI 为 0.153.0，仍由本机管理升级。推理档位是否受支持取决于所选模型。
+Ordinary phases reject xhigh. Literature requires an explicit connected mode; changing phase does not enable networking. An empty `model` uses the CLI default and is recorded as unresolved, so it cannot support model-specific pricing. Check the installed version with `codex --version`. Supported effort levels depend on the selected model.
 
-`runtime_version = 2` 为普通回合的默认路径。设为 `1` 可使用兼容提示词。
-`mixed-isolated` 保持已配置模式，使用兼容收尾和原有 bubblewrap 隔离；三个调用依次承担
-离线探索、联网核查、汇合审计，后两者使用 medium、high。它尚未接入 V2 状态 writer。
+Ordinary rounds default to `runtime_version = 2`; version 1 uses compatibility prompts. `mixed-isolated` retains compatibility closing and bubblewrap isolation, normally with three calls: parallel offline/connected branches and then integration. The connected and integration calls use medium and high respectively. Mixed runs do not use the V2 shared-state writer.
 
-## 上下文包
+## Context packets
 
-每个普通回合创建：
+An ordinary round creates:
 
 ```text
 projects/<project>/.runtime/rounds/<round-id>/
@@ -42,12 +38,9 @@ projects/<project>/.runtime/rounds/<round-id>/
   after/
 ```
 
-包包含规则核心、当前阶段协议、正式题目、短状态、指定证据片段与本轮评估要求。
-不自动遍历旧 progress、proof-map 或整个 notes。首轮没有片段清单时，Agent 从短状态的
-精确指针选择必要材料，并在回合结果中给下一轮返回片段。引用了外部依赖时仍须按协议
-加载相应文献或认证规则，包不能替代缺失的证明前提。
+Packets contain the core rules, phase protocol, formal problem, short state, designated evidence slices, and assessment requirements. They do not automatically traverse old progress, proof maps, or all notes. If no slice list exists, read the necessary direct pointers from short state and return slices for the next round. External dependencies still require the applicable literature or certification protocol; a packet cannot replace missing premises.
 
-证据清单位于项目 `.runtime/evidence.json`，例如：
+Project `.runtime/evidence.json` example:
 
 ```json
 {
@@ -55,67 +48,98 @@ projects/<project>/.runtime/rounds/<round-id>/
     "file": "notes/lemma.md",
     "start": 12,
     "end": 40,
-    "sha256": "此处填写整个文件的64位SHA256",
-    "purpose": "当前缺口所需的饱和估计",
+    "sha256": "insert-the-full-file-64-character-SHA256-here",
+    "purpose": "Saturation estimate needed at the current gap",
     "source": "internal-offline"
   }]
 }
 ```
 
-路径必须在项目内，禁止 symlink 和目录逃逸。范围越界、哈希过期、离线包引入非内部
-来源、片段超预算时拒绝调用模型。哈希仅检测内容变化，不能核验来源标签或数学正确性。
-行号漂移需重新选片段并核对哈希，不能自动接受旧引用。
+Paths must stay inside the project; symlinks and directory escapes are rejected. Invalid line ranges, stale hashes, or noninternal evidence in an offline packet prevent a model call. Whole slices beyond the inline budget retain file, lines, full-file hash, and purpose, marked NOT INLINED. Read the source slice before using it. Never truncate a proof or remove premises to fit.
 
-短状态目标 6 KiB，超过 8 KiB 提醒，V2 新写入最多 12 KiB/300 行。旧摘要保留
-32 KiB/300 行检查上限；自动 writer 保留原问题范围、既有数学状态和证据上限。
-若这些部分需要精简或纠正，应先做显式保守迁移，不能让程序猜测或截掉证明条件。
+Large evidence is checked incrementally for the full specified range and hash, while only complete fitting slices are retained. Deferred loading avoids first joining the whole file; integrity-check costs still grow with file size. Hashes detect content changes, not truthful provenance or correct mathematics. If line numbers move, select and verify a new slice.
 
-`context_budget` 控制初始包的目标、硬上限、片段数量及单片段大小。本实现没有安装
-专用 tokenizer，使用 UTF-8 字节数作为保守 token 上界：默认目标 12000，硬上限 48000，
-最多 8 个片段，每片段上限 12000。PACKET.json 分项记录字节数、哈希与提醒。
-这些数值不是实际计费 tokens，也不限制 CLI 的系统提示、工具定义和之后的工具返回。
-追加读取仍靠阶段协议约束，实际消耗以事件 usage 为准。
+Short state targets 6 KiB, warns above 8 KiB, and has a V2 limit of 12 KiB/300 lines. Legacy state retains a 32 KiB/300-line check. The writer preserves scope, existing mathematical status, and the evidence ceiling. Changes to these sections need explicit conservative migration, not inferred edits or truncated hypotheses.
 
-## 回合结果与认证
+`context_budget` uses explicit UTF-8 bytes:
 
-格式见 [ROUND_RESULT 协议](../agents/protocols/round-result.md)。研究 Agent 保存证明、
-检查记录、计算及 JSON 字段，runner 校验后追加 progress、登记新 claim，并更新短状态
-与下一轮片段清单。gap 变化只作为待证据核对的报告追加到 proof-map，程序不重写证明 DAG。
-方法族结构变更仍写在研究笔记里，由显式复核更新 ideas/research-tree。
+```toml
+packet_target_bytes = 32768
+packet_hard_bytes = 65536
+max_evidence_slices = 8
+max_single_evidence_bytes = 12288
+```
 
-自动 writer 只接受新 ID，证据等级最高 proof-draft；既有结论的升级、降级与认证结果回流
-需要显式审查和状态协调。完整候选必须带十项检查及报告的证据哈希，随后触发全局冻结。
-JSON 检查通过不等于数学认证，候选仍须研究者复核。未完成认证的候选用 needs-human-review。
+Legacy `*_tokens` keys remain byte-unit aliases; conflicting aliases are rejected. These limits control automatic loading, not saved proofs or evidence archives. Results allow at most eight evidence entries, each checked independently for path, range, source, and hash. Keep complete fitting slices in listed priority order and defer the rest. If even rules, state, and evidence references exceed the hard limit, explicitly reduce working state before calling the model.
 
-writer 写入前检查共享文件是否偏离开工哈希，并保存前后快照及提交日志。重复应用同一
-已完成结果不会重复追加；已应用结果遭改写会拒绝。多文件写入遇中断时保留 COMMIT.json，
-若没有 APPLIED.json，后续回合停止并报告待恢复。按日志逐文件核对 before/after 哈希，
-确认后选择恢复或完成；程序不会自动覆盖中断后研究者的修改。备份仅用于恢复状态文件，
-证明和实验产物仍保存在原目录。
+`PACKET.json` records all evidence and the reason for each deferred entry. `deferred_evidence` does not delete evidence. These are not billed tokens and do not bound CLI system prompts, tool definitions, or later tool outputs. Phase rules govern further reading; usage events record actual consumption.
 
-## 查看与验证
+Fixed rules precede project details, hashes, and round instructions, preserving a common prefix for each phase. `stable_prefix_bytes` and `stable_prefix_sha256` describe it. This enables potential cache reuse without guaranteeing a service cache hit.
+
+Repeated slices with the same file, range, hash, and source are validated separately, then reuse the first body only when this shortens the input. Purposes and evidence records remain separate. Overlapping but different ranges are not merged. `evidence_dedup_saved_bytes` and `evidence_rendered_bytes` record byte savings and rendered size; `components_bytes.evidence` remains itemwise. No duplicates means zero savings, not a claimed token reduction.
+
+## Results and certification
+
+Follow the [ROUND_RESULT protocol](../agents/protocols/round-result.md). The researcher writes proofs, checks, calculations, and JSON fields. After validation, the runner appends progress, registers new claims, and updates short state and next-round slices. Gap changes are appended as reports requiring evidence review; the program does not rewrite the proof DAG.
+
+With the task protocol enabled, report structural route changes through `route_changes` and evidence. The transaction writer updates the route table and dedicated ideas/research-tree sections. Compatibility rounds retain root ownership.
+
+Before submission, run the same read-only validation used by the writer:
 
 ```bash
-./queue.sh packet --slug <slug>           # 只读大小与哈希预览
-./queue.sh packet --slug <slug> --content # 输出包正文
-./queue.sh run --dry-run --slug <slug>    # 命令预演，不启动模型
-./queue.sh usage                         # 历史回合汇总
+python tools/research_runtime.py check-result   --project <absolute-project-path> --round .runtime/rounds/<round-id>
+```
+
+The runtime preserves supported Chinese headings in existing state without adding duplicate English sections. Transaction snapshots retain previous duplicate content. It does not automatically rewrite the original problem or mathematical statements.
+
+The writer accepts new IDs only, at evidence levels no higher than `proof-draft`. Existing claim upgrades, downgrades, and certification imports require explicit review and state reconciliation. A complete candidate must include ten checks and a hash-bound audit report, then triggers a global hold. Valid JSON is not mathematical certification. An incomplete main-candidate audit uses `needs-human-review`; an auxiliary candidate without independent certification may still support explicit conditional exploration or independent routes.
+
+The writer parses and hashes the same result bytes, checks backup/start hashes and changes during commit, and rejects a write that would immediately invalidate its own cited evidence. Preserve immutable evidence first. Conflicts after journaling retain the scene for recovery; this is not a cross-file atomic transaction against arbitrary uncooperative edits.
+
+Before writing, the runner checks shared files against starting hashes and saves before/after snapshots and a journal. Reapplying an unchanged completed result is idempotent; altering an applied result is rejected. If interrupted with `COMMIT.json` but no `APPLIED.json`, subsequent rounds stop for recovery. Inspect each before/after hash before restoring or completing the transaction. The runner does not overwrite researcher edits made after interruption. Backups restore state files; proof and experiment artifacts remain in their own directories.
+
+### Execution counts and abnormal exits
+
+`.queue-runtime.json` and `.conjecture-status` use atomic replacement. Only an absent count file means no executions. Corrupt files, invalid counts, or empty status files produce errors and remain intact; they are not reset to zero or queued. Dry-run selection does not rewrite state.
+
+After preflight and before calling the model, persist `attempts` and `active_execution`: attempt, round ID, start time, mode, and log path. A failed reservation prevents the call; failed preflight does not count. Clear the marker only after closing. Handled timeouts/process failures still count once under the existing failure policy. A mixed execution also counts once despite possibly containing three calls.
+
+On catchable interruption or wait errors, stop the launched process group and check for surviving descendants after the leader exits; append errors to existing logs. Mixed interruption signals both branches and waits for cleanup before removing isolated directories. A forced kill, power failure, or detached child requires separate inspection; a marker alone cannot establish that all processes stopped.
+
+If `active_execution` remains, preserve counts, exclude the project from scheduling, and report the recovery location. Runnable state becomes `needs-human-review`; an existing main-result hold is preserved. Merely changing status to queued does not permit a rerun. First confirm old processes have stopped. Inspect call logs, ROUND_RESULT, assessments, and V2 COMMIT/APPLIED records. Resolve partial transactions, then reconcile history and counts. An absent call log does not justify subtracting a reserved attempt. Preserve raw records and a recovery explanation, atomically clear the inspected marker, and reconcile status. Technical recovery neither upgrades evidence nor substitutes for researcher acceptance.
+
+An active persistent task cannot switch to a legacy/task_version=0 path that drops its obligations. Ordinary V2 and mixed-isolated must retain `research_task_version=1`, the objective, and acceptance criteria, or explicitly reconcile scope and outstanding obligations first. Task-state saving checks the 128 KiB read limit before transaction commit. Oversized results are rejected without changing the original state. Put full derivations in evidence files; retain only short obligations and pointers in state.
+
+`run --once` returns the execution error code, except that a complete main-result global hold retains priority. Successful execution, structural checks, and saved files do not prove mathematical correctness.
+
+## Inspect and validate
+
+```bash
+./queue.sh packet --slug <slug>           # Size/hash preview.
+./queue.sh packet --slug <slug> --content # Packet body.
+./queue.sh run --dry-run --slug <slug>    # No model call.
+./queue.sh usage
 ./queue.sh usage --slug <slug> --json
 ./queue.sh state-audit
 conda run -n graphlab python -m unittest discover -s tools/tests -v
 ```
 
-packet 预览使用当前题目源，不创建输入快照，也不含实际启动时的进展评估指令；实际包在
-调用前重新编译并执行完整预算检查。未创建项目、混合模式或超限包会明确报错。
+Preview uses the current problem source without input snapshots or the actual launch's assessment instructions. The runner recompiles and fully checks the packet before calling. Missing projects, mixed mode, and over-budget packets produce explicit preview errors.
 
-每轮 telemetry 记录请求模型、effort、phase、耗时、包大小、各信息分支 token 用量、工具
-调用计数及结果类别。input、cached input、output 分开统计，缓存量是输入的子集，不再相加。
-reasoning tokens 只在 CLI 上报时记录；文件读取数量没有可靠事件支持，保留 null。
-历史缺失或失败调用缺失 usage 均为未知，部分分支统计标记 incomplete，不把缺失当零。
-工具调用只计算事件可见的工具，不代表 shell 命令内全部操作或子 Agent 的完整用量。
-进展类别是研究者自报；是否真正缩小核心缺口仍以原有独立进展评估为准。
+Telemetry records requested model, effort, phase, elapsed time, packet size, per-branch usage, visible tool calls, and result category. Cached input is a subset of input and is not added again. Reasoning tokens are recorded only when reported. File-read counts lack reliable events and remain null. Missing historical/failed-call usage remains unknown; partial branch totals are incomplete. Visible tool events do not enumerate all shell operations or child-agent usage. Progress categories are self-reports; independent assessment determines verified gap reduction.
 
-CLI 的 JSONL usage 和配置接口已核对
-[官方非交互文档](https://learn.chatgpt.com/docs/non-interactive-mode)与
-[官方配置参考](https://learn.chatgpt.com/docs/config-file/config-reference)。
-本次仅验证本地实现与模拟回合，尚无真实模型回合的质量、耗时或额度节省对照。
+The implementation's JSONL/configuration references are the [noninteractive guide](https://learn.chatgpt.com/docs/non-interactive-mode) and [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference). The recorded validation covers local implementation and simulated rounds, not controlled quality, latency, or savings comparisons using real model rounds.
+
+## Mathematical tasks across calls
+
+Introduced on 2026-09-26, `research_task_version = 1` enables persistent tasks for new ordinary V2 and mixed-isolated runners. An ordinary call or complete mixed branches-plus-integration cycle is one step. Attempt/time/quota limits retain their meaning; the task layer does not add calls.
+
+PLAN fixes the objective and original acceptance. Later steps retain the same ID. Auxiliary results must include an actual attempt to apply them to the original problem. See [round-result.md](../agents/protocols/round-result.md) for JSON fields.
+
+`.runtime/research-task.json` stores the task, obligations, and protocol counts. `.runtime/routes.json` stores self-reported structural changes and evidence hashes. V2 maintains both in one transaction; mixed closing atomically saves task state but retains compatibility route records. Preserve manually written ideas/research-tree content; update only dedicated sections. Historical proof-map gap reports stay outside replaceable latest-state sections.
+
+`queue.sh progress` distinguishes execution steps, self-reported task acceptance, route exhaustion, and independent reviews. These counts do not retrospectively infer old calls' mathematical value or certify proofs.
+
+PACKET determines protocol version; mixed runs use START. Old packets retain their closing path. Mixed integration returns `research_task` in compatibility RESULT; the runner seals and saves it without double-counting replay. Mixed results do not yet accept V2 `route_changes`. Existing Python runners do not hot-load updated modules; new starts use the update. An unfinished active task cannot silently revert to the old protocol.
+
+The route catalog uses only remaining packet space, up to eight entries/8 KiB. It does not displace proof bodies. Filter by information provenance and retain full scope/evidence pointers. This is a partial self-reported catalog, not certification or full history. Report structural changes even within an unfinished task; changing only `blocked_routes` in short state is insufficient.

@@ -1,53 +1,53 @@
 # Ideas
 
-> 针对本问题的所有攻击角度。按核心数学机制归入方法族；换记号或换措辞不算新方法。
+Group approaches by their mathematical mechanism. New notation or wording does not make a new method.
 
-## 方法族登记表
+## Method families
 
-| Family | 核心机制/表示 | 信息来源 | 暴露范围 | 决定性子目标 | 状态 | 结构性障碍 | 重开条件 |
+| Family | Mechanism/representation | Source | Exposure | Decisive subgoal | Status | Structural obstacle | Reopening condition |
 |---|---|---|---|---|---|---|---|
-| F1 | [机制] | internal-offline / provided-source / web-source / mixed | blind / partial / full | [可判定命题] | open | — | — |
+| F1 | [Mechanism] | internal-offline / provided-source / web-source / mixed | blind / partial / full | [Decidable assertion] | open | None recorded | None recorded |
 
-## 覆盖审计
+## Coverage audit
 
-- 搜索承诺：affirmative-proof / counterexample / either
-- 阻塞前所需连续再发散轮次（0 = 不因停滞自动 blocked）：
-- 当前连续无新机制回合数：0
-- 当前覆盖的方法族：
-- 尚未覆盖的表述、不变量或构造类型：
-- 发生重复收敛的方法族：
-- 下一轮为何具有信息增益：
+- Search contract: affirmative-proof / counterexample / either
+- Required renewed-exploration rounds before blocked (0 forbids automatic stagnation blocking):
+- Consecutive rounds without a new mechanism: 0
+- Covered families:
+- Uncovered representations, invariants, or constructions:
+- Families with repeated convergence:
+- Expected information gain next round:
 
-## 想法 1: [简短名称]
+## Idea 1: [Short name]
 
-- **方法族**: F1
-- **信息来源**: internal-offline / provided-source / web-source / mixed
-- **暴露范围**: blind / partial / full
-- **描述**: [一两句话描述这个方向]
-- **直觉**: [为什么觉得这个方向有希望]
-- **难度**: 低 / 中 / 高
-- **工具**: [需要的前置知识/工具]
-- **决定性子目标**: [证明或推翻什么才能判断此路线]
-- **可证伪测试**: [最小反例、边界情形或计算检查]
-- **状态**: open / pushing / stuck / blocked / partial-result
-- **结构性障碍**: [blocked 时必填]
-- **重开条件**: [出现何种新机制后才允许重开]
-- **分支产物**: [notes/ 下的独立产物]
+- Family: F1
+- Source: internal-offline / provided-source / web-source / mixed
+- Exposure: blind / partial / full
+- Description: [One or two sentences.]
+- Rationale: [Why this might work.]
+- Difficulty: low / medium / high
+- Tools: [Prerequisites.]
+- Decisive subgoal: [What proof/refutation would decide this route.]
+- Falsification test: [Minimal example, boundary, or computation.]
+- Status: open / pushing / stuck / blocked / partial-result
+- Structural obstacle: [Required when blocked.]
+- Reopening condition: [Specific new mechanism needed.]
+- Branch artifacts: [Separate notes/ artifacts.]
 
-## 想法 2: [简短名称]
+## Idea 2: [Short name]
 
-- **方法族**:
-- **信息来源**:
-- **暴露范围**:
-- **描述**:
-- **直觉**:
-- **难度**:
-- **工具**:
-- **决定性子目标**:
-- **可证伪测试**:
-- **状态**: open
-- **结构性障碍**:
-- **重开条件**:
-- **分支产物**:
+- Family:
+- Source:
+- Exposure:
+- Description:
+- Rationale:
+- Difficulty:
+- Tools:
+- Decisive subgoal:
+- Falsification test:
+- Status: open
+- Structural obstacle:
+- Reopening condition:
+- Branch artifacts:
 
-<!-- 按需复制添加更多想法 -->
+<!-- Add further ideas only as needed. -->

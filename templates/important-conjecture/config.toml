@@ -1,31 +1,30 @@
 title = "{{TITLE}}"
 
-# 老师填完并核对 problem.md 后，改成 true 才会进入队列。
+# Set true only after the researcher has completed and checked problem.md.
 ready = false
 enabled = true
 
-# 长跑目标：affirmative-proof / counterexample / either。
-# affirmative-proof 会把完整肯定证明作为搜索工作假定和预期终点，但不改变证据等级。
+# Search objective: affirmative-proof / counterexample / either.
+# An affirmative search assumption is not mathematical evidence.
 search_contract = "affirmative-proof"
 
-# 已有方法族全部阻塞后，至少连续做多少个无新机制的再发散回合才允许设为 blocked。
-# 0 表示永不因停滞自动 blocked，适合不设终止轮数的肯定证明长跑。
+# Renewed-exploration rounds without a new mechanism before blocked is allowed.
+# Zero forbids automatic stagnation blocking.
 stagnation_rounds_before_blocked = 0
 
-# 可选：覆盖 runner.toml 的全局信息模式。
-# 留空表示继承；可选 offline / connected / mixed-isolated。
+# Empty inherits the runner setting; offline / connected / mixed-isolated.
 information_mode = ""
 
-# 可选：复用 projects/ 下已有研究项目。留空时使用 projects/conjecture-<slug>/。
-# 必须是工作区内且位于 projects/ 下的相对路径。
+# Optional existing workspace-relative directory under projects/.
+# Empty uses projects/conjecture-<slug>/.
 project_path = ""
 
-# 数字越大越先运行；同优先级按 slug 排序。每轮每题最多运行一次，避免单题独占。
+# Higher runs first; equal priorities use slug order with one step per pass.
 priority = 100
 
-# 0 表示不限制累计 Codex 回合数。也可先设成 3 或 5 观察质量。
+# Cumulative executions, not completed mathematical tasks. Zero is unlimited.
 max_attempts = 0
 
-# 可选阶段覆盖；省略则继承 runner.toml。
+# Optional phase override; otherwise inherit runner.toml.
 # phase = "research"
-# critical-audit / stuck-escalation 才允许 xhigh。
+# Only critical-audit / stuck-escalation allow xhigh.

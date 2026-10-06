@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest import mock
@@ -79,6 +80,129 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             runtime.phase_config({}, {'config': {'phase': 'invalid'}})
 
+    def test_tree_and_dependency_index_refresh_without_erasing_authored_graphs(self):
+        tree = self.project / 'research-tree.md'
+        tree.write_text(tree.read_text() + '\n## 历史路线\n旧路线的明确适用范围。\n')
+        self.prepare()
+        result = self.result()
+        self.save(result)
+        runtime.apply_result(self.project, self.directory)
+        text = tree.read_text()
+        self.assertIn('G2: arbitrary n', text)
+        self.assertIn('A1', text)
+        self.assertIn('旧路线的明确适用范围。', text)
+        self.assertNotIn('主问题：待审计', text)
+        self.assertNotIn('P0 主问题<br/>conjecture', text)
+        proof = (self.project / 'proof-map.md').read_text()
+        self.assertIn('报告的依赖：none', proof)
+        self.assertIn('假设：n = 1', proof)
+        self.assertIn('`N1`（`partial-result`）', proof)
+        self.assertNotIn('T0 主猜想<br/>conjecture', proof)
+        # A manual edge is evidence-sensitive content, not a disposable template.
+        authored = '```mermaid\nflowchart TD\n    L1 --> T1\n```'
+        tree.write_text(text + '\n## 人工依赖\n' + authored + '\n')
+        rendered = runtime.render_updates(self.project, self.directory, result)
+        self.assertIn(authored, rendered['research-tree.md'].decode())
+
+    def test_machine_status_updates_only_the_status_field_in_recovery_index(self):
+        index = self.project / 'CURRENT_STATE.md'
+        old = index.read_text()
+        for status in ('paused', 'attempt-limit', 'needs-human-review'):
+            queue.write_status(self.item['slug'], status)
+            expected = runtime.re.sub(r'^- queue-status:.*$',
+                f'- queue-status: `{status}`', old, flags=runtime.re.M)
+            self.assertEqual(index.read_text(), expected)
+            self.assertEqual(queue.read_status(self.item['slug']), status)
+
+    def test_status_heading_case_does_not_leave_a_second_stale_summary(self):
+        old = '# Tree\n\n## Current Status\nOld summary\n\n## Route Map\nKeep graph\n'
+        new = runtime.section_replace(old, '## Current status', 'New summary')
+        self.assertNotIn('Old summary', new)
+        self.assertEqual(new.lower().count('## current status'), 1)
+        self.assertIn('Keep graph', new)
+
+    def test_byte_budget_aliases_and_conflicting_units(self):
+        old = runtime.context_budget({'packet_target_tokens': 100, 'packet_hard_tokens': 200,
+                                      'max_single_evidence_tokens': 80})
+        self.assertEqual(old['packet_hard_bytes'], 200)
+        self.assertEqual(old['max_single_evidence_bytes'], 80)
+        with self.assertRaisesRegex(ValueError, 'conflicting'):
+            runtime.context_budget({'packet_hard_tokens': 200, 'packet_hard_bytes': 300})
+
+    def test_large_chinese_proof_commits_under_old_small_packet_budget(self):
+        self.config['context_budget'] = {'max_single_evidence_tokens': 8000}
+        self.prepare()
+        result = self.result()
+        path = self.project / 'notes/lemma.md'
+        body = '# Proof\n' + '保留完整证明和全部假设。' * 1000 + '\nConclusion.\n'
+        path.write_text(body)
+        result['evidence'][0]['sha256'] = runtime.digest(path)
+        self.save(result)
+        runtime.apply_result(self.project, self.directory)
+        self.assertEqual(path.read_text(), body)
+        text, meta = runtime.compile_packet(self.root, self.project,
+            self.snapshot / 'problem.md', self.config, self.item, 'offline')
+        self.assertIn('NOT INLINED', text)
+        self.assertEqual(len(meta['deferred_evidence']), 1)
+        self.assertIn(result['evidence'][0]['sha256'], text)
+        self.assertFalse(meta['evidence'][0]['inlined'])
+        self.assertTrue((self.directory / 'APPLIED.json').exists())
+        # Deferral never makes a wrong hash acceptable.
+        path.write_text(body + 'changed')
+        with self.assertRaisesRegex(ValueError, 'stale evidence hash'):
+            runtime.compile_packet(self.root, self.project, self.snapshot / 'problem.md',
+                                   self.config, self.item, 'offline')
+
+    def test_eight_archived_entries_with_six_inline_slots(self):
+        self.prepare()
+        result = self.result()
+        entry = result['evidence'][0]
+        result['evidence'] = [{**entry, 'purpose': f'use {i}'} for i in range(8)]
+        runtime.validate_result(self.project, self.directory, result)
+        runtime.write_json(self.project / '.runtime/evidence.json', {'evidence': result['evidence']})
+        text, meta = runtime.compile_packet(self.root, self.project, self.snapshot / 'problem.md',
+            {**self.config, 'context_budget': {'max_evidence_slices': 6}}, self.item, 'offline')
+        self.assertEqual(len(meta['evidence']), 8)
+        self.assertEqual(len(meta['deferred_evidence']), 2)
+        self.assertIn('use 7', text)
+
+    def test_total_budget_defers_whole_ranges_not_proof_prefixes(self):
+        self.prepare()
+        result = self.result()
+        _, base = runtime.compile_packet(self.root, self.project, self.snapshot / 'problem.md',
+                                         self.config, self.item, 'offline')
+        path = self.project / 'notes/lemma.md'
+        path.write_text('BEGINPROOF\n' + 'x' * 8000 + '\nENDPROOF\n')
+        entry = {**result['evidence'][0], 'sha256': runtime.digest(path)}
+        runtime.write_json(self.project / '.runtime/evidence.json', {'evidence': [entry]})
+        cap = base['bytes'] + 2000
+        text, meta = runtime.compile_packet(self.root, self.project, self.snapshot / 'problem.md',
+            {**self.config, 'context_budget': {'packet_target_bytes': cap, 'packet_hard_bytes': cap}},
+            self.item, 'offline')
+        self.assertLessEqual(meta['bytes'], cap)
+        self.assertIn('NOT INLINED', text)
+        self.assertNotIn('BEGINPROOF', text)
+        self.assertEqual(path.read_text().count('ENDPROOF'), 1)
+
+    def test_chinese_frontiers_replace_old_duplicate_english_sections(self):
+        state = self.project / 'CURRENT_STATE.md'
+        text = state.read_text()
+        for en, zh in [('Active proof frontier', '当前证明缺口'),
+                       ('Next bounded round', '下一有界回合'), ('Evidence pointers', '证据指针')]:
+            text = text.replace('## ' + en, '## ' + zh)
+            text += '\n## ' + en + '\n\nStale duplicate.\n'
+        state.write_text(text)
+        self.prepare()
+        self.save(self.result())
+        runtime.apply_result(self.project, self.directory)
+        after = state.read_text()
+        for heading in ('当前证明缺口', '下一有界回合', '证据指针'):
+            self.assertEqual(after.count('## ' + heading), 1)
+        self.assertNotIn('## Active proof frontier', after)
+        self.assertNotIn('Stale duplicate.', after)
+        self.assertEqual((self.directory / 'before/CURRENT_STATE.md').read_text(), text)
+        self.assertEqual(queue.validate_current_state(self.project), [])
+
     def test_packet_is_read_only_bounded_and_phase_specific(self):
         before = {p: p.read_bytes() for p in self.project.rglob('*') if p.is_file()}
         text, meta = runtime.compile_packet(self.root, self.project,
@@ -93,6 +217,46 @@ class RuntimeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             runtime.compile_packet(self.root, self.project, self.snapshot / 'problem.md',
                 {**self.config, 'phase': 'literature'}, self.item, 'offline')
+
+    def test_packet_prefix_stable_across_projects_and_round_instructions(self):
+        first, meta = runtime.compile_packet(self.root, self.project,
+            self.snapshot / 'problem.md', self.config, self.item, 'offline', 'round one')
+        other = self.root / 'projects/other'
+        other.mkdir()
+        (other / 'CURRENT_STATE.md').write_text('Different state')
+        problem = other / 'problem.md'
+        problem.write_text('Different problem')
+        second, other_meta = runtime.compile_packet(self.root, other, problem,
+            self.config, {**self.item, 'search_contract': 'counterexample'}, 'offline', 'round two')
+        n = meta['stable_prefix_bytes']
+        self.assertEqual(first.encode()[:n], second.encode()[:n])
+        self.assertEqual(meta['stable_prefix_sha256'], other_meta['stable_prefix_sha256'])
+        self.assertIn('Different problem', second)
+        self.assertIn('counterexample', second)
+        self.assertIn('round two', second)
+        self.assertNotEqual(meta['packet_sha256'], other_meta['packet_sha256'])
+
+    def test_duplicate_evidence_reuses_text_but_preserves_purposes_and_validation(self):
+        path = self.project / 'notes/repeated.md'
+        content = 'Complete evidence, with all hypotheses intact. ' * 30 + '\n'
+        path.write_text(content)
+        entry = dict(file='notes/repeated.md', start=1, end=1,
+                     sha256=runtime.digest(path), source='internal-offline', purpose='first use')
+        entries = [entry, {**entry, 'purpose': 'second use'}]
+        manifest = self.project / '.runtime/evidence.json'
+        runtime.write_json(manifest, {'evidence': entries})
+        text, meta = runtime.compile_packet(self.root, self.project,
+            self.snapshot / 'problem.md', self.config, self.item, 'offline')
+        self.assertEqual(text.count(content), 1)
+        self.assertIn('first use', text)
+        self.assertIn('second use', text)
+        self.assertEqual(len(meta['evidence']), 2)
+        self.assertGreater(meta['evidence_dedup_saved_bytes'], 0)
+        for patch in ({'source': 'web-source'}, {'sha256': '0'*64}):
+            runtime.write_json(manifest, {'evidence': [entry, {**entry, **patch}]})
+            with self.assertRaises(ValueError):
+                runtime.compile_packet(self.root, self.project,
+                    self.snapshot / 'problem.md', self.config, self.item, 'offline')
 
     def test_slice_rejects_stale_hash_escape_source_and_range(self):
         self.prepare()
@@ -152,6 +316,36 @@ class RuntimeTest(unittest.TestCase):
         self.assertEqual(before, {n: runtime.digest(self.project / n) for n in runtime.PROTECTED})
         self.assertFalse((self.directory / 'COMMIT.json').exists())
 
+    def test_state_schema_failure_is_rejected_by_preflight_and_before_commit(self):
+        state = self.project / 'CURRENT_STATE.md'
+        state.write_text(state.read_text().replace('- schema-version: 1', '- schema-version: invalid'))
+        self.prepare()
+        self.save(self.result())
+        before = {n: runtime.digest(self.project / n) for n in runtime.PROTECTED}
+        check = subprocess.run([sys.executable, str(ROOT / 'tools/research_runtime.py'),
+            'check-result', '--project', str(self.project), '--round',
+            str(self.directory.relative_to(self.project))], capture_output=True, text=True)
+        self.assertNotEqual(check.returncode, 0)
+        self.assertIn('invalid rendered CURRENT_STATE', check.stderr)
+        with self.assertRaisesRegex(ValueError, 'invalid rendered CURRENT_STATE'):
+            runtime.apply_result(self.project, self.directory)
+        self.assertEqual(before, {n: runtime.digest(self.project / n) for n in runtime.PROTECTED})
+        self.assertFalse((self.directory / 'COMMIT.json').exists())
+
+    def test_new_state_and_generated_summary_are_chinese_without_level_upgrade(self):
+        state = self.project / 'CURRENT_STATE.md'
+        self.assertIn('## 控制信息', state.read_text())
+        self.assertIn('主命题仍为猜想', state.read_text())
+        self.assertFalse((self.project / 'lean').exists())
+        self.prepare()
+        self.save(self.result())
+        runtime.apply_result(self.project, self.directory)
+        text = state.read_text()
+        for label in ('本轮摘要：', '认证边界：', '当前缺口：', '验收：', '本轮结果：'):
+            self.assertIn(label, text)
+        self.assertIn('- evidence-ceiling: `conjecture`', text)
+        self.assertEqual(queue.validate_current_state(self.project), [])
+
     def test_conflict_and_incomplete_transaction_do_not_overwrite(self):
         self.prepare()
         self.save(self.result())
@@ -168,15 +362,59 @@ class RuntimeTest(unittest.TestCase):
         self.prepare()
         result = self.result()
         result['round_status'] = 'candidate-solution'
+        result['queue_status'] = 'solved-awaiting-human-verification'
         result['new_claims'][0]['status'] = 'proof-draft'
         self.save(result)
         with self.assertRaises(ValueError):
             runtime.apply_result(self.project, self.directory)
         result['audit'] = dict(checks=['pass']*10, report_file='notes/lemma.md')
+        result['solution_scope'] = dict(
+            kind='full-original-problem',
+            problem_sha256=runtime.read_json(self.directory / 'PACKET.json')['problem_sha256'],
+            unresolved_parts=[],
+            coverage_statement='The claim covers every quantifier and conclusion in the formal input.',
+        )
         self.save(result)
         runtime.apply_result(self.project, self.directory)
         self.assertEqual(queue.read_status('sample'), 'solved-awaiting-human-verification')
         self.assertNotIn('human-verified', (self.project / 'verification-ledger.md').read_text())
+
+    def test_local_or_partial_candidate_cannot_trigger_global_freeze(self):
+        self.prepare()
+        result = self.result()
+        result['round_status'] = 'candidate-solution'
+        result['queue_status'] = 'solved-awaiting-human-verification'
+        result['new_claims'][0]['status'] = 'proof-draft'
+        result['audit'] = dict(checks=['pass']*10, report_file='notes/lemma.md')
+        packet = runtime.read_json(self.directory / 'PACKET.json')
+        for scope in (
+            None,
+            dict(kind='authorized-subproblem', problem_sha256=packet['problem_sha256'],
+                 unresolved_parts=[], coverage_statement='Only a subproblem.'),
+            dict(kind='full-original-problem', problem_sha256=packet['problem_sha256'],
+                 unresolved_parts=['general n'], coverage_statement='The special case n=1 only.'),
+        ):
+            with self.subTest(scope=scope):
+                changed = copy.deepcopy(result)
+                if scope is not None:
+                    changed['solution_scope'] = scope
+                self.save(changed)
+                with self.assertRaises(ValueError):
+                    runtime.apply_result(self.project, self.directory)
+        self.assertEqual(queue.read_status('sample'), 'queued')
+
+    def test_commit_refreshes_state_and_proof_map_status_sections(self):
+        self.prepare()
+        result = self.result()
+        self.save(result)
+        runtime.apply_result(self.project, self.directory)
+        state = (self.project / 'CURRENT_STATE.md').read_text()
+        proof_map = (self.project / 'proof-map.md').read_text()
+        self.assertIn('Special case only.', state)
+        self.assertIn('`N1` (`partial-result`', state)
+        self.assertNotIn('- 可用结果：尚未记录', state)
+        self.assertIn('G2: arbitrary n', proof_map)
+        self.assertIn('`N1` (`partial-result`', proof_map)
 
     def test_telemetry_counts_turns_tools_and_unknown_fields(self):
         path = self.project / 'events.jsonl'
@@ -217,8 +455,8 @@ class RuntimeTest(unittest.TestCase):
     def test_oversized_state_and_duplicate_claim_do_not_mutate(self):
         # The compatibility audit permits 32 KiB, the V2 writer must not truncate it.
         path = self.project / 'CURRENT_STATE.md'
-        path.write_text(path.read_text().replace('## Current mathematical status',
-            '## Current mathematical status\n\n' + 'x' * 12500))
+        path.write_text(path.read_text().replace('## 问题与范围',
+            '## 问题与范围\n\n' + 'x' * 12500))
         self.prepare()
         result = self.result()
         self.save(result)
@@ -275,6 +513,8 @@ class RuntimeTest(unittest.TestCase):
         with mock.patch.object(queue, 'run_codex_process', side_effect=no_result):
             self.assertEqual(queue.execute_attempt(self.item, self.config), 1)
         self.assertEqual(queue.read_status('sample'), 'needs-human-review')
+        # Simulate explicit recovery before testing the separate packet preflight.
+        queue.write_status('sample', 'queued')
         config = {**self.config, 'context_budget': {'packet_hard_tokens': 50, 'packet_target_tokens': 25}}
         with mock.patch.object(queue, 'run_codex_process') as process:
             self.assertEqual(queue.execute_attempt(self.item, config), 1)

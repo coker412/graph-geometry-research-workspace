@@ -6,29 +6,29 @@ QUEUE="$WORKSPACE_ROOT/tools/conjecture_queue.sh"
 
 usage() {
   cat <<'EOF'
-重要猜想队列（所有命令都从工作区根目录运行）
+Conjecture queue (run from the workspace root)
 
-  ./queue.sh add <英文短名> "题目标题"  新建一道题
-  ./queue.sh check                      启动前检查，不调用 Codex
-  ./queue.sh start                      用 tmux 后台持续轮询
-  ./queue.sh start --slug <英文短名>    独立 tmux 持续研究一道题
-  ./queue.sh status                     查看队列和各题状态
-  ./queue.sh packet --slug NAME         只读预览研究包大小与证据
-  ./queue.sh usage [--slug NAME]         查看已记录 token 用量
-  ./queue.sh progress                   查看是否推进、证据和路线建议
-  ./queue.sh progress --slug <英文短名> 查看单题近期进展评估
-  ./queue.sh state-init [--slug NAME]   给旧项目补建短状态入口，不覆盖现有文件
-  ./queue.sh state-audit [--slug NAME]  检查短状态入口的结构与大小
-  ./queue.sh hygiene report             只读报告日志、LaTeX 产物和环境占用
-  ./queue.sh watch                      进入实时终端（Ctrl-b 后按 d 退出查看）
-  ./queue.sh watch --slug <英文短名>    查看指定单题 runner
-  ./queue.sh stop                       当前 Codex 回合结束后安全停止
-  ./queue.sh stop --slug <英文短名>     只安全停止指定单题 runner
-  ./queue.sh stop --all                 安全停止全部 runner
-  ./queue.sh once                       前台只推进一个回合
-  ./queue.sh run                        前台持续轮询；关闭终端会中断
+  ./queue.sh add <slug> "Title"         Add a problem
+  ./queue.sh check                      Check without calling Codex
+  ./queue.sh start                      Start fair rotation in tmux
+  ./queue.sh start --slug NAME          Start a dedicated problem runner
+  ./queue.sh status                     Show queue and problem states
+  ./queue.sh list                       List registered problems
+  ./queue.sh doctor [--slug NAME]        Read-only health check
+  ./queue.sh set-status NAME STATUS     Apply a researcher-directed status
+  ./queue.sh packet --slug NAME         Preview packet size and evidence
+  ./queue.sh usage [--slug NAME]         Show recorded token usage
+  ./queue.sh progress [--slug NAME]      Show assessments and route advice
+  ./queue.sh state-init [--slug NAME]    Add missing recovery state
+  ./queue.sh state-audit [--slug NAME]   Check state structure and size
+  ./queue.sh hygiene report             Report generated files and disk use
+  ./queue.sh watch [--slug NAME]         View tmux; detach with Ctrl-b, then d
+  ./queue.sh stop [--slug NAME]          Stop safely after the current round
+  ./queue.sh stop --all                 Safely stop all runners
+  ./queue.sh once                       Run one foreground round
+  ./queue.sh run                        Poll in the foreground
 
-日常长跑推荐 start。run 不需要 tmux，但终端必须一直保持打开。
+Use start for long runs. Foreground run does not need tmux but requires an open terminal.
 EOF
 }
 
@@ -43,7 +43,7 @@ case "$command_name" in
     "$QUEUE" list
     exec "$QUEUE" run --dry-run
     ;;
-  start|status|stop|state-init|state-audit|progress|packet|usage)
+  start|status|stop|state-init|state-audit|progress|packet|usage|doctor|list|set-status)
     shift
     exec "$QUEUE" "$command_name" "$@"
     ;;
@@ -67,7 +67,7 @@ case "$command_name" in
     usage
     ;;
   *)
-    echo "错误：未知命令 $command_name" >&2
+    echo "Error: unknown command $command_name" >&2
     usage >&2
     exit 2
     ;;

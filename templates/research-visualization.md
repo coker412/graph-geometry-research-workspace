@@ -1,27 +1,27 @@
-# 研究路线与证明依赖可视化模板
+# Research routes and proof dependencies
 
-将下面两个部分分别复制为项目中的 `research-tree.md` 和 `proof-map.md`。
+Copy the two sections below into the project files `research-tree.md` and `proof-map.md`.
 
-## research-tree.md：探索过程
+## research-tree.md: Exploration
 
-### 当前状态
+### Current state
 
-- 主问题：
-- 当前主路线：
-- 最新关键事件：
-- 最大障碍：
-- 下一步：
+- Main problem:
+- Current main route:
+- Latest important event:
+- Main obstacle:
+- Next step:
 
-### 路线图
+### Route diagram
 
 ```mermaid
 flowchart TD
-    P0["P0 主问题<br/>exploring"]
-    A1["A1 直接计算<br/>pushing"]
-    A2["A2 谱方法<br/>blocked"]
-    E1["E1 小规模实验<br/>experimental"]
-    C1["C1 反例"]
-    S11["S1.1 关键引理<br/>proof-draft"]
+    P0["P0 Main problem<br/>exploring"]
+    A1["A1 Direct calculation<br/>pushing"]
+    A2["A2 Spectral method<br/>blocked"]
+    E1["E1 Small experiments<br/>experimental"]
+    C1["C1 Counterexample"]
+    S11["S1.1 Key lemma<br/>proof-draft"]
     V1["V1 verifier<br/>wrong: gap"]
 
     P0 -->|decomposes-to| A1
@@ -43,48 +43,48 @@ flowchart TD
     class E1 evidence;
 ```
 
-### 分支卡片
+### Branch records
 
-#### A1 — 路线名称
+#### A1: Route name
 
-- 状态：`pushing`
-- 核心直觉：
-- 有序子目标：
-- 支持证据：
-- 当前障碍：
-- 对应日志：
-- 下一步：
+- Status: `pushing`
+- Main idea:
+- Ordered subgoals:
+- Supporting evidence:
+- Current obstacle:
+- Related log:
+- Next step:
 
-#### A2 — 路线名称
+#### A2: Route name
 
-- 状态：`blocked`
-- 失败位置：
-- 失败类型：
-- 反例或证据：
-- 可复用观察：
+- Status: `blocked`
+- Failure location:
+- Failure type:
+- Counterexample or evidence:
+- Reusable observation:
 
 ---
 
-## proof-map.md：候选证明依赖
+## proof-map.md: Candidate proof dependencies
 
-### 当前状态
+### Current state
 
-- 目标定理：
-- 当前证据等级：
-- 当前最小缺口：
-- 候选证明文件：
-- 最近一次验证报告：
+- Target theorem:
+- Current evidence level:
+- Smallest current gap:
+- Candidate proof file:
+- Latest verification report:
 
-### 依赖图
+### Dependency graph
 
 ```mermaid
 flowchart BT
-    D1["D1 定义与归一化<br/>internal · human-verified"]
-    L1["L1 外部定理<br/>literature · theorem-checked"]
-    P1["P1 局部公式<br/>internal · agent-verified"]
-    P2["P2 单调性引理<br/>internal · proof-draft<br/>GAP: 边界情形"]
-    T0["T0 主定理<br/>internal · proof-draft"]
-    E1["E1 n≤8 实验<br/>experimental"]
+    D1["D1 Definitions and normalization<br/>internal · human-verified"]
+    L1["L1 External theorem<br/>literature · theorem-checked"]
+    P1["P1 Local formula<br/>internal · agent-verified"]
+    P2["P2 Monotonicity lemma<br/>internal · proof-draft<br/>GAP: Boundary case"]
+    T0["T0 Main theorem<br/>internal · proof-draft"]
+    E1["E1 n≤8 Experiments<br/>experimental"]
 
     D1 --> P1
     L1 --> P1
@@ -104,23 +104,23 @@ flowchart BT
     class E1 experimental;
 ```
 
-### 节点登记表
+### Node register
 
-| ID | 命题 | 来源 | 证据等级 | 证明/来源文件 | 验证状态 | 下游影响 |
+| ID | Statement | Source | Evidence level | Proof/source file | Verification status | Downstream effect |
 |---|---|---|---|---|---|---|
-| D1 | 定义与归一化 | internal | human-verified | `README.md` | closed | P1, P2 |
-| L1 | 外部定理 | literature | theorem-checked | `references.md#L1` | closed | P1 |
-| P1 | 局部公式 | internal | agent-verified | `notes/local-formula.md` | closed | T0 |
-| P2 | 单调性引理 | internal | proof-draft | `notes/monotonicity.md` | gap | T0 |
-| T0 | 主定理 | internal | proof-draft | `notes/main-proof.md` | blocked by P2 | — |
+| D1 | Definitions and normalization | internal | human-verified | `README.md` | closed | P1, P2 |
+| L1 | External theorem | literature | theorem-checked | `references.md#L1` | closed | P1 |
+| P1 | Local formula | internal | agent-verified | `notes/local-formula.md` | closed | T0 |
+| P2 | Monotonicity lemma | internal | proof-draft | `notes/monotonicity.md` | gap | T0 |
+| T0 | Main theorem | internal | proof-draft | `notes/main-proof.md` | blocked by P2 | None |
 
-### 未关闭缺口
+### Open gaps
 
 #### GAP-P2-1
 
-- 位置：
-- 所需结论：
-- 已尝试路线：
-- 反例测试：
-- 影响节点：
-- 下一步：
+- Location:
+- Required conclusion:
+- Attempts:
+- Counterexample tests:
+- Affected nodes:
+- Next step:

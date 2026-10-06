@@ -22,6 +22,7 @@ SPEC.loader.exec_module(queue)
 class ConjectureQueueTest(unittest.TestCase):
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
+        self.lane_temporary = tempfile.TemporaryDirectory(prefix="queue-test-lanes-")
         root = Path(self.temporary.name)
         queue.ROOT = root
         queue.QUEUE_ROOT = root / "problems" / "important-conjectures"
@@ -29,7 +30,8 @@ class ConjectureQueueTest(unittest.TestCase):
         queue.RUNNER_CONFIG = queue.QUEUE_ROOT / "runner.toml"
         queue.ITEM_TEMPLATE_ROOT = SOURCE_ROOT / "templates" / "important-conjecture"
         queue.RUNTIME_ROOT = root / "agents" / "important-conjectures"
-        queue.LANE_RUNTIME_ROOT = root / "lane-runtime"
+        # Real lane storage is outside ROOT, which the connected namespace hides.
+        queue.LANE_RUNTIME_ROOT = Path(self.lane_temporary.name)
         queue.STOP_FILE = queue.RUNTIME_ROOT / "STOP"
         queue.LOCK_FILE = queue.RUNTIME_ROOT / "runner.lock"
         queue.ITEMS_ROOT.mkdir(parents=True)
@@ -42,6 +44,85 @@ class ConjectureQueueTest(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
+        self.lane_temporary.cleanup()
+
+    def test_focused_doctor_ignores_unrelated_invalid_state(self) -> None:
+        for slug in ("healthy", "broken"):
+            queue.add_item(argparse.Namespace(slug=slug, title=slug))
+        for item in queue.discover_items():
+            queue.ensure_project(item)
+        (queue.project_dir("broken") / "CURRENT_STATE.md").write_text("broken\n")
+        ok = mock.Mock(returncode=0, stdout="ok", stderr="")
+        with mock.patch.object(queue, "locate_codex", return_value="/bin/codex"), \
+             mock.patch.object(queue.subprocess, "run", return_value=ok), \
+             mock.patch.object(queue.shutil, "which", return_value="/bin/tool"), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(queue.doctor("healthy"), 0)
+            self.assertEqual(queue.doctor("broken"), 1)
+            self.assertEqual(queue.doctor(), 1)
+
+    def test_snapshot_checks_capacity_before_copying(self) -> None:
+        project = queue.ROOT / "projects" / "large"
+        project.mkdir()
+        (project / "data.bin").write_bytes(b"data")
+        destination = queue.ROOT / "snapshot"
+        destination.mkdir()
+        with mock.patch.object(queue.shutil, "disk_usage", return_value=mock.Mock(free=0)):
+            with self.assertRaisesRegex(RuntimeError, "insufficient disk space"):
+                queue.copy_connected_workspace(project, project / "input", destination)
+        self.assertFalse((destination / "workspace").exists())
+
+    def test_mixed_snapshot_uses_disk_runtime_not_default_tmp(self) -> None:
+        project = queue.ROOT / "projects" / "mixed"
+        project.mkdir()
+        seen = []
+        original = queue.tempfile.TemporaryDirectory
+        def temporary(*args, **kwargs):
+            seen.append(kwargs)
+            return original(*args, **kwargs)
+        with mock.patch.object(queue, "build_prompt", return_value="test"), \
+             mock.patch.object(queue, "codex_command", return_value=["/bin/true"]), \
+             mock.patch.object(queue.tempfile, "TemporaryDirectory", side_effect=temporary), \
+             mock.patch.object(queue, "prepare_lane_codex_home", side_effect=RuntimeError("test-stop-before-auth")):
+            with self.assertRaisesRegex(RuntimeError, "test-stop-before-auth"):
+                queue.execute_mixed_isolated_attempt({"slug": "mixed"}, {}, project,
+                                                    project / "input", project, 1, "test")
+        self.assertEqual(len(seen), 3)
+        self.assertTrue(all(call["dir"] == queue.LANE_RUNTIME_ROOT for call in seen))
+
+    def _startup_case(self, session_codes, lock_codes):
+        ok = mock.Mock(returncode=0)
+        def run(command, **kwargs):
+            if command[1] == "has-session":
+                return mock.Mock(returncode=next(session_codes))
+            return ok
+        with mock.patch.object(queue, "solution_holds", return_value=[]), \
+             mock.patch.object(queue, "active_focus_slugs", return_value=[]), \
+             mock.patch.object(queue, "runner_lock_held", side_effect=lock_codes), \
+             mock.patch.object(queue, "doctor", return_value=0), \
+             mock.patch.object(queue.shutil, "which", return_value="/bin/tmux"), \
+             mock.patch.object(queue.subprocess, "run", side_effect=run), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            return queue.start_runner(argparse.Namespace(slug=None))
+
+    def test_start_rejects_stale_session(self) -> None:
+        self.assertEqual(self._startup_case(iter([0]), [False]), 1)
+
+    def test_start_rejects_child_exiting_before_lock(self) -> None:
+        self.assertEqual(self._startup_case(iter([1, 1]), [False]), 1)
+
+    def test_start_confirms_live_session_and_lock(self) -> None:
+        self.assertEqual(self._startup_case(iter([1, 0]), [False, True]), 0)
+
+    def test_focused_start_preserves_global_solution_hold(self) -> None:
+        queue.add_item(argparse.Namespace(slug="held", title="Held"))
+        item = queue.discover_items()[0]
+        queue.ensure_project(item)
+        queue.write_status("held", "solved-awaiting-human-verification")
+        with mock.patch.object(queue.subprocess, "run") as run, \
+             contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(queue.start_runner(argparse.Namespace(slug=None)), 3)
+        run.assert_not_called()
 
     def test_add_prepare_snapshot_and_status(self) -> None:
         args = argparse.Namespace(slug="sample-problem", title="Sample Problem")
@@ -118,8 +199,11 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertIn("搜索承诺为 `affirmative-proof`", prompt)
         self.assertIn("不得仅因现有路线耗尽或连续停滞", prompt)
         self.assertIn("一个主路线", prompt)
-        self.assertIn("冻结依赖该结论的分支", prompt)
-        self.assertIn("不要因为第一条候选引理出现就终止全部探索者", prompt)
+        self.assertIn("冻结其作为已认证前提的使用", prompt)
+        self.assertIn("所有下游结论保留条件和错误传播", prompt)
+        self.assertIn("本身都不触发 needs-human-review", prompt)
+        self.assertIn("十项验证清单全部通过", prompt)
+        self.assertIn("加强自查后保持 pushing", prompt)
         self.assertIn("CURRENT_STATE.md 是下一回合的短入口", prompt)
         self.assertIn("不得默认完整重读 progress.md", prompt)
         self.assertIn("禁止向 README 追加逐回合日志", prompt)
@@ -356,16 +440,15 @@ class ConjectureQueueTest(unittest.TestCase):
             self.assertIn("联网核查分支", prompt)
             self.assertIn("汇合点之前看不到你的结果", prompt)
             self.assertIn("web-source", prompt)
-            with mock.patch.object(
-                queue.shutil, "which", return_value="/usr/bin/bwrap"
-            ):
-                wrapped = queue.bubblewrap_command(
-                    ["/bin/true"],
-                    lane_project,
-                    writable_dirs=[lane_project],
-                    hidden_dirs=[queue.ROOT],
-                    writable_bindings=[(lane_project, lane_root)],
-                )
+            wrapped = queue.bubblewrap_command(
+                ["/bin/true"],
+                lane_project,
+                writable_dirs=[lane_project],
+                hidden_dirs=[queue.ROOT],
+                writable_bindings=[
+                    (lane_project, lane_root)
+                ],
+            )
             self.assertIn("--ro-bind", wrapped)
             self.assertIn("--dev", wrapped)
             self.assertIn("--tmpfs", wrapped)
@@ -387,6 +470,35 @@ class ConjectureQueueTest(unittest.TestCase):
         self.assertTrue((destination / "auth.json").is_file())
         self.assertTrue((destination / "installation_id").is_file())
         self.assertFalse((destination / "state_5.sqlite").exists())
+
+    def test_connected_sources_survive_temporary_lane_cleanup(self) -> None:
+        project = queue.ROOT / "project"
+        with tempfile.TemporaryDirectory() as lane:
+            root = Path(lane)
+            report = root / "CONNECTED_RESULT.md"
+            report.write_text("See CONNECTED_SOURCES/paper.txt")
+            sources = root / "CONNECTED_SOURCES"
+            sources.mkdir()
+            (sources / "paper.txt").write_bytes(b"original theorem")
+            checkpoint = queue.persist_connected_checkpoint(
+                project, 1, report, {}, connected_sources=sources
+            )
+        metadata = queue.json.loads((checkpoint / "CHECKPOINT.json").read_text())
+        entry = metadata["connected_source_files"][0]
+        self.assertEqual((checkpoint / entry["path"]).read_bytes(), b"original theorem")
+        self.assertEqual(entry["sha256"], queue.hashlib.sha256(b"original theorem").hexdigest())
+        self.assertEqual(entry["bytes"], 16)
+
+    def test_connected_sources_reject_symlinks(self) -> None:
+        sources = queue.ROOT / "CONNECTED_SOURCES"
+        sources.mkdir()
+        report = queue.ROOT / "CONNECTED_RESULT.md"
+        report.write_text("report")
+        (sources / "outside").symlink_to(report)
+        with self.assertRaises(ValueError):
+            queue.persist_connected_checkpoint(
+                queue.ROOT / "project", 1, report, {}, connected_sources=sources
+            )
 
     @unittest.skipUnless(queue.shutil.which("bwrap"), "bubblewrap is required")
     def test_mixed_isolated_attempt_runs_two_lanes_then_integration(self) -> None:
@@ -411,12 +523,14 @@ arguments = sys.argv[1:]
 prompt = arguments[-1]
 if 'mixed-isolated 兼容回合的汇合审计' in prompt:
     assert ' seal-plan ' not in prompt
-    assert ' seal-result ' in prompt
+    assert '不要手动 seal-result' in prompt
     assert '不新增独立评审调用' in prompt
 output = Path(arguments[arguments.index('--output-last-message') + 1])
 output.parent.mkdir(parents=True, exist_ok=True)
 output.write_text('fake final message\\n', encoding='utf-8')
 if '--search' in arguments:
+    Path('CONNECTED_SOURCES').mkdir()
+    Path('CONNECTED_SOURCES/paper.txt').write_text('primary source')
     Path('CONNECTED_RESULT.md').write_text(
         '# Connected result\\n\\nweb-source test result\\n', encoding='utf-8'
     )
@@ -427,7 +541,10 @@ if '--search' in arguments:
             config = queue.load_runner_config()
             config["codex_path"] = str(fake_codex)
             config["attempt_timeout_minutes"] = 1
-            self.assertEqual(queue.execute_attempt(item, config), 0)
+            with mock.patch.object(queue.research_progress, 'finalize_result',
+                                   return_value={'sealed': True}) as close:
+                self.assertEqual(queue.execute_attempt(item, config), 0)
+                close.assert_called_once()
 
         project = queue.project_dir("mixed-run")
         checkpoint = (
@@ -441,6 +558,11 @@ if '--search' in arguments:
             (checkpoint / "CHECKPOINT.json").read_text(encoding="utf-8")
         )
         self.assertEqual(metadata["mode"], "mixed-isolated")
+        self.assertEqual(
+            (checkpoint / 'connected/CONNECTED_SOURCES/paper.txt').read_text(),
+            'primary source',
+        )
+        self.assertEqual(len(metadata['connected_source_files']), 1)
         self.assertEqual(metadata["offline"]["return_code"], 0)
         self.assertEqual(metadata["connected"]["return_code"], 0)
         self.assertEqual(metadata["integration"]["return_code"], 0)
@@ -527,9 +649,9 @@ if '--search' in arguments:
             path = project / "CURRENT_STATE.md"
             content = path.read_text(encoding="utf-8")
             for canonical, alias in (
-                ("## Problem and scope", "## Problem and source boundary"),
-                ("## Current mathematical status", "## Mathematical status retained from offline work"),
-                ("## Evidence pointers", "## Precise evidence pointers"),
+                ("## 问题与范围", "## Problem and source boundary"),
+                ("## 当前数学状态", "## Mathematical status retained from offline work"),
+                ("## 证据指针", "## Precise evidence pointers"),
             ):
                 content = content.replace(canonical, alias)
             path.write_text(content, encoding="utf-8")
@@ -546,7 +668,7 @@ if '--search' in arguments:
         self.assertEqual(assessment["status"], "unknown")
         self.assertEqual(assessment["decision"]["action"], "assess")
         packet = queue.project_dir("alias-state") / assessment["round"]
-        self.assertIn("## Evidence pointers", (packet / "BEFORE.md").read_text())
+        self.assertIn("## 证据指针", (packet / "BEFORE.md").read_text())
         self.assertTrue((packet / "FINISH.json").is_file())
 
     def test_foreground_restart_clears_old_stop_request(self) -> None:

@@ -1,42 +1,37 @@
-# 如何判断研究是否推进
+# Assessing mathematical progress
 
-`./queue.sh progress` 显示每题最近的进展评估和下一步建议。
-`./queue.sh status` 只回答任务是否运行，不能据此判断数学进展。
+`./queue.sh progress` reports each problem's latest assessment and suggested next action. `./queue.sh status` reports execution status, which does not establish mathematical progress.
 
 ```bash
 ./queue.sh progress
-./queue.sh progress --slug alexandrov-isodiametric-offline
-./queue.sh progress --slug my-problem --json
+./queue.sh progress --slug example-problem
+./queue.sh progress --slug example-problem --json
 ```
 
-评估不使用完成百分比、综合分数、字数、Agent 数量或文件数。它比较一个有明确范围的数学
-缺口，列出本轮消除的证明义务、新增的前提，以及对主问题的实际影响。脚本检查记录与版本；
-独立审查者判断数学增量。独立进展审查不代替证明认证。
+Assess a scoped mathematical gap: obligations removed, premises added, and effect on the main problem. Do not use completion percentages, aggregate scores, word counts, agent counts, or file counts. Scripts check records and versions; independent reviewers assess the mathematical difference. Progress review does not replace proof certification.
 
-## 哪些情况需要区分
+## Categories
 
-| 分类 | 判断依据 | 后续动作 |
+| Category | Evidence needed | Next action |
 |---|---|---|
-| 核心缺口缩小 | 在声明范围内消除原证明义务，说明量词、依赖和额外前提；有已审查证据 | 继续下一项有界目标 |
-| 有效排除 | 严格证伪明确的构造、参数范围或整个方法族 | 停止搜索被排除部分；只有整族排除才直接换族 |
-| 工具或条件结果 | 新公式或归约有用途，但原核心难点未闭合 | 做一个能判断其用途的测试 |
-| 计算线索 | 只有浮点、抽样或尚未认证的计算信号 | 复现、寻找反例或建立严格证书 |
-| 重新表述 | 难点换了形式，尚未证明原任务变得更弱或更可解 | 检验新的表示是否带来机制 |
-| 重复 | 同一障碍仍在，已有结果或失败被再次发现 | 满足重复门槛后换机制 |
-| 未得结论 | 本轮完成了尝试，但没有可确认的判断 | 保留记录，不能包装成推进 |
-| 依赖失效 | 原依赖存在错误 | 冻结受影响分支并修复或回退 |
-| 完整候选 | 声称闭合主问题所有量词 | 进入原有认证流程，不能由脚本宣布完成 |
-| 无法判断 | 材料缺失、自评未经独立审查、证据已变或审查有分歧 | 补充评估，不计作数学停滞 |
+| Frontier advance | Reviewed removal of an original obligation, with quantifiers, dependencies, and added assumptions stated | Pursue the next bounded target |
+| Valid exclusion | Rigorous refutation of a construction, parameter range, or method family | Stop the excluded search; only a whole-family exclusion directly rules out the family |
+| Enabling or conditional result | Useful formula/reduction without closing the central gap | Test whether it helps the main problem |
+| Experimental signal | Floating-point, sampled, or uncertified computation | Reproduce, stress-test, or seek a rigorous certificate |
+| Reformulation | A new expression without demonstrated improvement in the original obligation | Test for a new mechanism |
+| Repetition | The same obstacle or rediscovered result/failure | Change mechanism at the repetition threshold |
+| Inconclusive | An attempted step without a justified conclusion | Keep the record without presenting it as progress |
+| Invalid dependency | An error in a premise | Freeze and repair or retract the affected branch |
+| Complete candidate | Claimed closure of all main-problem quantifiers | Follow certification; scripts cannot declare completion |
+| Unknown | Missing material, unreviewed self-report, changed evidence, or disputed review | Complete the assessment; do not count mathematical stagnation |
 
-“核心缺口缩小”可以是某条主攻路线的前提被严格削弱，不表示整个主问题接近解决。
-只有局部模型、较小参数窗或更强假设的结果，必须在评估中写出限制。
+Frontier advance may mean rigorously weakening assumptions on one route, not nearing a full solution. State restrictions such as local models, small parameter windows, or stronger assumptions.
 
-例如，给出新传递公式却仍缺全局估计，应先记为工具结果；严格删除原构造的额外导数条件，
-可以记为该路线的前提削弱；认证一个新参数窗无根，是有效排除，不能声称已经找到反例。
+A new transfer formula that still lacks a global estimate is initially an enabling result. Removing an unnecessary derivative assumption can weaken a route's premises. Certifying a root-free parameter window is an exclusion, not a counterexample.
 
-## 每轮如何记录
+## Round records
 
-队列在模型启动前保存 `CURRENT_STATE.md` 的原文与 SHA256，并建立：
+Before model execution, the queue saves the original CURRENT_STATE and its SHA-256, then creates:
 
 ```text
 projects/<project>/notes/progress-assessment/<round>/
@@ -52,83 +47,71 @@ projects/<project>/notes/progress-assessment/<round>/
 └── FINISH.json
 ```
 
-其中 PLAN.lock、RESULT.lock 和 REVIEW 文件在相应步骤完成后才出现。
+Locks and review files appear only when their respective steps finish.
 
-开工时，根 Agent 填写稳定的方法族 ID、障碍 ID、实际机制、原缺口和可证伪验收目标，
-再封存计划。中途改变目标可以如实记录，但不能事后修改验收标准来制造成功。
-
-```bash
-conda run -n graphlab python tools/research_progress.py seal-plan \
-  --project projects/<project> --round <round>
-```
-
-V2 回合只填写 ROUND_RESULT.json，并在 progress 对象写进展类型、主问题影响、范围及等级；
-runner 从同一份事实生成并封存评估 RESULT。PLAN 仍须事前封存，证明正文只写一次。
-派生记录绑定本轮 ID、研究包及源结果哈希，不改写已有手填 RESULT 或旧锁；缺项保留未知，
-不自动升级证据，也不新增审查调用。旧版结果仍兼容。
-
-兼容回合完成后填写 RESULT.json，列出准确命题、剩余缺口、消除及新增的证明义务、范围限制、
-原证据等级和项目内证据路径，再封存结果：
+At the start, the root supplies stable method-family/obstacle IDs, the actual mechanism, original gap, and falsifiable acceptance target, then seals the plan. Record genuine changes of direction without retroactively changing acceptance to manufacture success.
 
 ```bash
-conda run -n graphlab python tools/research_progress.py seal-result \
-  --project projects/<project> --round <round>
+conda run -n graphlab python tools/research_progress.py seal-plan   --project projects/<project> --round <round>
 ```
 
-此命令生成 REVIEW.template.json。独立审查者以它为模板写 REVIEW.json，并将具体比较
-写入 REVIEW.md，填写该报告的相对路径及 SHA256。作者与审查者必须是不同的人或 Agent。
-审查者至少回答：
+V2 rounds fill ROUND_RESULT and its progress object: category, main-problem effect, scope, and level. The runner derives and seals assessment RESULT from those same facts. PLAN remains sealed in advance, and proofs are written only once. Derived records bind round, packet, and source-result hashes; they do not overwrite manual RESULT or old locks. Missing information stays unknown. There is no automatic evidence upgrade or added review call; legacy results remain compatible.
 
-1. 本轮结论是否已经出现在基线或直接引用的旧证据中？
-2. 原先哪一个量词或证明义务现在得到解决？它怎样影响主问题？
-3. 是否损失了适用范围，或把困难移到了一个更强的新假设？
-4. 若说同一障碍已绕过，新的数学机制是什么？
-5. 下一轮哪一个测试能明确决定继续还是换路线？
-
-审查可以否定作者的分类。例如，作者声称 `frontier-advance`，审查者可判为
-`enabling-result` 或 `reformulation`。脚本保留二者，不用多数投票决定数学真假。
-
-独立审查按研究者授权安排，普通回合不默认新增评审调用；本功能不会自行启动模型。没有审查者时，结果显示
-`self-report`，不能计为已确认推进。审查身份是流程声明，JSON 和哈希不能验证人的真实身份
-或证明 Agent 的上下文完全独立。
-
-在 `mixed-isolated` 回合，离线分支先封存计划。完成汇合后才封存最终结果并审查进展；
-不能提前读取联网分支。每项结论仍沿用原有的来源和证据等级。
-
-## 什么时候继续、换路线或考虑暂停
-
-连续两轮被独立审查为同一障碍上的重复、重新表述或无结论，且没有新机制时，下一轮必须
-换方法族；若保留原族，需要在 PLAN.json 的 `reopening_basis` 指向一份具体的新机制说明。
-简单改 ID 不能视为新方法，审查者应按数学机制核对。
-
-连续三轮没有缩小核心缺口时，系统建议复核路线价值。下一轮 PLAN.json 的 `strategy_review`
-必须指向一份替代方法族比较及继续/暂停建议。辅助结果和有效排除仍保留各自价值；“三轮”
-只是当前调度提醒门槛，不是判断数学路线无望的定理。
-
-缺少审查、执行超时、未知回合或缺号会中断连续计数。历史回看明确标记 `retrospective`，
-不冒充预注册，也不参与连续停滞门槛。准备但未完成的包不覆盖最近的完整评估。
-报告只检查最近 50 份评估，旧证据仍留在磁盘，不能把窗口之外的历史当作已检索。
-
-目前采用建议模式。脚本不自动暂停整题、不设置 `blocked`、不解除数学认证冻结，也不修改
-原来的 `search_contract`。`affirmative-proof` 或再发散门槛为 0 的持续搜索仍按原承诺执行。
-实际停止整题由研究者决定；换一条失效路线不等于放弃项目。
-
-## 文件检查能保证什么
-
-哈希绑定基线、计划、结果、证据和审查报告。任何一项改变，旧审查就不能继续算作有效。
-近期完全相同的结果和证据不能重复登记为核心缺口缩小；改名或语义重述仍需要独立审查。
-路径检查拒绝项目外的证据和越界符号链接，防止评估错误地引用别的项目。
-
-这些检查不证明定理、不认证证据等级，也不防止能同时修改全部记录的作者伪造材料。
-研究者仍可沿报告中的具体路径检查数学论证。与现有台账冲突时，以直接证据为准。
-
-手工准备一个工作区项目的评估包：
+Compatibility rounds fill RESULT with precise statements, remaining gaps, removed/added obligations, scope limits, original evidence levels, and project-relative evidence paths, then seal it:
 
 ```bash
-conda run -n graphlab python tools/research_progress.py prepare \
-  --project projects/<project> --round attempt-00000001-manual --attempt 1
+conda run -n graphlab python tools/research_progress.py seal-result   --project projects/<project> --round <round>
 ```
 
-封存文件不覆盖已有版本。需要更正已封存的材料时，保留旧包并另建评估；旧审查不能用于
-更正后的新版本。历史回看或事后更正的包用 `prepare --retrospective` 创建；需要指定历史
-基线时加 `--baseline notes/<原证据文件>`，路径相对项目目录。
+This produces REVIEW.template.json. An independent reviewer creates REVIEW.json and a specific comparison in REVIEW.md, with the report's relative path and SHA-256. Author and reviewer must be different people or agents. The reviewer addresses:
+
+1. Was the conclusion already present in the baseline or directly cited old evidence?
+2. Which quantifier or obligation is now resolved, and how does this affect the main problem?
+3. Has scope narrowed or the difficulty moved into a stronger assumption?
+4. If an obstacle was bypassed, what new mathematical mechanism did it?
+5. Which next test would decide whether to continue or change route?
+
+The reviewer may replace the author's `frontier-advance` judgment with `enabling-result` or `reformulation`. Preserve both judgments; mathematical truth is not a majority vote.
+
+Reviews follow researcher authorization. Ordinary rounds do not add reviewer calls automatically, and this tool never starts a model. Without a reviewer, the result is `self-report`, not confirmed progress. JSON and hashes do not authenticate a person's identity or establish complete context independence.
+
+In mixed-isolated mode, the offline branch seals PLAN without reading the connected branch. Seal final RESULT and assess progress only after integration. Preserve each finding's provenance and evidence level.
+
+## Continue, change route, or review strategy
+
+After two consecutive independently reviewed rounds of repetition, reformulation, or inconclusive work at the same obstacle without a new mechanism, the next round must change method family. To retain it, PLAN.reopening_basis must point to a concrete new-mechanism note. Renaming an ID is not a new method.
+
+After three rounds without a reduced core gap, review the route's value. PLAN.strategy_review must point to a comparison of alternatives and a continue/pause recommendation. Auxiliary results and valid exclusions still retain their value; three rounds is a scheduling threshold, not a theorem of impossibility.
+
+Missing reviews, timeouts, unknown rounds, or missing sequence numbers interrupt the independently reviewed streak. Retrospective records are explicitly marked and do not count as preregistration or toward consecutive stagnation thresholds. Unfinished packages do not replace the latest complete assessment. Reports inspect the latest 50 assessments; older evidence stays on disk and is not treated as searched.
+
+The system currently provides advice. It does not automatically pause a problem, set `blocked`, remove a certification hold, or alter the search contract. Affirmative searches and zero stagnation thresholds retain their commitment. The researcher decides a whole-problem stop; abandoning a failed route does not abandon the project.
+
+## What file checks establish
+
+Hashes bind baseline, plan, result, evidence, and review. A changed input invalidates the previous review. Exact duplicate recent results/evidence cannot be repeatedly registered as frontier advances; renamed or semantically restated claims still need independent review. Project-bound path checks reject outside evidence and escaping symlinks.
+
+These checks do not prove theorems, certify levels, or prevent fabrication by someone able to rewrite all records. The researcher can follow the report's evidence paths. Direct evidence controls when ledgers disagree.
+
+Prepare a manual assessment:
+
+```bash
+conda run -n graphlab python tools/research_progress.py prepare   --project projects/<project> --round attempt-00000001-manual --attempt 1
+```
+
+Sealing preserves existing versions. Correct a sealed record in a new assessment while keeping the old package; its review cannot certify the revision. Use `prepare --retrospective` for later corrections or historical assessments, optionally with `--baseline notes/<evidence-file>` relative to the project.
+
+## Self-reported scheduling feedback and tasks
+
+Absent independent REVIEW still means no independently reviewed advance or stagnation. A separate self-report window triggers `review-strategy` after either:
+
+- Two consecutive completed prospective steps at the same obstacle in the same task, including enabling-result, experimental-signal, and frontier-advance labels.
+- Three consecutive steps reporting only auxiliary results, computational leads, route exclusions, or inconclusive work.
+
+Failures, missing steps, unfinished/retrospective records, task changes, or ineligible categories interrupt the applicable window. Existing certification/route-change decisions take precedence. Changing the category alone does not reset the same-obstacle window. The next PLAN must reference a mechanism-comparison report; sealing binds its hash and resets the observation window.
+
+The comparison identifies the failure derivation, excluded scope, tested new mechanism, and a test linking it back to the original problem. Repeating that an estimate is missing is insufficient. Scripts check existence and hashes, not the adequacy of the mathematics. This feedback uses the existing decision step at high effort; it does not add independent reviews, paid calls, or whole-problem holds.
+
+With task-enabled ordinary V2 or mixed-isolated runs, the same objective persists across calls. Progress reports separate execution steps, self-reported accepted tasks, exhausted routes, and unfinished tasks. Check acceptance claims against evidence; certification and completion boundaries remain unchanged. See the [runtime guide](runtime-v2-guide.md).
+
+In mixed mode, the offline branch seals task PLAN, integration fills RESULT.research_task, and the runner validates and atomically saves task state without counting replay twice. Old START=0 rounds keep their protocol. Structured route changes remain V2-only; mixed runs keep compatibility records. `partial-result` describes scope rather than proof certification. Neither it nor `proof-draft` can become a certified frontier advance or exclusion through progress REVIEW alone.

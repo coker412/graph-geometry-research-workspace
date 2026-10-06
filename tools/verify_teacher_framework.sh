@@ -17,6 +17,7 @@ elif [[ $# -eq 1 ]] && [[ "$1" == "--public-source" ]]; then
 fi
 
 public_skill_files=(
+  ".agents/skills/math-paper-writing/references/delivery-checks.md"
   ".agents/skills/math-paper-study-guide/SKILL.md"
   ".agents/skills/math-paper-study-guide/agents/openai.yaml"
   ".agents/skills/math-paper-study-guide/assets/main-study-zh-template.tex"
@@ -37,6 +38,12 @@ public_skill_files=(
 )
 
 required_files=(
+  "tools/tests/test_setup.py"
+  "agents/protocols/geometry-scope.md"
+  "agents/protocols/cross-field.md"
+  "agents/instructions/personal-research.md"
+  "tools/research_tasks.py"
+  "tools/tests/test_research_tasks.py"
   "${public_skill_files[@]}"
   "agents/core/research-core.md"
   "agents/core/queue-core.md"

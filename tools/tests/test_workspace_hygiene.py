@@ -76,6 +76,30 @@ class WorkspaceHygieneTest(unittest.TestCase):
             self.assertEqual(handle.read(), "old event\n")
         self.assertTrue(newest.is_file())
 
+    def test_paper_layout_rejects_new_project_root_manuscript(self) -> None:
+        manuscript = self.root / "projects" / "sample" / "main.tex"
+        manuscript.parent.mkdir(parents=True)
+        manuscript.write_text("\\documentclass{article}\n", encoding="utf-8")
+
+        self.assertEqual(hygiene.check_paper_layout(self.root, show_legacy=False), 1)
+        self.assertEqual(hygiene.paper_layout_candidates(self.root), [manuscript])
+
+    def test_paper_layout_accepts_paper_and_nonmanuscript_document_dirs(self) -> None:
+        allowed = [
+            self.root / "projects" / "sample" / "paper" / "main.tex",
+            self.root / "projects" / "sample" / "paper" / "references.bib",
+            self.root / "projects" / "sample" / "notes" / "audit.tex",
+            self.root / "projects" / "sample" / "reports" / "report.tex",
+            self.root / "projects" / "sample" / "study-zh" / "main.tex",
+            self.root / "projects" / "sample" / "sources" / "source.bib",
+        ]
+        for path in allowed:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("test\n", encoding="utf-8")
+
+        self.assertEqual(hygiene.paper_layout_candidates(self.root), [])
+        self.assertEqual(hygiene.check_paper_layout(self.root, show_legacy=False), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

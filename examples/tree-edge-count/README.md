@@ -1,20 +1,17 @@
-# 示例：有限树的边数
+# Example: the edge count of a finite tree
 
-这个虚构项目演示工作台如何保存一个很小的证明任务。它不来自任何真实研究项目，也不在
-重要猜想队列中运行。
+This synthetic project demonstrates a small proof task. It comes from no private research project and is not running in the conjecture queue.
 
-问题是证明：若有限非空简单图是一棵树，且有 \(n\) 个顶点，那么它有 \(n-1\) 条边。
-示例故意停在 `proof-draft`。证明虽然完整，仍需独立审查或研究者确认才能提高证据等级。
+The problem is to prove that a finite nonempty simple tree with $n$ vertices has $n-1$ edges. The example deliberately remains `proof-draft`: its complete candidate still needs independent review or researcher acceptance before any evidence upgrade.
 
-建议按以下顺序阅读：
+Read in this order:
 
-1. `problem.md`：正式陈述和定义边界；
-2. `CURRENT_STATE.md`：下一回合的短入口；
-3. `ideas.md` 与 `research-tree.md`：候选方法和路线选择；
-4. `proof-map.md`：当前证明的依赖；
-5. `notes/proof.md`：候选证明；
-6. `verification-ledger.md`：证据等级和待审查事项；
-7. `progress.md`：追加式回合记录。
+1. `problem.md`: formal statement and definitions.
+2. `CURRENT_STATE.md`: short recovery entry.
+3. `ideas.md` and `research-tree.md`: candidate methods and route choice.
+4. `proof-map.md`: dependencies.
+5. `notes/proof.md`: candidate proof.
+6. `verification-ledger.md`: evidence level and pending review.
+7. `progress.md`: append-only round history.
 
-复制此目录作为新项目起点时，应先替换题目和定义，再重新建立证据记录。不要保留本示例
-的结论、ID 或证据等级。
+When using this as a project starter, replace the problem and definitions and establish new evidence records. Do not carry over this example's conclusions, IDs, or evidence levels.

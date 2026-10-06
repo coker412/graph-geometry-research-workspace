@@ -1,160 +1,126 @@
-# 中文数学论文学习版方法
+# Method for a Chinese mathematical study edition
 
-## 来源与适用范围
+## Origin and scope
 
-本方法记录中文学习稿的通用写法与学习设计。使用时应重新识别源论文的证明依赖、
-难点和证据状态，并在具体项目中记录源文件或冻结版本。
+This method was developed from an internal scalar-curvature study edition. The recorded entry-point SHA-256 is `c127be33068ee0ce812d154a7a4236a3795dc502bb130808349269806d777bc2`; its modules were study-guide, introduction, slices, path, clock, ambient, completion, and reconstruction. The private manuscript is not part of the public framework.
 
-## 这套写法的核心
+This records teaching and exposition choices, not the source paper's mathematics. Identify each new paper's own dependencies, difficult steps, and evidence status instead of copying module names or counts.
 
-学习稿不是把英文论文逐句翻译成中文，也不是把审稿记录搬进正文。它应同时做到三件事：
+## Core design
 
-1. 忠实保存可以逐项对照的数学主干；
-2. 在读者真正会卡住的位置补基础和计算；
-3. 让读者最终能够脱离正文重建证明。
-
-学习稿按以下顺序组织：
+Preserve a mathematical core that can be compared with the source, supply prerequisites/calculations where readers actually need them, and enable eventual reconstruction without the text. Sentence-by-sentence translation and pasted review records are insufficient.
 
 ```text
-精确问题与主结果
+Precise problem and main result
         ↓
-一句话核心机制与证明依赖图
+One-sentence mechanism and proof dependencies
         ↓
-基础补充 → 正文模块 → 计算补充 → 学习检查
-        ↓                         ↑
-        └────── 对每个关键模块重复 ──────┘
+Prerequisites → proof module → decisive calculation → checkpoint
+        ↑                                             |
+        └──────── repeat for essential modules ────────┘
         ↓
-证明重构清单与最终掌握标准
+Proof-reconstruction list and mastery criteria
 ```
 
-## 首页应解决的四件事
+## Front matter
 
-### 1. 说明来源和状态
+### Source and status
 
-首页用一个短状态框说明学习稿依据哪个源文件或冻结版本、源结果的证据等级，以及哪些额外计算只是为学习新增。状态框只承担边界说明，不写成长篇防御性叙述。
+Use a short status box naming the source/frozen version, its evidence level, and any new teaching calculations. Keep it concise rather than defensive.
 
-### 2. 用一句话说出机制
+### Mechanism in one sentence
 
-不是重复摘要，而是给出“构造什么—怎样连接—哪个正项压住哪个误差—最后怎样得到目标量”的因果链。读者应在尚未进入技术细节前知道为什么这种证明可能成立。
+Explain the causal chain: what is constructed, how pieces connect, which positive term controls which error, and how the target follows. Do not merely repeat the abstract.
 
-### 3. 给出分遍阅读法
+### Staged reading
 
-- 第一遍：理解对象、目标量、核心机制和各模块的输入输出；允许跳过长计算。
-- 第二遍：逐项复算决定结论的等式和不等式，并标出每个误差由什么吸收。
-- 第三遍：合上正文，按重构清单重新写出定义、依赖和关键估计。
+- First pass: objects, target quantity, mechanism, module inputs/outputs; long calculations may be skipped.
+- Second pass: recompute decisive identities/inequalities and identify how each error is absorbed.
+- Third pass: close the text and reconstruct definitions, dependencies, and estimates.
 
-每一遍都要写明可检验的完成标准，避免“认真阅读”“深入理解”这类空指令。
+Give testable completion criteria for each pass. Vague requests to read carefully or understand deeply are insufficient.
 
-### 4. 列出少量关键量
+### Key quantities
 
-只列贯穿全文、承担不同功能的量。每一项写清类型、定义和证明中的作用。局部一次性符号留在相应章节首次出现处解释。
+List only persistent quantities with distinct roles. Give their type, definition, and proof function. Introduce one-use notation locally.
 
-## 单个证明模块的标准结构
+## Proof modules
 
-每个主要章节尽量按下面的次序组织：
+The following are teaching functions, not five blocks to concatenate. Supply prerequisites before first use and decisive calculations beside the steps they explain. Short checks can close a section. Do not make readers finish a compressed proof before receiving the knowledge needed to understand it.
 
-1. **本节任务。** 用一段话说明输入、要解决的障碍和输出。
-2. **基础补充。** 只复习马上要用的定义、公式和直观图景，并说明第一遍可跳过哪些细节。
-3. **数学主干。** 陈述对象、引理、命题和证明；顺序尽可能对应源论文，便于同步。
-4. **计算补充。** 展开真正容易出错的局部步骤，例如：
-   - 二阶导数和链式法则；
-   - 曲率符号和指标提升；
-   - 缩放幂次和体积因子；
-   - 边界项、端点奇偶性和光滑延拓；
-   - 块矩阵正定性和混合项；
-   - `lim`、`limsup`、子序列与全体充分大参数的区别。
-5. **学习检查。** 要求读者解释该模块为什么成立、哪一步是发动机、输出如何进入下一节。
+1. State the module's inputs, obstacle, and output in a paragraph.
+2. Review only definitions, formulas, and intuition immediately needed; identify details that can be skipped on the first pass.
+3. Preserve exact statements/dependencies while reorganizing the learning narrative. Match source mathematics and citations, not necessarily paragraph order.
+4. Expand error-prone calculations: second derivatives/chain rules, curvature signs/index raising, scaling/volume factors, boundary terms/endpoint parity/smooth extension, block-matrix positivity/mixed terms, and the distinctions between limits, limsups, subsequences, and all sufficiently large parameters.
+5. Ask why the module works, which step drives it, and where its output is used.
 
-并非每个模块都需要同样长。容易的连接段可以合并；决定性构造或估计应完整展开。
+Give decisive constructions and estimates full treatment; combine easy connecting passages.
 
-### 证明主线连续性
+### Proof continuity
 
-“分步详细”不等于“主线清楚”。每个较长证明开始时先写出唯一目标量、目标命题或最终矛盾，
-并给贯穿多步的对象固定记号。若证明包含长技术核验，先把主等式链或主蕴含链集中写完，
-再补充该核验；核验结束时明确说它证明了前面使用的哪条公式。
+Start a long proof with its target quantity, proposition, or contradiction. Keep stable notation for persistent objects. Present the main equality/implication chain before a long technical verification, then explicitly connect that verification to the formula it establishes.
 
-逐步构造尤其要避免只写若干独立的“到这里得到……”。应同时说明：
+For stepwise constructions, identify the prior input, output quantifiers, later use on the same object, and whether final outputs concern the same box, subsequence, parameters, or candidate family. A sequence of disconnected local achievements is insufficient.
 
-- 本步的输入来自前面的哪个对象或公式；
-- 本步的输出具有怎样的量词；
-- 后面哪一步会在同一个对象上使用这个输出；
-- 最后组合的是不是同一方块、同一子序列、同一参数选择或同一个候选族。
+Check the central object throughout: if it disappears for a long stretch or an auxiliary construction never reconnects to the goal, repair the exposition. Reading step openings, endings, and connecting formulas should reconstruct the causal chain.
 
-完稿时做一次“主角检查”：定理陈述中的核心对象若在证明主体中长期消失，或者一个辅助对象
-构造后没有明确回接目标，就说明叙事仍未闭合。只读各步开头、结尾及连接公式，也应能重建
-目标、输入、输出和下一箭头。
+### Lemmas and appendices
 
-### 何时拆成引理或移入附录
+A long technical passage with a clear hypothesis/conclusion interface, used later only through its conclusion, should normally become a lemma. Approximation, regularity, boundary-trace, or lengthy constant checks may move to an appendix if they are not the conceptual mechanism. State the result precisely before use and point to its full proof.
 
-长技术段若有清楚的“假设—结论”接口，并且后文只调用其结论，应优先拆成独立引理。
-若该段主要处理逼近、正则性、边界迹或冗长常数核验，而且不是正文的概念发动机，可以把
-完整证明放入附录；正文必须先准确陈述结果，并在使用处明确指向附录。这样依赖顺序仍是
-“先有可引用的结论，再使用结论”，而不是在同一个证明中先借用、很久以后才补证。
+Keep short one-use algebra and direct substitutions inline. Split by meaningful mathematical interfaces and clearer causality, not page count or desired numbering.
 
-反过来，两三行的一次性代数或直接代入通常留在原证明里。拆分的判断标准不是篇幅或编号数量，
-而是能否形成有意义的数学接口，以及拆分后是否让主证明的因果链更容易重建。
+## Auxiliary environments
 
-## 三种辅助环境的职责
+`prerequisite` supplies the minimum background needed for the next page: geometric meaning, formulas, conventions, or endpoint/regularity intuition. It is not an unlimited textbook chapter.
 
-### 基础补充 `prerequisite`
+`calculation` explains the move between two source lines: differentiation variables, identities, signs, and sufficient estimate margins. End by stating what the calculation accomplishes in the main proof.
 
-回答“为了看懂下一页，现在最低限度要知道什么”。它不是教材章节，不应无边界扩张背景知识。优先包含：对象的几何含义、标准公式、符号约定、端点或正则性直觉。
+`checkpoint` asks what the reader can reconstruct with the text closed. Test causality or a decisive calculation, not yes/no responses or irrelevant constant memorization.
 
-### 计算补充 `calculation`
+## Track distinct obligations separately
 
-回答“正式论文为何可以从这一行到下一行”。逐项展示变量对谁求导、使用哪条恒等式、符号从哪里来、估计的余量是否足够。计算结束时说明这段代数在主证明中完成了什么，而不是只停在公式。
+The source example separately tracked nonnegative Ricci curvature and divergent scalar-curvature mass. Other papers may separate existence/regularity, local construction/global gluing, main-term lower bounds/error control, geometric/integral or topological properties, or qualitative results/optimality.
 
-### 学习检查 `checkpoint`
+Explain which obligation each new object serves so readers understand why a formula is needed.
 
-回答“如果现在合上稿件，读者应该能做什么”。好的检查要求重建一个因果关系或关键计算；不使用只需回答“是/否”的伪问题，也不考察无关常数记忆。
+## Detail level
 
-## 两条账分开记
+Expand steps where one error invalidates the conclusion; nontrivial arguments hidden behind direct calculation or standard reasoning; ambiguous variables, scales, endpoints, measures, or tensor types; and passages from local/subsequence results to global quantifiers.
 
-复杂证明常有两条或更多彼此独立的任务。应分开追踪这些任务，例如：
+Do not repeat identical mechanical substitutions, unrelated background, already explained standard facts, or audit/revision history.
 
-- 存在性与正则性；
-- 局部构造与整体拼接；
-- 主项下界与误差控制；
-- 几何性质与积分/拓扑性质；
-- 定性结论与最优性。
+## Source synchronization
 
-每引入一个对象，都说明它服务于哪一条账。这样可以避免读者知道公式成立，却不知道为什么需要它。
+Match theorems, formulas, assumptions, and labels wherever possible. Make added explanations identifiable, including concise markings on expansions placed directly in proofs. Keep source-comparison records; do not disguise a new proof as the source argument.
 
-## 解释的颗粒度
+A proof-bearing source change makes the companion potentially stale. Added calculations aid understanding without raising evidence levels. If they expose a gap, return to the source and proof-audit process rather than bypassing it only in the companion.
 
-应当展开：
+## Completion checklist
 
-- 一处错误会推翻结论的步骤；
-- 源论文以“直接计算”“标准论证”略过、但读者难以自行补出的步骤；
-- 变量复用、尺度变化、端点退化、测度变化和张量类型容易混淆之处；
-- 从局部或子序列结论升级到全局量词的步骤。
+1. Does the opening state the problem, conclusion, source version, and evidence boundary accurately?
+2. Does the short mechanism describe the full chain from construction to conclusion?
+3. Does each module specify inputs, obstacle, and output?
+4. Is every nonstandard object typed, defined, and motivated before use?
+5. Can decisive calculations be recomputed line by line, including signs, powers, norms, and boundary terms?
+6. Are pointwise/integral, local/global, subsequence/full-limit, and fixed/uniform parameters distinguished?
+7. Do checkpoints test the actual bottlenecks?
+8. Does reconstruction cover all essential dependencies rather than summarize sections?
+9. Have duplicate translations, empty encouragement, audit logs, and defensive prose been removed?
+10. Are source comparison, forced LaTeX builds, and log checks complete?
+11. Do long proofs retain their target objects, reconnect technical detours, and combine outputs on the same objects?
+12. Are long technical steps factored through clear interfaces without fragmenting short calculations?
 
-通常不必展开：
+## Lessons from a later internal study edition
 
-- 每次代入都完全相同的机械计算；
-- 与主证明无下游关系的广泛背景；
-- 已在前文完整解释、此处只需引用的标准结论；
-- 审核历史、修订过程和“我们检查过”的元叙述。
+A later private study edition refined these rules; its files are optional teaching references, not required mathematical inputs for other projects.
 
-## 与源论文同步
+Show the complete target chain early. For example, explain the incompatible upper/lower bounds on the same pair of boxes before the finite-tree argument that selects them. Find the new paper's own persistent objects and closed chain rather than listing module names.
 
-- 数学定理、公式、假设和标签尽量与源稿一一对应。
-- 新增说明使用单独环境，不把另一套证明悄悄混入正式正文。
-- 源稿发生 proof-bearing 修改后，学习稿立即视为可能不同步。
-- 学习稿新增计算只能帮助理解和复核，不能提高源结果的证据等级。
-- 若新增计算发现问题，应回到源稿和证明审计流程处理，不能只在学习稿中绕过。
+Use a short example to explain an unfamiliar object's purpose only when it removes a real obstacle, and check the example's hypotheses. An affine map's translation increment can explain why subtracting a constant vector suffices.
 
-## 完稿检查表
+Organize hard proofs causally, expand necessary calculations in place, and track objects and parameter dependence. Checkpoints test material already taught; they must not delegate omitted essential derivations to the reader.
 
-1. 首页是否准确写出问题、结论、来源版本和证据边界？
-2. 一句话机制能否覆盖从构造到最终结论的完整因果链？
-3. 每个主要模块是否明确说明输入、障碍和输出？
-4. 每个非标准对象是否在首次使用前说明类型、定义和作用？
-5. 所有决定性计算是否能逐行复算，尤其是符号、幂次、范数和边界项？
-6. 是否区分了点态/积分、局部/全局、子序列/全极限、固定参数/一致参数？
-7. 每个学习检查是否覆盖该模块真正的逻辑瓶颈？
-8. 重构清单是否包含全部关键依赖，而不是章节摘要？
-9. 是否删掉了重复翻译、空泛鼓励、审核日志和防御性语言？
-10. 是否完成源稿对照、LaTeX 强制编译和日志扫描？
-11. 每个长证明的目标对象是否贯穿正文，技术岔路是否回接原公式，最后是否在同一对象上组合各步输出？
-12. 是否把会打断主线的长技术步骤拆成了有明确接口的引理或附录，同时避免把短计算过度拆碎？
+Reading routes should point to exact propositions, equations, or pages, specifying which input is provisionally accepted and when to return to its proof. Three generic reading passes do not replace this route.
+
+For teaching acceptance, read the hardest chain from the intended reader's starting knowledge. At each step ask why the quantity is introduced, how the next line follows, and where the output is used. Record and repair actual sticking points. Report this reading check separately from mathematical audit; page counts, supplement counts, and matching labels do not establish teaching quality.

@@ -99,6 +99,22 @@ class ResearchProgressTest(unittest.TestCase):
         self.put(source, value)
         self.assertEqual(progress.assess(self.project, d)["status"], "unknown")
 
+    def test_mechanical_close_is_idempotent_and_rejects_evidence_changes(self):
+        d, source, value = self.v2_packet()
+        progress.import_round_result(self.project, d)
+        first = progress.finalize_result(self.project, d)
+        self.assertEqual(first, progress.finalize_result(self.project, d))
+        self.assertFalse(first['mathematical_verification'])
+        self.assertFalse((d / 'REVIEW.json').exists())
+        (self.project / 'proof.md').write_text('changed evidence')
+        with self.assertRaises(ValueError):
+            progress.finalize_result(self.project, d)
+
+    def test_mechanical_close_rejects_evidence_upgrade(self):
+        d = self.packet(reviewed=False)
+        with self.assertRaisesRegex(ValueError, 'cannot certify'):
+            progress.finalize_result(self.project, d)
+
     def test_v2_import_preserves_authored_and_sealed_results(self):
         d, source, value = self.v2_packet()
         result = progress.read(d / "RESULT.json")

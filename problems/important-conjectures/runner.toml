@@ -1,45 +1,49 @@
-# tmux 后台 session 名。
+# Background tmux session.
 session_name = "important_conjectures"
 
-# 留空表示使用 Codex CLI 当前默认模型；老师也可明确填写账户可用的 GPT/Codex 模型。
-model = ""
-reasoning_effort = "high"
-# 普通回合使用 V2；mixed-isolated 保留兼容汇合协议。
+# Explicit models keep isolated branches independent of temporary CLI defaults.
+# Replace them with models available to your account if needed.
+model = "gpt-6-astra"
+reasoning_effort = "medium"
 runtime_version = 2
+research_task_version = 1
 phase = "research"
 
-# 单个 Codex 回合的硬超时。0 表示不设超时。
+# Per-call timeout in minutes; 0 disables it.
 attempt_timeout_minutes = 90
-
-# 一次 start 最多运行多久；0 表示持续运行，直到收到 stop 请求。
+# Total hours per background start; 0 means continuous operation.
 max_wall_hours = 24
-
-# 没有可运行题目时定期重扫，老师可在运行期间继续投放新题。
 idle_seconds = 60
 max_idle_cycles = 0
 
-# 允许 Codex 使用内置网页搜索做文献核查。
-# information_mode 留空时继续使用这个兼容开关；也可填写
-# offline / connected / mixed-isolated。留空不会改变已有任务的行为。
+# Empty information_mode uses the web_search compatibility switch.
+# Explicit modes: offline / connected / mixed-isolated.
 information_mode = ""
 web_search = false
-
-# 连续 CLI/超时故障达到此数后冻结该题，避免无休止消耗额度。
 max_consecutive_runtime_failures = 3
 
-# xhigh 仅用于显式选择的关键认证或瓶颈升级阶段。
+[phase_model]
+triage = "gpt-6-astra"
+research = "gpt-6-astra"
+experiment = "gpt-5.6-sol"
+literature = "gpt-5.6-sol"
+audit = "gpt-6-astra"
+critical-audit = "gpt-6-astra"
+stuck-escalation = "gpt-6-astra"
+
 [phase_effort]
-triage = "medium"
-research = "high"
+triage = "high"
+research = "medium"
 experiment = "medium"
 literature = "medium"
 audit = "high"
 critical-audit = "xhigh"
-stuck-escalation = "xhigh"
+stuck-escalation = "high"
 
-# 无 tokenizer 时使用 UTF-8 字节数作为保守 token 上界，不是计费量。
+# Initial-packet budgets in UTF-8 bytes, not billing tokens.
+# Oversized evidence remains available through explicit references.
 [context_budget]
-packet_target_tokens = 12000
-packet_hard_tokens = 48000
+packet_target_bytes = 32768
+packet_hard_bytes = 65536
 max_evidence_slices = 8
-max_single_evidence_tokens = 12000
+max_single_evidence_bytes = 12288

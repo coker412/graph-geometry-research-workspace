@@ -1,20 +1,19 @@
-# Proof Map
+# Proof map
 
 ```mermaid
 flowchart TD
     P0["P0: |E|=|V|-1<br/>proof-draft"]
-    A1["A1: 对 |V| 归纳<br/>proof-draft"]
-    S1["S1: 有限非平凡树存在叶子<br/>proof-draft"]
-    S2["S2: 删除叶子后仍为树<br/>proof-draft"]
-
+    A1["A1: Induction on |V|<br/>proof-draft"]
+    S1["S1: A finite nontrivial tree has a leaf<br/>proof-draft"]
+    S2["S2: Leaf deletion preserves the tree property<br/>proof-draft"]
     P0 -->|depends-on| A1
     A1 -->|depends-on| S1
     A1 -->|depends-on| S2
 ```
 
-| Node | 命题 | 来源 | 证据等级 | 证据 | 当前 gap |
+| Node | Statement | Source | Level | Evidence | Gap |
 |---|---|---|---|---|---|
-| P0 | 有限非空树满足 \(|E|=|V|-1\) | internal-offline | proof-draft | `notes/proof.md` | 缺少独立审查 |
-| A1 | 删叶归纳覆盖所有 \(|V|\ge 1\) | internal-offline | proof-draft | `notes/proof.md` | 缺少独立审查 |
-| S1 | \(|V|\ge 2\) 时存在度为 1 的顶点 | internal-offline | proof-draft | `notes/proof.md` | 缺少独立审查 |
-| S2 | 删除叶子及其关联边后仍为树 | internal-offline | proof-draft | `notes/proof.md` | 缺少独立审查 |
+| P0 | Edge count is vertex count minus one | internal-offline | proof-draft | `notes/proof.md` | Independent review pending |
+| A1 | Leaf-deletion induction covers every nonempty finite tree | internal-offline | proof-draft | `notes/proof.md` | Independent review pending |
+| S1 | A tree with at least two vertices has a degree-one vertex | internal-offline | proof-draft | `notes/proof.md` | Independent review pending |
+| S2 | Deleting a leaf and its incident edge leaves a tree | internal-offline | proof-draft | `notes/proof.md` | Independent review pending |

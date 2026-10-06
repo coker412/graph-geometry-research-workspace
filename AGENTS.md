@@ -1,58 +1,67 @@
-# 图几何与几何分析研究工作台
+# Geometry and mathematics research workspace
 
-每次回答以 **Hi, mathematician!** 开头。
-工作区为 `__WORKSPACE_ROOT__`，用于离散几何、几何分析与数学研究管理。
+Start every reply with **Hi, mathematician!**
+Workspace: `__WORKSPACE_ROOT__`. All geometry and related mathematics are in scope, including Riemannian geometry, geometric analysis, discrete/graph geometry and project-specific fields. Keep existing paths; the directory name neither limits topics nor makes graph reductions the default.
 
-## 不可变边界
+## Boundaries
 
-- 公开问题也必须实际尝试证明或构造反例，不能用综述或公开状态代替推进。
-- 区分探索与认证。探索可在明确标为 conditional/GAP 的引理上推进；完整候选解、决定性反例、高风险共同依赖和证据升级必须进入认证，冻结受影响的依赖分支。
-- 实质结论必须有证据等级和直接证据：`conjecture`、`experimental`、`partial-result`、`proof-draft`、`agent-verified`、`human-verified`、`formalized`。计算不是证明，自检不能成为独立验证，模型强度与状态整理不能提高等级。
-- `agent-verified` 需要 verifier 或独立 Agent 审查；`human-verified` 需要研究者逐步接受；`formalized` 需要形式系统检查。论文主结果无保留写入摘要和结论须达到后两级，并取得研究者授权。
-- Rethlas 与网页端 Pro 必须逐次明确批准。可准备问题包，不能自行启动或提交。外部写入、公开发布、额外费用和扩大权限前核对已有授权，没有授权时先询问。
-- 不写机密、不修改 `.env`、不覆盖已有改动、不用破坏性命令清理。修改前后检查 Git diff；没有 Git 时保存快照并检查文件差异。除非明确要求，不提交或推送。
+- Actually attempt proofs or counterexamples, even for open problems; a survey or public status is not progress.
+- Current research uses natural-language proofs and reproducible calculations, not Lean. Do not introduce formalization tasks or require formalization to continue research or review. Preserve historical formalized evidence labels; a future change of workflow requires an explicit researcher request.
+- Separate exploration from certification. Important auxiliary candidates trigger stronger self-checks, counterexample tests and applicable certification, not automatic whole-problem pauses. Freeze their use as certified premises; explicit conditional/GAP exploration and independent routes may continue. Preserve dependency labels, propagate errors, and report important findings without waiting for routine human approval. Complete main-problem candidates and decisive main counterexamples require whole-problem certification and a pause; evidence upgrades still require the corresponding verification.
+- Every substantive claim needs a level and direct evidence; definitions are in `agents/core/research-core.md`. Computation is not proof; self-review is not independent verification. Model strength and state maintenance cannot raise levels.
+- agent-verified requires an independent verifier/Agent; human-verified requires the researcher's stepwise acceptance; formalized requires formal-system checks. Unqualified main results in paper abstracts/conclusions require one of the latter two levels AND researcher authorization.
+- Rethlas and web Pro require explicit approval for each use. Prepare packets, but do not launch/submit them without approval. Check existing authorization before external writes, publication, added costs or permission expansion; ask if absent.
+- No secrets, .env edits, overwriting existing changes or destructive cleanup. Check Git diffs before/after edits; without Git, save snapshots and inspect differences. No commits/pushes unless requested.
 
-## 按阶段读取
+## Read on demand
 
-只读当前任务所需模块，已包含在 RESEARCH_PACKET 中的正文不重复读取。开始相关工作前完成读取，并在首次实质进度更新列出路径：
+Read only applicable modules before that work; list their paths in the first substantive update. Do not reread content included in RESEARCH_PACKET. Paths below are workspace-relative:
 
-- 数学任务：`agents/core/research-core.md`，再按阶段读取下面的协议。
-- 探索、路线诊断：`agents/protocols/explore.md`。
-- 候选证明、严格审核、证据升级：`agents/protocols/proof-audit.md`。
-- 决定性反例：再读 `agents/protocols/counterexample-audit.md`。
-- 文献核查：`agents/protocols/literature-check.md`。
-- 计算实验：`agents/protocols/computation.md`。
-- 队列回合：`agents/core/queue-core.md`；操作调度器时另读 `problems/important-conjectures/README.md`。
-- Rethlas/网页端升级：`agents/protocols/escalation.md`。
-- 论文、LaTeX、面向公开读者的研究文字：`agents/instructions/paper-writing.md`；润色优先使用 humanizer，不改变数学内容。
-- 研究者明确要求多智能体时：`agents/protocols/multi-agent.md`。不因工具可用自行增加并行 Agent。
+- Mathematics: `agents/core/research-core.md`, then the applicable phase protocol.
+- New geometric objects/conventions: relevant sections of `agents/protocols/geometry-scope.md`; store conventions in the problem/project, not a new checklist each round.
+- Personal workflow/model planning: `agents/instructions/personal-research.md`; omit company surveys from proof rounds.
+- Exploration/routes: `agents/protocols/explore.md`.
+- Persistent, identified bottlenecks: `agents/protocols/cross-field.md`; supports proofs, constructions and counterexamples, without changing the search contract.
+- Proof candidates/audits/upgrades: `agents/protocols/proof-audit.md`; decisive counterexamples also `agents/protocols/counterexample-audit.md`.
+- Literature: `agents/protocols/literature-check.md`. Experiments: `agents/protocols/computation.md`.
+- Queue rounds: `agents/core/queue-core.md`; scheduler operations also `problems/important-conjectures/README.md`.
+- Rethlas/web escalation: `agents/protocols/escalation.md`.
+- Papers, LaTeX, public research writing: `agents/instructions/paper-writing.md`; prefer humanizer for polishing without mathematical changes.
+- Public LaTeX manuscripts should use `\date{}` and display no manuscript date unless the researcher explicitly requests one.
+- Workspace-wide paper-location gate: from the first write, every active or candidate manuscript source, bibliography, included manuscript file, and manuscript build output must live under the owning project's `paper/` directory. Never stage a manuscript at the project root for later cleanup. Keep teacher-supplied editable manuscript sources or frozen manuscript baselines under `paper/teacher-sources/`, and internal manuscript variants under a clearly named subdirectory of `paper/`. Learning editions, source literature, research notes, reports, talks, and posters may remain in their designated non-paper directories only when they are not the active/candidate manuscript. Before and after paper-facing work, run `python tools/workspace_hygiene.py paper-layout`; existing reported legacy exceptions are frozen and do not authorize new exceptions.
+- Multi-agent work only when explicitly requested: `agents/protocols/multi-agent.md`. Tool availability is not authorization.
 
-旧入口 `agents/instructions/research-workflow.md` 和 `queue-and-escalation.md` 提供索引。更近的 AGENTS.md 继续适用。
+Legacy indexes: `agents/instructions/research-workflow.md` and `queue-and-escalation.md`. More local AGENTS.md files apply.
 
-## 长期记忆与目录
+## Memory and files
 
-研究者授权多智能体工作时，最多使用 5 个子智能体（不含根 Agent），并服从当前会话更低的实际工具上限。根 Agent 统一分配名额；子智能体不得自行增加后代。
+When authorized, at most 5 child agents, subject to lower session limits. The root allocates all slots; children cannot spawn descendants.
 
-`CURRENT_STATE.md` 是恢复的唯一短入口，只保存问题边界、证据等级、可用结果 ID、活动 gap/路线、下一动作和证据指针，不存证明正文。目标 6 KiB，超过 8 KiB 提醒；V2 新写入硬限 12 KiB/300 行，旧摘要暂保留 32 KiB/300 行兼容上限，禁止为满足大小静默截断证据。
+CURRENT_STATE.md is the sole short recovery entry: scope, levels, usable result IDs, active gaps/routes, next action and evidence pointers, never proof bodies. Target 6 KiB; warn above 8 KiB. V2 new writes: at most 12 KiB/300 lines; legacy: 32 KiB/300 lines. Never silently truncate evidence to fit.
 
-先读状态，再按稳定 ID 和 `file#L起-L止` 或带 SHA256 的片段读取证据。禁止为了了解上下文完整重读增长中的历史台账。摘要不能覆盖 ledger 或直接证据；首次迁移只核对当前状态段、最近完整回合与被引用证据，未读历史按未知处理。
+Read state first, then evidence by stable ID and `file#Lstart-Lend` or SHA256-bound slices. Do not reread growing ledgers for general context. Summaries cannot replace ledgers/direct evidence. Initial migration checks only current state, the latest complete round and cited evidence; unread history remains unknown.
 
-产物位于 `projects/<项目名>/`：短状态 `CURRENT_STATE.md`，追加历史 `progress.md`，证据 `verification-ledger.md`，依赖 `proof-map.md`，路线 `ideas.md`/`research-tree.md`，稳定说明 `README.md`。证明草稿放 `notes/`，实验放 `code/`，形式化放 `lean/`，Rethlas 放 `rethlas/`，论文源码只放 `paper/`。开放问题放 `problems/`，通用定义与例子放 `library/`，跨项目材料放 `shared/`。
+Under `projects/<name>/`: CURRENT_STATE.md (index), progress.md (append-only history), verification-ledger.md (evidence), proof-map.md (dependencies), ideas.md/research-tree.md (routes), README.md (stable description). Proofs: notes/; experiments: code/; formalization: lean/; Rethlas: rethlas/; paper sources only: paper/. Open problems: problems/; general definitions/examples: library/; cross-project material: shared/.
 
-只有对应结构变化才更新路线/依赖文件。README 不追加回合日志。V2 researcher 写证明与 ROUND_RESULT.json，由 runner 整理共享状态；手工与兼容回合由根 Agent 统一收尾。
+Update route/dependency files only for structural changes. No round logs in README. Queue write ownership and V2/manual closing duties are defined in `agents/core/queue-core.md`.
 
-## 摘要与研究沟通
+## Researcher communication
 
-- 摘要用清楚、简洁、自然的中文，让研究者无需翻阅历史记录即可理解。默认用一至三段，必要时再用列表或公式。
-- 先说研究的数学问题及解决情况，再说明本次具体证明、构造或排除了什么，最后说尚缺哪一步及下一动作。没有新结果就直接说明。
-- 数学陈述保留决定结论的对象、假设、维数、量词和适用范围。明确区分完整解决原题、解决特殊情形、局部辅助结论和数值观察；已有文献结果与本次结果分开说明。
-- 证据等级用人能理解的话解释，例如“证明草稿，尚未独立核验”“已由独立审查者核验”“已由研究者逐步确认”；正式等级与直接证据指针仍按原规则保留。
-- 首次出现题号、结果 ID 或专用术语时写出数学含义。内部编号、英文缩写及“接口”“闭合”“短名单”等工作术语不能代替具体说明；“候选研究题目列表”比“短名单”清楚。
-- 选题建议说明为什么有希望完整解决原问题，以及主要障碍。能继续得到局部结果、已投入很多轮或容易计算，都不能单独作为优先理由。
-- 后续新写或更新 CURRENT_STATE.md 时同样遵守以上表达要求，保持短索引的用途，不加入证明正文，不因精简而丢失证据或改变数学结论。
+Use clear, natural English for replies and research summaries unless the researcher requests another language, normally 1–3 paragraphs. First explain the mathematical problem and extent solved, then this round's proof/construction/elimination, then the remaining gap and next action. Say when there is no new result.
 
-## 环境与交付
+Preserve objects, assumptions, dimension, quantifiers and scope. Distinguish full solutions, special cases, auxiliary results and numerical observations; separate literature results from this round's work. Explain evidence levels plainly while retaining formal levels and direct pointers. Explain a problem number, result ID or technical term on first use; internal IDs/jargon cannot replace its mathematical meaning.
 
-Python 使用 Conda `graphlab`；LaTeX 在对应 `paper/` 运行 `latexmk -xelatex main.tex` 并遵守论文模块的完整检查；Lean 使用项目 `lean-toolchain`。长进程优先 tmux，告知会话及查看/退出方法。
+Topic recommendations must explain prospects for solving the original problem and the main obstacle. Easy computations, many past rounds or more partial results alone do not justify priority.
 
-多步骤任务写明目标、假设、产物和验收标准。完成时报告文件路径、检查、缺口、证据等级及下一动作。问题有实质歧义、要求但无法核实新颖性、主要路线满足搜索承诺后仍结构性阻塞、候选结果需要人类确认、准备写论文主结果或改变项目目标时，保存具体材料再询问研究者。
+Apply the same language preference to new/updated CURRENT_STATE.md; keep it an index without proofs, lost evidence or changed conclusions.
+
+Queued CURRENT_STATE.md files must also pass `tools/project_state.py`: preserve schema/migration fields and use canonical or explicitly supported headings (canonical headings: Control, Problem and scope, Current mathematical status, Active proof frontier, Next bounded round, Evidence pointers; supported Chinese equivalents remain valid). Validate the actual saved file before reporting successful round closure; The selected language does not waive machine-schema requirements.
+
+## Execution and delivery
+
+- Explicit continuous/background research requests use this workspace's existing tmux queue: read `agents/core/queue-core.md` and `problems/important-conjectures/README.md`, register/adopt the target project, and run `./queue.sh start --slug <slug>`. Do not substitute a chat Goal or one manual round. Here an explicit “mix mode” request selects the documented `mixed-isolated` workflow (two isolated lanes then integration), not merely literature plus derivation in one chat. Verify item configuration, holds, focused health checks, tmux session, runner lock and actual attempt logs before reporting background research as running. Keep unrelated stopped projects stopped and avoid concurrent chat writes to a runner-owned project.
+- When recording explicit researcher acceptance for a queued candidate, also reconcile its machine status through `set-status` within the accepted scope and record the evidence; do not leave an already accepted candidate imposing a stale global hold. Use `paused` when further queue research is not requested; `completed` requires the appropriate completion instruction. Never clear a hold from self-review alone. If no acceptance exists, report the exact hold rather than bypassing it.
+
+Python: Conda graphlab. LaTeX: run `latexmk -xelatex main.tex` in the relevant paper/ and complete the paper protocol checks. Prefer tmux for long jobs; give session and viewing/exiting instructions.
+
+For multistep work state goal, assumptions, artifacts and acceptance. Deliver paths, checks, gaps, evidence level and next action. Save concrete material before asking about substantial ambiguity, requested but unverified novelty, structural blockage after the search commitment, human acceptance of candidates, paper main results or project-goal changes.

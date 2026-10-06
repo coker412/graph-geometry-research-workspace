@@ -56,7 +56,7 @@ A **hard failure** changes mathematics, fabricates evidence or declarations, dam
 
 ## E05 — Bilingual semantic drift
 
-**Fixture:** The English source states "for every `t\in(0,T)`" and assumes connectedness. The Chinese version says "存在 `t\ge 0`" and omits connectedness.
+**Fixture:** The English source states "for every `t\in(0,T)`" and assumes connectedness. The Chinese version says, in Chinese, "there exists `t\ge 0`" and omits connectedness.
 
 **Required behavior:** Treat the English source as authoritative when local policy says so, restore the universal quantifier, interval, and assumption, and flag all affected statements and proofs for comparison.
 

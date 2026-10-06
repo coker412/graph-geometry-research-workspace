@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 import datetime as dt
 import fcntl
 import hashlib
@@ -81,6 +82,7 @@ HUMAN_SETTABLE_STATUSES = {
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 SEARCH_CONTRACTS = {"affirmative-proof", "counterexample", "either"}
 INFORMATION_MODES = {"offline", "connected", "mixed-isolated"}
+PROJECT_BUSY_EXIT = 75
 
 
 def now_iso() -> str:
@@ -249,48 +251,80 @@ def runtime_state_path(slug: str) -> Path:
 
 def read_status(slug: str) -> str:
     path = status_path(slug)
-    if not path.is_file():
+    if not path.exists():
         return "queued"
-    return path.read_text(encoding="utf-8").strip() or "queued"
+    status = path.read_text(encoding="utf-8").strip()
+    if not status:
+        raise ValueError(f"empty queue status; preserve and reconcile: {path}")
+    return status
 
 
 def write_status(slug: str, status: str) -> None:
     if status not in KNOWN_STATUSES:
         raise ValueError(f"未知状态：{status}")
-    status_path(slug).write_text(status + "\n", encoding="utf-8")
+    runtime.atomic(status_path(slug), (status + "\n").encode("utf-8"))
+    # CURRENT_STATE is a readable projection; the machine status remains
+    # authoritative. Refresh only this field, never mathematical conclusions.
+    index = project_dir(slug) / 'CURRENT_STATE.md'
+    if index.is_file():
+        old = index.read_text(encoding='utf-8')
+        new = re.sub(r'^- queue-status:.*$', f'- queue-status: `{status}`', old, flags=re.M)
+        if new != old:
+            runtime.atomic(index, new.encode('utf-8'))
 
 
 def read_runtime_state(slug: str) -> dict:
     path = runtime_state_path(slug)
-    if not path.is_file():
+    if not path.exists():
         return {"attempts": 0, "consecutive_runtime_failures": 0}
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {"attempts": 0, "consecutive_runtime_failures": 0}
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"unreadable runtime state; preserve and reconcile: {path}") from exc
+    if not isinstance(state, dict):
+        raise ValueError(f"invalid runtime state object: {path}")
+    for key in ("attempts", "consecutive_runtime_failures"):
+        value = state.get(key, 0 if key == "consecutive_runtime_failures" else None)
+        if type(value) is not int or value < 0:
+            raise ValueError(f"invalid runtime state counter {key}: {path}")
+    if "active_execution" in state:
+        active = state["active_execution"]
+        if (not isinstance(active, dict) or type(active.get("attempt")) is not int
+                or active["attempt"] != state["attempts"]):
+            raise ValueError(f"invalid runtime state active_execution: {path}")
+    return state
 
 
 def write_runtime_state(slug: str, state: dict) -> None:
-    runtime_state_path(slug).write_text(
-        json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-    )
+    runtime.write_json(runtime_state_path(slug), state)
+
+
+def unfinished_execution(slug: str, state: dict, *, update_status: bool) -> bool:
+    if "active_execution" not in state:
+        return False
+    # Preserve stronger main-result holds and deliberate paused/completed states.
+    if update_status and read_status(slug) in RUNNABLE_STATUSES | {"attempt-limit", "runtime-error"}:
+        write_status(slug, "needs-human-review")
+    print(f"Unfinished execution for {slug}: {state['active_execution']}. "
+          "Reconcile its artifacts and runtime bookkeeping before resuming; no model called.",
+          file=sys.stderr)
+    return True
 
 
 def current_state_template(item: dict, *, migration_status: str) -> str:
     legacy = migration_status == "pending"
     evidence_ceiling = "unmigrated-see-verification-ledger" if legacy else "conjecture"
     status_summary = (
-        "Legacy state has not yet been summarized; this file changes no evidence level."
+        "历史状态尚未迁移；此文件不改变任何证据等级。"
         if legacy
-        else "The main statement remains a conjecture."
+        else "主命题仍为猜想。"
     )
-    return f"""# Current State
+    return f"""# 当前研究状态
 
-This is the bounded entry point for the next research round. It summarizes current
-state but does not replace the evidence files it cites. Keep it under
-{CURRENT_STATE_MAX_LINES} lines; target 6 KiB, warn above 8 KiB, V2 limit 12 KiB (legacy 32 KiB).
+这是下一回合的短入口，不替代引用的原始证据。最多 {CURRENT_STATE_MAX_LINES} 行；
+目标 6 KiB，超过 8 KiB 提醒，V2 新写限 12 KiB（历史兼容 32 KiB）。
 
-## Control
+## 控制信息
 
 - schema-version: 1
 - updated-at: {now_iso()}
@@ -299,42 +333,39 @@ state but does not replace the evidence files it cites. Keep it under
 - search-contract: `{item.get('search_contract', 'either')}`
 - evidence-ceiling: `{evidence_ceiling}`
 
-## Problem and scope
+## 问题与范围
 
-- Formal input: `CURRENT_INPUT.md` and its immutable snapshot.
-- Definitions and normalization: not yet audited.
-- Scope exclusions: none recorded.
+- 正式输入：`CURRENT_INPUT.md` 及其不可变快照。
+- 定义与归一化：尚未审计。
+- 排除范围：尚未记录。
 
-## Current mathematical status
+## 当前数学状态
 
-- Strongest usable results: {'see the existing verification ledger' if legacy else 'none recorded'}.
-- Current conclusion: {status_summary}
-- Human decisions pending: none.
+- 可用结果：{'见既有 verification-ledger.md 的原始证据' if legacy else '尚未记录'}。
+- 当前结论：{status_summary}
+- 待研究者决定事项：无。
 
-## Active proof frontier
+## 当前证明缺口
 
-- Smallest open gap: audit the statement and definitions.
-- Active routes: not yet selected.
-- Blocked routes worth remembering: none.
+- 当前缺口：审计问题陈述与定义。
+- 活动路线：尚未选择。
+- 受阻路线：尚未记录。
 
-## Next bounded round
+## 下一有界回合
 
-- Goal: audit definitions and form at least three genuinely different method families.
-- Acceptance: record a precise gap, strict intermediate result, counterexample test,
-  reproducible experiment, or verified literature distinction.
+- 目标：审计定义，按 explore 协议比较可信的方法族并实际检验主路线。
+- 验收：保存精确缺口、中间推导、反例测试、可复现实验或核对后的文献差异。
 
-## Evidence pointers
+## 证据指针
 
-- Verification ledger IDs: none.
-- Active proof-map nodes: `P0`.
-- Direct evidence files: none.
+- 证据台账 ID：无。
+- 证明依赖节点：`P0`。
+- 直接证据文件：无。
 
-## History access
+## 历史访问
 
-- Read `progress.md`, `ideas.md`, `research-tree.md`, and `proof-map.md` only for a
-  named gap, node, route, or evidence pointer needed in the current round.
-- Historical files remain authoritative evidence; this summary must never silently
-  strengthen, weaken, or replace a mathematical claim.
+- 仅按本轮所需的具名缺口、节点、路线或证据指针读取历史台账。
+- 历史原始证据控制数学结论；本摘要不得暗中加强、削弱或替代它。
 """
 
 
@@ -394,7 +425,7 @@ def ensure_project(item: dict) -> Path:
     marker_preexisting = marker.is_file()
     adopted_existing = project.exists() and not marker_preexisting
     project.mkdir(parents=True, exist_ok=True)
-    for name in ("notes", "code", "lean", "rethlas", "input-snapshots"):
+    for name in ("notes", "code", "rethlas", "input-snapshots"):
         (project / name).mkdir(exist_ok=True)
 
     if not marker.is_file():
@@ -417,22 +448,22 @@ def ensure_project(item: dict) -> Path:
         "README.md": (
             f"# {item['title']}\n\n"
             "本目录由重要猜想队列创建。正式题目以 `CURRENT_INPUT.md` 指向的快照为准。\n\n"
-            "## 当前状态\n\n"
-            "- 证据等级：`conjecture`\n"
-            f"- 搜索承诺：`{item.get('search_contract', 'either')}`\n"
-            "- 当前路线：尚未开始\n"
-            "- 最小缺口：尚未审计\n"
-            "- 下一步：读取题目并完成定义审计\n"
+            f"- 搜索承诺：`{item.get('search_contract', 'either')}`\n\n"
+            "## 研究入口\n\n"
+            "当前范围、证据等级、缺口及下一步见 `CURRENT_STATE.md`；"
+            "依赖见 `proof-map.md`，路线见 `research-tree.md`，直接证据按 `verification-ledger.md` 的ID读取。"
+            "本文件仅保留稳定项目说明，不复制逐轮状态。\n"
         ),
         "references.md": "# References\n\n尚未开始文献审计。\n",
         "ideas.md": (
             "# Ideas\n\n"
-            "至少维护三个实质不同的方法族。根 Agent 每回合选择一条主路线深入推进；"
-            "独立分支可在额度允许时并行推进其他不兼容路线。\n\n"
+            "按核心数学机制记录可信的方法族；不足三种时说明依据，不为凑数更名。"
+            "普通回合由单研究者推进；只有研究者明确授权才能增加Agent。"
+            "当前路线及缺口由 CURRENT_STATE.md 索引，空表不表示未做研究。\n\n"
             "## 覆盖审计\n\n"
             f"- 搜索承诺：`{item.get('search_contract', 'either')}`\n"
             f"- 阻塞前所需连续再发散轮次：{item.get('stagnation_rounds_before_blocked', 3)}（0 = 不因停滞自动 blocked）\n"
-            "- 当前连续无新机制回合数：0\n\n"
+            "- 连续无新机制回合数：须依据实际评估，不从模板推断。\n\n"
             "## 方法族登记表\n\n"
             "| Family | 核心机制/表示 | 信息来源 | 暴露范围 | 决定性子目标 | 状态 | 结构性障碍 | 重开条件 |\n"
             "|---|---|---|---|---|---|---|---|\n"
@@ -492,36 +523,51 @@ def source_files(source: Path) -> list[Path]:
 
 def create_input_snapshot(item: dict, project: Path) -> Path:
     source = item["dir"]
-    digest = hashlib.sha256()
     files = source_files(source)
-    for path in files:
-        relative = path.relative_to(source)
-        digest.update(str(relative).encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(path.read_bytes())
-        digest.update(b"\0")
-    short_hash = digest.hexdigest()[:16]
+    if any(p.is_symlink() for p in source.rglob('*')):
+        raise ValueError('input snapshot source contains a symlink')
+    relative_files = [p.relative_to(source) for p in files]
+
+    def content_hash(base: Path) -> str:
+        digest = hashlib.sha256()
+        for relative in relative_files:
+            digest.update(str(relative).encode('utf-8') + b'\0')
+            digest.update((base / relative).read_bytes())
+            digest.update(b'\0')
+        return digest.hexdigest()
+
+    expected_hash = content_hash(source)
+    short_hash = expected_hash[:16]
     destination = project / "input-snapshots" / short_hash
+    # Resolve neither a linked snapshot nor its parent before checking it.
+    if destination.is_symlink() or destination.parent.is_symlink():
+        raise ValueError('input snapshot path contains a symlink')
+    identity = dict(source=str(source.relative_to(ROOT)), sha256_prefix=short_hash)
+
+    def verify(base: Path) -> None:
+        paths = list(base.rglob('*'))
+        if any(p.is_symlink() or not (p.is_file() or p.is_dir()) for p in paths):
+            raise ValueError('input snapshot contains a symlink or non-regular file')
+        actual = {p.relative_to(base) for p in paths if p.is_file()}
+        if actual != set(relative_files) | {Path('SNAPSHOT.json')}:
+            raise ValueError('input snapshot file set changed')
+        metadata = runtime.read_json(base / 'SNAPSHOT.json')
+        if any(metadata.get(k) != v for k, v in identity.items()) or content_hash(base) != expected_hash:
+            raise ValueError('input snapshot integrity mismatch; preserve it for recovery')
+
     if not destination.exists():
-        destination.mkdir(parents=True)
-        for path in files:
-            relative = path.relative_to(source)
-            target = destination / relative
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path, target)
-        (destination / "SNAPSHOT.json").write_text(
-            json.dumps(
-                {
-                    "source": str(source.relative_to(ROOT)),
-                    "sha256_prefix": short_hash,
-                    "created_at": now_iso(),
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(dir=destination.parent, prefix='.snapshot-') as tmp:
+            staging = Path(tmp) / 'complete'
+            staging.mkdir()
+            for path, relative in zip(files, relative_files):
+                target = staging / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+            runtime.write_json(staging / 'SNAPSHOT.json', {**identity, 'created_at': now_iso()})
+            verify(staging)
+            staging.rename(destination)
+    verify(destination)
     current = project / "CURRENT_INPUT.md"
     current.write_text(
         "# Current Input\n\n"
@@ -590,24 +636,24 @@ def build_prompt(
 
 本回合要求：
 - 直接推进搜索承诺指定的目标；不得以问题可能公开为理由停止。
-- 普通回合使用一个 researcher，选择一个主路线深入。只在初始发散或重新规划时比较至少三个方法族，已有路线直接从当前 gap 接续。未经研究者明确要求，不新增探索或审查 Agent；保留显式配置的 mixed-isolated 两支与汇合。当前不开展形式化。
+- 普通回合使用一个 researcher，选择一个主路线深入。初始发散或结构重规划按 explore 协议比较可信方法族，不为凑数虚构路线；已有路线直接从当前 gap 接续。未经研究者明确要求，不新增探索或审查 Agent；保留显式配置的 mixed-isolated 两支与汇合。当前不开展形式化。
 - ideas.md 方法族登记表只在机制或结构改变时更新；等强改写不计缺口缩小。
 - 研究者明确要求多智能体时，按 agents/protocols/multi-agent.md 执行；子 Agent 只写独立产物，根 Agent 统一收尾。
 - 优先产生可复用的严格中间结果、反例测试、计算证据或精确缺口。{evidence_instruction}
 - 探索可沿明确标为 conditional/GAP 的引理继续；局部自检检查实际变化的假设、推导和边界，证明细节写充分。自检不构成独立验证；新探索结果最多 proof-draft。
 - 只允许修改本研究项目 {project}；不得修改题目源目录、其他项目、AGENTS.md 或工作区规则；不得提交 Git。
 - 普通计算实验使用 graphlab 环境，记录命令、参数、随机种子和误差风险。
-- 不得自动调用 Rethlas、网页端 Pro 或其他付费升级。若 Codex 层面同一精确缺口两次失败且适合升级，只准备完整交接稿，并把状态设为 needs-escalation-approval。
+- 不得自动调用 Rethlas、网页端 Pro 或其他付费升级。同一机制在同一精确缺口两次失败且适合升级时，先准备交接稿；只在后续确实依赖未获授权的外部调用时设 needs-escalation-approval。仍有可推进路线时保持 pushing。
 - 不写论文，不把计算观察写成定理，不把任何 Agent 结果升级为 human-verified。
 
 证明冻结规则：
-- 完整候选解、决定性反例、高风险共同依赖或证据升级触发认证：冻结依赖该结论的分支，执行 agents/protocols/proof-audit.md；反例另读 counterexample-audit.md。普通条件引理不默认触发完整十项审计。不要因为第一条候选引理出现就终止全部探索者。
-- 需要独立验证但没有获授权的审查者时，保存冻结材料并如实报待审查，不冒充独立 REVIEW。
+- 完整候选解、决定性反例、高风险共同依赖或证据升级触发适用认证，执行 agents/protocols/proof-audit.md；反例另读 counterexample-audit.md。重要辅助候选先加强逐步自查、反例测试和必要计算，冻结其作为已认证前提的使用；可明确假设候选继续条件推导，所有下游结论保留条件和错误传播，也可走独立路线。普通条件引理不默认触发完整十项审计。
+- 需要独立验证但没有获授权的审查者时，保存冻结材料并如实报待审查，不冒充独立 REVIEW，不因这一点停下可继续的条件探索；自查不提高证据等级。
 - 经审查成立但尚未完整解决主猜想的中间引理或部分结果，应准确标为 partial-result 或 proof-draft，记录其适用范围和下一缺口；只要仍有明确路线，状态可以保持 pushing，之后继续公平轮询。
-- 如果出现需要老师尽快判断的重要中间结果、潜在可发表现象或无法由当前 Agent 独立裁决的证明审计，把状态设为 needs-human-review。该状态只暂停当前题，不冻结其他猜想的轮询。
+- 重要中间结果、可发表性或辅助候选尚缺独立认证，本身都不触发 needs-human-review。加强自查后保持 pushing，并在后续报告重要性、证据和待核项。只有具体研究者决定实际阻止授权工作，或原题完整候选的审计未完成时，才使用数学原因的 needs-human-review；运行完整性故障仍按原恢复规则处理。
 - 只有在已经给出主猜想的完整候选证明，或者给出并严格核验了足以彻底否定主猜想的反例，而且十项验证清单全部通过时，才把 {project / '.conjecture-status'} 改成单独一行 solved-awaiting-human-verification。这会冻结整个队列，等待老师逐步复核。单个 Codex 回合即使自检通过也最多是 proof-draft；只有独立 Agent/Rethlas 审查通过后才可标为 agent-verified。
 - 如果题目有实质歧义，把状态改为 needs-human-input，并记录必须由老师决定的精确问题。
-- 如果需要 Rethlas 升级许可，把状态改为 needs-escalation-approval；不得启动 Rethlas。
+- 如果后续确实依赖尚未获授权的 Rethlas 调用，把状态改为 needs-escalation-approval；不得启动 Rethlas。
 - 如果仍有明确可推进的下一步，状态保持 pushing。
 - {blocked_instruction}
 - blocked 路线只有出现能直接攻击原 gap 的新机制、不变量、构造、假设或工具才能重开；增加 Agent 数量、重复推导或改写措辞不是重开理由。
@@ -756,20 +802,70 @@ def append_history(slug: str, record: dict) -> None:
         handle.write(json.dumps({"slug": slug, **record}, ensure_ascii=False) + "\n")
 
 
+def process_group_running(pgid: int) -> bool:
+    """Check descendants too; Linux zombies cannot execute or keep writing files."""
+    if Path('/proc').is_dir():
+        for entry in Path('/proc').iterdir():
+            if not entry.name.isdigit():
+                continue
+            try:
+                # comm may contain spaces and parentheses; fields after its last
+                # closing parenthesis begin with state, ppid, process group.
+                fields = (entry / 'stat').read_text().rsplit(')', 1)[1].split()
+                if int(fields[2]) == pgid and fields[0] not in {'Z', 'X'}:
+                    return True
+            except (OSError, ValueError, IndexError):
+                continue
+        return False
+    try:
+        os.killpg(pgid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+
+
+def stop_process_group(
+    process: subprocess.Popen, *, grace_periods: tuple[float, float, float] = (30, 10, 5)
+) -> int:
+    """Stop this launch's entire group, even after the group leader has exited."""
+    for sig, grace in zip((signal.SIGINT, signal.SIGTERM, signal.SIGKILL), grace_periods):
+        try:
+            os.killpg(process.pid, sig)
+        except ProcessLookupError:
+            pass
+        deadline = time.monotonic() + grace
+        while True:
+            try:
+                return_code = process.wait(timeout=0.1)
+            except subprocess.TimeoutExpired:
+                return_code = None
+            if return_code is not None and not process_group_running(process.pid):
+                return return_code
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.05)
+    raise RuntimeError("process group did not exit after SIGKILL")
+
+
 def run_codex_process(
     command: list[str],
     cwd: Path,
     event_log: Path,
     timeout_seconds: int,
     label: str = "",
+    cancel_event: threading.Event | None = None,
 ) -> dict:
     """Run one Codex process and stream its output to a dedicated event log."""
     event_log.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     timed_out = False
+    cancelled = False
     return_code = 1
     try:
         with event_log.open("w", encoding="utf-8") as output:
+            if cancel_event is not None and cancel_event.is_set():
+                return {"return_code": 130, "timed_out": False, "cancelled": True,
+                        "duration_seconds": 0, "usage": runtime.telemetry(event_log)}
             process = subprocess.Popen(
                 command,
                 cwd=cwd,
@@ -791,28 +887,47 @@ def run_codex_process(
             output_thread = threading.Thread(target=pump_output, daemon=True)
             output_thread.start()
             try:
-                return_code = process.wait(
-                    timeout=None if timeout_seconds <= 0 else timeout_seconds
-                )
-            except subprocess.TimeoutExpired:
-                timed_out = True
-                os.killpg(process.pid, signal.SIGINT)
                 try:
-                    return_code = process.wait(timeout=30)
+                    if cancel_event is None:
+                        return_code = process.wait(
+                            timeout=None if timeout_seconds <= 0 else timeout_seconds
+                        )
+                    else:
+                        deadline = started + timeout_seconds if timeout_seconds > 0 else None
+                        while True:
+                            if cancel_event.is_set():
+                                cancelled = True
+                                return_code = stop_process_group(process)
+                                break
+                            remaining = deadline - time.monotonic() if deadline else None
+                            if remaining is not None and remaining <= 0:
+                                raise subprocess.TimeoutExpired(command, timeout_seconds)
+                            try:
+                                return_code = process.wait(timeout=min(0.2, remaining) if remaining else 0.2)
+                                break
+                            except subprocess.TimeoutExpired:
+                                continue
+                    # A successful group leader can leave tool subprocesses behind.
+                    if process_group_running(process.pid):
+                        stop_process_group(process)
                 except subprocess.TimeoutExpired:
-                    os.killpg(process.pid, signal.SIGTERM)
-                    try:
-                        return_code = process.wait(timeout=10)
-                    except subprocess.TimeoutExpired:
-                        os.killpg(process.pid, signal.SIGKILL)
-                        return_code = process.wait()
-            output_thread.join(timeout=10)
-            if process.stdout is not None:
-                process.stdout.close()
+                    timed_out = True
+                    return_code = stop_process_group(process)
+                except BaseException:
+                    # KeyboardInterrupt is not an ordinary failed research round.
+                    # Stop the child, then propagate so the recovery marker stays.
+                    stop_process_group(process)
+                    raise
+            finally:
+                output_thread.join(timeout=10)
+                if process.stdout is not None:
+                    process.stdout.close()
     except OSError as exc:
-        event_log.write_text(f"runner error: {exc}\n", encoding="utf-8")
+        # Existing events are evidence for recovery; never replace them with an error.
+        with event_log.open("a", encoding="utf-8") as output:
+            output.write(f"runner error: {exc}\n")
         print(f"[{label or 'codex'}] runner error: {exc}", file=sys.stderr, flush=True)
-    return {"return_code": return_code, "timed_out": timed_out,
+    return {"return_code": return_code, "timed_out": timed_out, "cancelled": cancelled,
             "duration_seconds": round(time.monotonic() - started, 3),
             "usage": runtime.telemetry(event_log)}
 
@@ -821,6 +936,23 @@ def copy_connected_workspace(
     project: Path, snapshot: Path, destination: Path
 ) -> tuple[Path, Path]:
     """Create a frozen workspace for the connected lane outside the live project."""
+    # Frozen copies include large experiment archives. Fail before filling the
+    # destination filesystem; /tmp may be a small RAM-backed mount.
+    ignored_names = {".git", ".queue-runtime.json", ".conjecture-status", "__pycache__"}
+    required_bytes = 0
+    for directory, directories, names in os.walk(project, followlinks=False):
+        directories[:] = [name for name in directories
+                          if name not in ignored_names and not (Path(directory) / name).is_symlink()]
+        for name in names:
+            path = Path(directory) / name
+            if name not in ignored_names and not path.is_symlink() and path.is_file():
+                required_bytes += path.stat().st_size
+    free_bytes = shutil.disk_usage(destination).free
+    if required_bytes + 64 * 1024 * 1024 > free_bytes:
+        raise RuntimeError(
+            f"mixed snapshot insufficient disk space: need {required_bytes} bytes "
+            f"plus 64 MiB reserve, available {free_bytes} at {destination}"
+        )
     lane_root = destination / "workspace"
     lane_project = lane_root / "project"
     lane_root.mkdir(parents=True)
@@ -911,6 +1043,9 @@ def build_connected_lane_prompt(
 
 把完整结果写入 {lane_project / 'CONNECTED_RESULT.md'}。文件必须列出检索范围、来源链接、
 可安全导入的结论、不能直接导入的线索、对离线路线的潜在影响及仍需独立验证的缺口。
+将需要汇合回读的原文、摘录及来源说明保存到冻结项目的 CONNECTED_SOURCES/ 目录，
+报告用相对路径 CONNECTED_SOURCES/... 引用，并记录 URL、版本及具体页码或定理号。
+该目录会在两支结束后连同报告导入；其他临时路径不会交付。不得用符号链接代替原文。
 最终答复只简要概括该文件。
 """
 
@@ -925,6 +1060,7 @@ def build_mixed_integration_prompt(
 汇合阶段不得重写或重新封存离线 PLAN.json；最终 RESULT 可涵盖汇合实际引入的变化，逐条保持来源标签。
 研究项目：{project}
 联网隔离结果：{checkpoint / 'connected' / 'RESULT.md'}
+联网原文材料：{checkpoint / 'connected' / 'CONNECTED_SOURCES'}
 隔离清单：{checkpoint / 'CHECKPOINT.json'}
 
 按需读取 agents/core/research-core.md、agents/protocols/proof-audit.md、agents/core/queue-core.md，以及项目的
@@ -943,6 +1079,8 @@ proof map 的已证明依赖。同步本回合影响到的共享台账和状态�
 来源污染边界、接受或拒绝的联网结论以及下一步。候选完整证明或决定性反例仍须执行十项
 认证，证据等级不得自动升级为 human-verified。
 
+辅助候选只冻结其无条件/已认证使用；先加强自查，继续保留假设的条件探索或独立路线。不得仅因重要性、可发表性或缺少独立审查就把全题设为 needs-human-review；在报告中提醒待核项。主问题完整候选和确需研究者决定的阻塞仍按原认证规则暂停。
+
 只能修改 {project}，不得修改题目源、其他项目、工作区规则或 Git 仓库。回合结束时给出
 产物、检查、证据等级、未关闭缺口和下一步。
 """
@@ -953,6 +1091,7 @@ def persist_connected_checkpoint(
     attempt_number: int,
     connected_result: Path,
     metadata: dict,
+    connected_sources: Path | None = None,
 ) -> Path:
     checkpoint = (
         project
@@ -970,6 +1109,28 @@ def persist_connected_checkpoint(
             "# Connected lane result\n\n联网分支没有生成可导入的结果。\n",
             encoding="utf-8",
         )
+    source_files = []
+    if connected_sources is not None and connected_sources.exists():
+        if connected_sources.is_symlink() or not connected_sources.is_dir():
+            raise ValueError("CONNECTED_SOURCES must be a real directory")
+        for source in sorted(connected_sources.rglob("*")):
+            if source.is_symlink():
+                raise ValueError("CONNECTED_SOURCES must not contain symlinks")
+            if source.is_dir():
+                continue
+            if not source.is_file():
+                raise ValueError("CONNECTED_SOURCES must contain regular files")
+            relative = source.relative_to(connected_sources)
+            target = connected_dir / "CONNECTED_SOURCES" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open("xb") as output, source.open("rb") as input_file:
+                shutil.copyfileobj(input_file, output)
+            source_files.append({
+                "path": str(target.relative_to(checkpoint)),
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                "bytes": target.stat().st_size,
+            })
+    metadata["connected_source_files"] = source_files
     (checkpoint / "CHECKPOINT.json").write_text(
         json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -1013,7 +1174,8 @@ def execute_mixed_isolated_attempt(
     LANE_RUNTIME_ROOT.mkdir(parents=True, mode=0o700, exist_ok=True)
     with (
         tempfile.TemporaryDirectory(
-            prefix=f"conjecture-{item['slug']}-mixed-"
+            prefix=f"conjecture-{item['slug']}-mixed-",
+            dir=LANE_RUNTIME_ROOT,
         ) as raw,
         tempfile.TemporaryDirectory(
             prefix=f"conjecture-{item['slug']}-offline-codex-",
@@ -1074,13 +1236,23 @@ def execute_mixed_isolated_attempt(
         )
 
         results: dict[str, dict] = {}
+        lane_errors: dict[str, BaseException] = {}
+        cancel_lanes = threading.Event()
+        lane_finished = {name: threading.Event() for name in ('offline', 'connected')}
 
         def run_lane(
             name: str, command: list[str], cwd: Path, event_log: Path
         ) -> None:
-            results[name] = run_codex_process(
-                command, cwd, event_log, timeout_seconds, label=name
-            )
+            try:
+                results[name] = run_codex_process(
+                    command, cwd, event_log, timeout_seconds, label=name,
+                    cancel_event=cancel_lanes,
+                )
+            except BaseException as exc:
+                lane_errors[name] = exc
+                cancel_lanes.set()
+            finally:
+                lane_finished[name].set()
 
         offline_thread = threading.Thread(
             target=run_lane,
@@ -1095,10 +1267,34 @@ def execute_mixed_isolated_attempt(
                 temporary_connected_event,
             ),
         )
-        offline_thread.start()
-        connected_thread.start()
-        offline_thread.join()
-        connected_thread.join()
+        started_lanes: list[tuple[str, threading.Thread]] = []
+        try:
+            for name, thread in (('offline', offline_thread), ('connected', connected_thread)):
+                started_lanes.append((name, thread))
+                thread.start()
+            for name, thread in started_lanes:
+                # Waiting on our completion event avoids Thread.join's interrupted
+                # lock acquisition marking an actually running thread as stopped.
+                lane_finished[name].wait()
+                thread.join()
+            if lane_errors:
+                raise next(iter(lane_errors.values()))
+        except BaseException:
+            cancel_lanes.set()
+            # TemporaryDirectory must outlive both processes. Cancellation applies
+            # only to the process groups launched for these two lanes.
+            for name, thread in started_lanes:
+                if thread.ident is None:
+                    continue
+                while True:
+                    try:
+                        lane_finished[name].wait()
+                        thread.join()
+                        break
+                    except KeyboardInterrupt:
+                        # A repeated Ctrl-C cannot tear down a live lane's cwd.
+                        continue
+            raise
 
         if temporary_connected_event.is_file():
             shutil.copy2(temporary_connected_event, connected_event)
@@ -1123,7 +1319,8 @@ def execute_mixed_isolated_attempt(
             },
         }
         checkpoint = persist_connected_checkpoint(
-            project, attempt_number, connected_result, metadata
+            project, attempt_number, connected_result, metadata,
+            connected_sources=lane_project / "CONNECTED_SOURCES",
         )
 
     offline_result = results.get("offline", {"return_code": 1, "timed_out": False})
@@ -1191,9 +1388,58 @@ def execute_mixed_isolated_attempt(
     }
 
 
+def project_execution_lock_file(slug: str) -> Path:
+    project = project_dir(slug).resolve()
+    key = hashlib.sha256(os.fsencode(project)).hexdigest()
+    return RUNTIME_ROOT / f'project.{key}.lock'
+
+
+@contextmanager
+def project_execution_lock(slug: str, *, create: bool = True):
+    lock_file = project_execution_lock_file(slug)
+    if not create and not lock_file.is_file():
+        # Read-only previews never create lock files and never reconcile status.
+        yield True
+        return
+    if create:
+        lock_file.parent.mkdir(parents=True, exist_ok=True)
+    with lock_file.open('a' if create else 'r', encoding='utf-8') as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            yield False
+            return
+        yield True
+
+
 def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
+    if dry_run:
+        return _execute_attempt(item, config, dry_run=True)
+    # Different item slugs may adopt the same project, including through symlinks.
+    # Hold the canonical-project lock before reading counters or touching state.
+    project = project_dir(item['slug']).resolve()
+    with project_execution_lock(item['slug']) as acquired:
+        if not acquired:
+            print(f'Project already executing; no model called: {project}', file=sys.stderr)
+            return PROJECT_BUSY_EXIT
+        return _execute_attempt(item, config)
+
+
+def _execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     slug = item["slug"]
     state = read_runtime_state(slug)
+    if unfinished_execution(slug, state, update_status=not dry_run):
+        return 1
+    status = read_status(slug)
+    if status not in RUNNABLE_STATUSES:
+        print(f'Project status is {status}; no model called: {slug}', file=sys.stderr)
+        return 3 if status == 'solved-awaiting-human-verification' else 1
+    max_attempts = int(item.get('max_attempts', 0))
+    if max_attempts > 0 and state['attempts'] >= max_attempts:
+        if not dry_run and read_status(slug) in RUNNABLE_STATUSES:
+            write_status(slug, 'attempt-limit')
+        print(f'Attempt limit reached for {slug}; no model called.', file=sys.stderr)
+        return 0
     attempt_number = int(state.get("attempts", 0)) + 1
     logs = RUNTIME_ROOT / "logs" / slug
     timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -1201,7 +1447,35 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     last_message = logs / f"attempt-{attempt_number:04d}-{timestamp}-last.md"
     information_mode = effective_information_mode(item, config)
     config = runtime.phase_config(config, item, state)
+    # Spend stronger reasoning on decisions, route generation, and certification;
+    # keep ordinary execution of an established route at the configured research
+    # effort.  The compatibility runner plans and executes within one call, so a
+    # decision round stays high for that whole bounded attempt.
+    previous_progress = None
+    candidate_project = project_dir(slug)
+    if candidate_project.is_dir():
+        previous_progress = research_progress.summary(
+            candidate_project,
+            search_contract=item.get("search_contract", "either"),
+            stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
+        )
+    previous_action = (research_progress.scheduling_decision(previous_progress).get("action")
+                       if previous_progress else None)
+    decision_round = attempt_number == 1 or previous_action in {
+        "switch-route", "review-strategy"
+    }
+    if previous_action == "certify":
+        config = runtime.phase_config(
+            {**config, "phase": "critical-audit"}, {}, state
+        )
+    elif decision_round:
+        config = {**config, "reasoning_effort": "high"}
     use_v2 = config.get("runtime_version", 2) == 2 and information_mode != "mixed-isolated"
+    task_version = config.get('research_task_version', 0) if (use_v2 or information_mode == 'mixed-isolated') else 0
+    if (runtime.tasks.read(candidate_project, runtime.tasks.TASK_FILE).get("active")
+            and task_version != 1):
+        raise ValueError("active research task requires research_task_version=1; "
+                         "reconcile the task explicitly before changing execution mode")
     round_id = f"attempt-{attempt_number:08d}-{timestamp}"
     round_directory = None
     packet_metadata = None
@@ -1271,13 +1545,23 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             write_status(slug, "needs-human-review")
             print(f"Incomplete state transaction: {journal}", file=sys.stderr)
             return 1
-    snapshot = create_input_snapshot(item, project)
-    previous_progress = research_progress.summary(
-        project, search_contract=item.get("search_contract", "either"),
-        stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
-    )
+    try:
+        snapshot = create_input_snapshot(item, project)
+    except (OSError, ValueError) as exc:
+        state['packet_error'] = str(exc)
+        write_runtime_state(slug, state)
+        write_status(slug, 'needs-human-review')
+        print(f'Input snapshot preflight failed, no model called: {exc}', file=sys.stderr)
+        return 1
+    if previous_progress is None:
+        previous_progress = research_progress.summary(
+            project, search_contract=item.get("search_contract", "either"),
+            stagnation_limit=item.get("stagnation_rounds_before_blocked", 0),
+        )
     progress_round = research_progress.prepare(
         project, f"attempt-{attempt_number:08d}-{timestamp}", attempt_number,
+        research_task_version=task_version,
+        problem_sha256=runtime.digest(snapshot / "problem.md"),
     )
     item = dict(item)
     item["_progress_instruction"] = research_progress.instruction(
@@ -1301,6 +1585,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
                 ROOT, project, snapshot / "problem.md", config, item,
                 information_mode, extra,
             )
+            state.pop("packet_error", None)
         except (OSError, ValueError) as exc:
             state["packet_error"] = str(exc)
             write_runtime_state(slug, state)
@@ -1311,8 +1596,17 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     if use_v2:
         runtime.prepare_round(project, round_directory, packet, packet_metadata)
     started_at = now_iso()
+    # Reserve before launching. An unexpected exit leaves an explicit recovery
+    # marker and cannot erase spent attempts or silently replay partial work.
+    state["attempts"] = attempt_number
+    state["active_execution"] = dict(
+        attempt=attempt_number, round_id=round_id, started_at=started_at,
+        information_mode=information_mode,
+        log_prefix=str((logs / f"attempt-{attempt_number:04d}-{timestamp}").relative_to(ROOT)),
+    )
+    write_runtime_state(slug, state)
     print(
-        f"[{started_at}] 开始 {slug}，第 {attempt_number} 回合，"
+        f"[{started_at}] 开始 {slug}，第 {attempt_number} 次执行，"
         f"mode={information_mode}",
         flush=True,
     )
@@ -1328,10 +1622,15 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         )
     else:
         prompt = (
-            f"Execute one bounded {config['phase']} round in {project}. "
+            f"Execute one bounded {config['phase']} step in {project}; continue its mathematical task. "
             f"Read {round_directory / 'RESEARCH_PACKET.md'} and PACKET.json. "
             "Included instructions are already loaded; follow evidence slices, not full histories. "
-            "Write ROUND_RESULT.json in that round directory. Do not edit protected state files."
+            "Write ROUND_RESULT.json in that round directory. Do not edit protected state files. "
+            f"Before finishing, run the read-only check: {shlex.quote(sys.executable)} "
+            f"{shlex.quote(str(ROOT / 'tools/research_runtime.py'))} check-result "
+            f"--project {shlex.quote(str(project))} "
+            f"--round {shlex.quote(str(round_directory.relative_to(project)))}. "
+            "Fix reported submission errors before returning; this check does not certify mathematics."
             if use_v2 else build_prompt(
                 item, project, snapshot, web_search=information_mode == "connected",
             )
@@ -1356,6 +1655,18 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
 
     return_code = int(outcome["return_code"])
     timed_out = bool(outcome["timed_out"])
+    if information_mode == "mixed-isolated" and return_code == 0 and not timed_out:
+        try:
+            issues = validate_current_state(project)
+            if issues:
+                raise ValueError("invalid final state: " + "; ".join(issues))
+            closure = close_mixed_result(project, progress_round, read_status(slug))
+            runtime.write_json(progress_round / "MECHANICAL_CLOSE.json", closure)
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            state["round_result_error"] = str(exc)
+            write_status(slug, "needs-human-review")
+            print(f"Mechanical close failed; artifacts preserved: {exc}", file=sys.stderr)
+            return_code = 1
     result_record = None
     if use_v2 and return_code == 0 and not timed_out:
         try:
@@ -1383,9 +1694,38 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         if any(runtime.digest(project / name) != expected for name, expected in baseline.items()):
             write_status(slug, "needs-human-review")
     usage = runtime.aggregate_usage(outcome.get("lane_event_logs", {}))
+    if information_mode == "mixed-isolated":
+        connected_request = runtime.phase_config(
+            {**config, "phase": "literature"}, {}
+        )
+        integration_request = runtime.phase_config(
+            {**config, "phase": "audit"}, {}
+        )
+        lane_requests = {
+            "offline": {
+                "model": config.get("model") or "cli-default (unresolved)",
+                "reasoning_effort": config["reasoning_effort"],
+            },
+            "connected": {
+                "model": connected_request.get("model") or "cli-default (unresolved)",
+                "reasoning_effort": connected_request["reasoning_effort"],
+            },
+            "integration": {
+                "model": integration_request.get("model") or "cli-default (unresolved)",
+                "reasoning_effort": integration_request["reasoning_effort"],
+            },
+        }
+    else:
+        lane_requests = {
+            information_mode: {
+                "model": config.get("model") or "cli-default (unresolved)",
+                "reasoning_effort": config["reasoning_effort"],
+            }
+        }
     telemetry_record = {
         "model_requested": config.get("model") or "cli-default (unresolved)",
         "reasoning_effort": config["reasoning_effort"], "phase": config["phase"],
+        "lane_requests": lane_requests,
         "duration_seconds": round(time.monotonic() - attempt_started, 3),
         "usage": usage, "packet": packet_metadata, "result": result_record,
     }
@@ -1400,6 +1740,7 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         "round": str(progress_round.relative_to(project)),
         "status": (progress_report["latest"] or {}).get("status", "unknown"),
         "decision": progress_report["decision"],
+        "scheduling": progress_report.get("scheduling", {}),
     }
     outcome_event_log = Path(outcome["event_log"])
     outcome_last_message = outcome.get("last_message")
@@ -1457,7 +1798,6 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
         state["invalid_agent_status"] = status
         write_status(slug, "needs-human-input")
         status = "needs-human-input"
-    write_runtime_state(slug, state)
     append_history(
         slug,
         {
@@ -1473,6 +1813,8 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
             "telemetry": telemetry_record,
         },
     )
+    state.pop("active_execution", None)
+    write_runtime_state(slug, state)
     print(
         f"[{state['last_finished_at']}] 结束 {slug}：return={return_code}，status={status}",
         flush=True,
@@ -1480,32 +1822,124 @@ def execute_attempt(item: dict, config: dict, dry_run: bool = False) -> int:
     return return_code
 
 
-def eligible_items(items: list[dict]) -> list[dict]:
+def eligible_items(items: list[dict], *, update_status: bool = True) -> list[dict]:
     eligible: list[dict] = []
     for item in items:
         if item.get("invalid") or not item.get("ready") or not item.get("enabled"):
             continue
-        state = read_runtime_state(item["slug"])
-        attempts = int(state.get("attempts", 0))
-        max_attempts = int(item.get("max_attempts", 0))
-        if max_attempts > 0 and attempts >= max_attempts:
+        # Keep status reconciliation inside the same mutex as actual execution;
+        # checking and releasing it first would race with a newly started call.
+        # A never-created project has no status to reconcile; its discovery should
+        # remain read-only. If another process creates it now, this scan still does
+        # no writes, and execution will recheck under the project mutex.
+        reconcile = update_status and project_dir(item['slug']).is_dir()
+        with project_execution_lock(item['slug'], create=reconcile) as acquired:
+            if not acquired:
+                continue
+            state = read_runtime_state(item["slug"])
+            if unfinished_execution(item["slug"], state, update_status=reconcile):
+                continue
+            attempts = int(state.get("attempts", 0))
+            max_attempts = int(item.get("max_attempts", 0))
+            if max_attempts > 0 and attempts >= max_attempts:
+                if reconcile and read_status(item["slug"]) in RUNNABLE_STATUSES:
+                    write_status(item["slug"], "attempt-limit")
+                continue
             if read_status(item["slug"]) in RUNNABLE_STATUSES:
-                write_status(item["slug"], "attempt-limit")
-            continue
-        if read_status(item["slug"]) in RUNNABLE_STATUSES:
-            eligible.append(item)
+                eligible.append(item)
     return eligible
 
 
+def close_mixed_result(project: Path, directory: Path, queue_status: str) -> dict:
+    """Seal integration once and persist its task without adding a model call.
+
+    The project execution lock is held by the caller. The writer lock and START
+    digest protect the single task-state update from manual/concurrent changes.
+    Legacy START packets retain their original version, even after an upgrade.
+    """
+    start = research_progress.read(directory / 'START.json')
+    if not start.get('research_task_version'):
+        return research_progress.finalize_result(project, directory)
+    lock = runtime.local(project, '.runtime/state-writer.lock', exists=False)
+    lock.parent.mkdir(parents=True, exist_ok=True)
+    with lock.open('a') as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        result_path = runtime.local(project, str((directory / 'RESULT.json').relative_to(project)))
+        if result_path.stat().st_size > research_progress.ASSESSMENT_LIMIT:
+            raise ValueError('mixed result too large')
+        result_bytes = result_path.read_bytes()
+        result = json.loads(result_bytes)
+        result_hash = hashlib.sha256(result_bytes).hexdigest()
+        bundle = research_progress.sealed_bundle(project, directory)
+        if bundle['result_sha256'] != result_hash:
+            raise ValueError('mixed result changed during closure')
+        if result.get('route_changes'):
+            raise ValueError('mixed integration does not accept route_changes')
+        adapted = dict(
+            progress={k: result[k] for k in ('claimed_kind', 'main_problem_effect',
+                                            'scope_limitations', 'evidence_level')},
+            research_task=result.get('research_task'),
+            evidence=[{'file': name} for name in result['evidence']],
+            round_status=('candidate-solution' if result['claimed_kind'] == 'candidate-solution'
+                          else 'no-progress' if result['claimed_kind'] in {'repeat', 'inconclusive'}
+                          else 'progress'), queue_status=queue_status)
+        if adapted['round_status'] == 'candidate-solution' and queue_status != 'solved-awaiting-human-verification':
+            raise ValueError('main candidate requires the global certification hold')
+        runtime.tasks.validate(project, directory, {
+            'research_task_version': start['research_task_version'],
+            'problem_sha256': start['research_task']['problem_sha256']}, adapted)
+        state = runtime.tasks.read(project, runtime.tasks.TASK_FILE)
+        marker = {'round_id': directory.name, 'result_sha256': bundle['result_sha256']}
+        previous = state.get('mixed_commit', {})
+        if previous.get('round_id') == directory.name:
+            if previous != marker:
+                raise ValueError('applied mixed task result changed')
+            return research_progress.finalize_result(project, directory)
+        path = runtime.local(project, runtime.tasks.TASK_FILE, exists=False)
+        if (runtime.digest(path) if path.exists() else None) != start.get('task_state_sha256'):
+            raise ValueError('research task changed since mixed round START')
+        updates, _ = runtime.tasks.render(project, directory, adapted, result_name='RESULT.json')
+        updated = json.loads(updates[runtime.tasks.TASK_FILE])
+        updated['mixed_commit'] = marker
+        encoded = (json.dumps(updated, ensure_ascii=False, indent=2) + '\n').encode()
+        if len(encoded) > 128 * 1024:
+            raise ValueError('mixed task state too large')
+        closure = research_progress.finalize_result(project, directory)
+        if closure['result_sha256'] != result_hash or runtime.digest(result_path) != result_hash:
+            raise ValueError('mixed result changed during closure')
+        if (runtime.digest(path) if path.exists() else None) != start.get('task_state_sha256'):
+            raise ValueError('research task changed during mixed closure')
+        runtime.atomic(path, encoded)
+        return closure
+
+
 def solution_holds(items: list[dict] | None = None) -> list[str]:
-    candidates = discover_items() if items is None else items
-    return [
-        item["slug"]
-        for item in candidates
-        if not item.get("invalid")
-        and project_dir(item["slug"]).is_dir()
-        and read_status(item["slug"]) == "solved-awaiting-human-verification"
-    ]
+    # Registration is independent of a mutable/invalid scheduling config.
+    # Do not inspect historical status copies under a project's artifacts.
+    holds = set()
+    excluded = {'notes', 'code', 'lean', 'paper', 'rethlas', 'input-snapshots'}
+    for directory, children, names in os.walk(ROOT / 'projects', followlinks=False):
+        registered = '.conjecture-queue-project.json' in names
+        children[:] = [n for n in children if not (Path(directory) / n).is_symlink()
+                       and not (registered and (n.startswith('.') or n in excluded))]
+        if '.conjecture-queue-project.json' not in names:
+            continue
+        project = Path(directory)
+        status = project / '.conjecture-status'
+        if status.is_file() and status.read_text().strip() == 'solved-awaiting-human-verification':
+            marker = runtime.read_json(project / '.conjecture-queue-project.json')
+            validate_slug(marker['slug'])
+            holds.add(marker['slug'])
+    # Include configured legacy projects which predate registration markers.
+    for item in discover_items() if items is None else items:
+        try:
+            project = project_dir(item['slug'])
+        except (OSError, ValueError):
+            continue  # registered projects above remain visible
+        status = project / '.conjecture-status'
+        if status.is_file() and status.read_text().strip() == 'solved-awaiting-human-verification':
+            holds.add(item['slug'])
+    return sorted(holds)
 
 
 def focus_lock_file(slug: str) -> Path:
@@ -1624,7 +2058,7 @@ def run_loop_body(args: argparse.Namespace, config: dict, stop_file: Path | None
             if not items:
                 print(f"错误：找不到题目 {args.slug}", file=sys.stderr)
                 return 2
-        runnable = eligible_items(items)
+        runnable = eligible_items(items, update_status=not args.dry_run)
         if not runnable:
             idle_cycles += 1
             if args.once or args.dry_run:
@@ -1646,12 +2080,16 @@ def run_loop_body(args: argparse.Namespace, config: dict, stop_file: Path | None
                 return 0
             if read_status(item["slug"]) not in RUNNABLE_STATUSES:
                 continue
-            execute_attempt(item, config, dry_run=args.dry_run)
+            attempt_code = execute_attempt(item, config, dry_run=args.dry_run)
+            if attempt_code == PROJECT_BUSY_EXIT:
+                # A second alias runner must not spin while another owns the same
+                # project, or change the owning runner's shared status to a hold.
+                return attempt_code
             if read_status(item["slug"]) == "solved-awaiting-human-verification":
                 print("主问题声称已完整解决，触发全局解答冻结。", flush=True)
                 return 3
             if args.once or args.dry_run:
-                return 0
+                return attempt_code
 
 
 def add_item(args: argparse.Namespace) -> int:
@@ -1758,7 +2196,7 @@ def audit_project_states(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
-def doctor() -> int:
+def doctor(slug: str | None = None) -> int:
     errors: list[str] = []
     warnings: list[str] = []
     try:
@@ -1798,7 +2236,7 @@ def doctor() -> int:
         print(f"tmux: OK ({tmux})")
     else:
         errors.append("PATH 中找不到 tmux")
-    items = discover_items()
+    items = selected_state_items(slug) if slug else discover_items()
     print(f"items: {len(items)}")
     missing_current_state = 0
     invalid_current_state = 0
@@ -1811,6 +2249,7 @@ def doctor() -> int:
             missing_current_state += 1
         elif issues:
             invalid_current_state += 1
+            errors.append(f"{item['slug']}: " + "; ".join(issues))
         else:
             content = (project_dir(item["slug"]) / CURRENT_STATE_NAME).read_text(
                 encoding="utf-8"
@@ -1829,11 +2268,11 @@ def doctor() -> int:
         errors.append(
             f"{invalid_current_state} 个项目的 {CURRENT_STATE_NAME} 未通过结构或大小检查。"
         )
-    mixed_requested = resolve_information_mode(config) == "mixed-isolated" or any(
+    mixed_requested = any(
         not item.get("invalid")
-        and str(item.get("information_mode", "")).strip() == "mixed-isolated"
+        and effective_information_mode(item, config) == "mixed-isolated"
         for item in items
-    )
+    ) or (not slug and resolve_information_mode(config) == "mixed-isolated")
     if mixed_requested:
         bubblewrap = shutil.which("bwrap")
         if bubblewrap:
@@ -1862,6 +2301,9 @@ def start_runner(args: argparse.Namespace) -> int:
         if item.get("invalid") or not item.get("ready") or not item.get("enabled"):
             print(f"错误：题目 {slug} 当前不可运行。", file=sys.stderr)
             return 2
+        if lock_held(project_execution_lock_file(slug)):
+            print(f"错误：该研究项目已有执行者（可能使用另一题目标识）：{project_dir(slug)}", file=sys.stderr)
+            return PROJECT_BUSY_EXIT
         if read_status(slug) not in RUNNABLE_STATUSES:
             print(
                 f"错误：题目 {slug} 的状态为 {read_status(slug)}，不能自动继续。",
@@ -1893,7 +2335,7 @@ def start_runner(args: argparse.Namespace) -> int:
         label = f"单题 runner {slug}" if slug else "队列 runner"
         print(f"{label} 已经在运行（可能是前台模式）。")
         return 0
-    if doctor() != 0:
+    if doctor(slug) != 0:
         print("错误：启动前健康检查未通过。", file=sys.stderr)
         return 1
     tmux = shutil.which("tmux")
@@ -1904,9 +2346,9 @@ def start_runner(args: argparse.Namespace) -> int:
         [tmux, "has-session", "-t", session], capture_output=True, check=False
     )
     if existing.returncode == 0:
-        print(f"队列 session 已存在：{session}")
+        print(f"错误：session 已存在但未持有 runner 锁，不能确认正在运行：{session}", file=sys.stderr)
         print(f"查看：tmux attach -t {session}")
-        return 0
+        return 1
     RUNTIME_ROOT.mkdir(parents=True, exist_ok=True)
     stop_file = focus_stop_file(slug) if slug else STOP_FILE
     stop_file.unlink(missing_ok=True)
@@ -1919,6 +2361,21 @@ def start_runner(args: argparse.Namespace) -> int:
     if result.returncode != 0:
         print("错误：无法启动 tmux 队列。", file=sys.stderr)
         return result.returncode
+    # A successful tmux spawn is not evidence that the runner survived startup.
+    deadline = time.monotonic() + 5
+    while True:
+        alive = subprocess.run(
+            [tmux, "has-session", "-t", session], capture_output=True, check=False
+        ).returncode == 0
+        if not alive:
+            print(f"错误：后台 session 启动后已退出：{session}；未确认运行。", file=sys.stderr)
+            return 1
+        if runner_lock_held(slug):
+            break
+        if time.monotonic() >= deadline:
+            print(f"错误：session 存在但 runner 未取得锁：{session}；请检查终端。", file=sys.stderr)
+            return 1
+        time.sleep(0.1)
     if slug:
         print(f"已启动独立单题 runner：{slug}（{session}）")
     else:
@@ -2022,7 +2479,7 @@ def show_progress(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(reports, ensure_ascii=False, indent=2))
         return 0
-    print("研究进展评估（独立审查记录；脚本不验证数学正确性，不自动停止整题）")
+    print("研究进展：认证评估与作者自报调度分列；脚本不验证数学、不自动停止整题")
     for report in reports:
         latest = report["latest"] or {}
         verdict = research_progress.KINDS.get(latest.get("kind"), latest.get("status", "unknown"))
@@ -2032,6 +2489,15 @@ def show_progress(args: argparse.Namespace) -> int:
         print(f"{report['slug']}: {verdict} | {suggestion['action']} | "
               f"连续未缩小核心缺口={suggestion['no_frontier_rounds']}")
         print(f"  {suggestion['reason']}")
+        signal = report.get('scheduling', {})
+        if signal.get('action'):
+            print(f"  自报调度（非认证）：{signal['action']} | {signal['reason']}")
+        task_state = report.get('research_tasks', {})
+        if task_state:
+            totals = task_state['totals']
+            current = task_state.get('active')
+            print(f"  新协议执行步骤={totals['steps']}；作者报告达到任务验收={totals['acceptance_reported']}；"
+                  f"路线结算={totals['routes_exhausted']}；未结任务={current['contract']['id'] if current else '无'}；非数学认证")
         if latest:
             print(f"  证据：{project_dir(report['slug']) / research_progress.DIRECTORY / latest['round_id']}")
         if args.slug:
@@ -2138,7 +2604,8 @@ def build_parser() -> argparse.ArgumentParser:
     add.add_argument("slug")
     add.add_argument("title", nargs="?")
     sub.add_parser("list", help="列出全部猜想及状态")
-    sub.add_parser("doctor", help="只读健康检查")
+    doctor_parser = sub.add_parser("doctor", help="只读健康检查")
+    doctor_parser.add_argument("--slug", help="只检查指定题目及其运行依赖")
     state_init = sub.add_parser(
         "state-init", help=f"为已有项目补建 {CURRENT_STATE_NAME}，不覆盖现有文件"
     )
@@ -2185,7 +2652,7 @@ def main() -> int:
         if args.command == "list":
             return list_items()
         if args.command == "doctor":
-            return doctor()
+            return doctor(args.slug)
         if args.command == "state-init":
             return initialize_project_states(args)
         if args.command == "state-audit":
@@ -2209,6 +2676,20 @@ def main() -> int:
         if args.command == "set-status":
             return set_item_status(args)
     except (OSError, RuntimeError, ValueError, tomllib.TOMLDecodeError) as exc:
+        if args.command == "run":
+            # Startup can fail before a model event log exists. Preserve its
+            # cause even after the tmux session disappears; do not alter quota
+            # or mathematical holds from an infrastructure exception.
+            slug = getattr(args, "slug", None) or "fair-queue"
+            try:
+                validate_slug(slug)
+                directory = RUNTIME_ROOT / "logs" / slug
+                directory.mkdir(parents=True, exist_ok=True)
+                with (directory / "runner-errors.jsonl").open("a", encoding="utf-8") as log:
+                    log.write(json.dumps({"at": now_iso(), "type": type(exc).__name__,
+                                          "error": str(exc)}, ensure_ascii=False) + "\n")
+            except (OSError, ValueError):
+                pass
         print(f"错误：{exc}", file=sys.stderr)
         return 1
     return 2

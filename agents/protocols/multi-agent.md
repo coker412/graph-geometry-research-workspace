@@ -1,35 +1,18 @@
-# 经授权的多智能体研究
+# Authorized multi-agent research
 
-## 动态多智能体搜索
+## Dynamic search
 
-研究者要求多智能体长跑且编排能力可用时，由根 Agent 动态管理搜索，不预先固定“某
-策略分配若干 Agent”的永久分工：
+When the researcher requests sustained multi-agent work and orchestration is available, the root manages assignments dynamically:
 
-1. 第一轮向多个探索者发送相互独立的盲问题包，要求返回具体引理、构造、方程、反例或
-   精确 gap；拒绝只有状态、乐观判断或把关键步骤称为“常规”的报告。
-2. 根 Agent 在 `ideas.md` 维护方法族登记表。按核心数学机制归族，而不是按措辞归族；
-   记录每族的表示、关键不变量、决定性子目标、证伪测试、当前障碍和重开条件。
-3. 若多个探索者落入同一方法族，保留推进最深或机制真正不同的分支，把其余探索者改派
-   到覆盖不足的方法族。分配依据是信息增益和具体进展，不是平均票数。
-4. 在各路线暴露真实优势和缺陷之前保持若干不兼容路线；之后才允许定向交叉融合，并在
-   登记表中记录父路线和新增机制。
-5. 始终保留对抗审计。候选证明的审计者原则上只接收正式陈述、定义、候选证明和依赖
-   清单，不接收发现过程中的说服性叙事；审计结果必须定位到具体步骤。
-6. `affirmative-proof` 模式中，已登记方法族全部阻塞后先进入再发散轮次，不立即宣布
-   全局阻塞。每个再发散轮次必须主动改变表示或核心机制；出现新机制时重置停滞计数。
+1. Initially send independent blind packets to explorers. Require concrete lemmas, constructions, equations, counterexamples, or precise gaps. Status-only reports, optimism, and calling the essential step routine are insufficient.
+2. Maintain method families in `ideas.md`, grouped by mathematical mechanism rather than wording. Record each family's representation, key invariant, decisive subgoal, falsification test, obstacle, and reopening condition.
+3. If explorers converge on the same family, retain the deepest or substantively different branches and reassign the others to underexplored families. Use information gain and concrete progress, not vote counts.
+4. Keep incompatible approaches until their actual strengths and failures are clear. Only then permit focused combinations, recording parent routes and the new mechanism.
+5. Preserve adversarial review. A proof auditor should normally receive only the formal statement, definitions, candidate proof, and dependencies, without persuasive discovery history. Findings must identify exact steps.
+6. Under `affirmative-proof`, exhausted registered families trigger renewed exploration rather than an immediate global blocked status. Each such round must change the representation or mechanism; a new mechanism resets the stagnation count.
 
-根 Agent 每回合选择一条主路线深入推进，但这不是全局单路线限制。额度和编排能力允许
-时，可以同时维持少量相互独立、有明确交付物和停止条件的探索分支。分支数量由预期信息
-增益动态决定，不设永久配额，也不为维持数量而重复同一方法族。
+The root chooses a main route to pursue deeply each round, without imposing a permanent single-route restriction. Within authorized resources, a few independent branches may continue with concrete deliverables and stopping conditions. Their number follows expected information gain, not a fixed quota or duplicated work.
 
-证明冻结按依赖分支执行。候选证明、严格中间结果或高风险引理出现后，立即冻结所有依赖
-该结论的下游推导并启动对抗审计；不依赖该结论、使用独立问题包且不写共享台账的分支可
-继续。只有主问题的完整候选解进入认证时，根 Agent 才停止全题探索并按状态机等待研究者
-复核。
+Auxiliary candidates receive stronger stepwise self-checks, counterexample tests, and applicable certification. Freeze their use as certified premises, not all exploration. Conditional derivations must retain assumptions and dependencies and propagate errors; independent routes may continue. Importance, publication potential, or the absence of an independent reviewer does not by itself pause the whole problem. Notify the researcher of these findings. Additional reviewers still require authorization, and self-review cannot raise evidence levels. Complete main candidates trigger whole-problem certification and a pause; required researcher decisions and runtime integrity failures follow queue rules.
 
-根 Agent 是唯一修改共享状态的角色。每轮必须追加 `progress.md` 并重写短入口
-`CURRENT_STATE.md`；只在出现实质数学推进、关键失败或证据等级变化时登记
-`verification-ledger.md`，只在对应结构变化时更新 `ideas.md`、`research-tree.md` 或
-`proof-map.md`。探索者写入
-`notes/branches/<round>/<branch-id>/RESULT.md` 等各自独立的分支产物，避免并发覆盖；
-盲问题包使用 `templates/blind-research-packet.md`。
+Follow queue-core write ownership. In V2, the root combines branch artifacts in ROUND_RESULT, and the runner's transaction writer updates shared state. The root must not directly edit protected files. In manual/compatibility rounds, the root is the sole shared-state writer: append `progress.md`, rewrite `CURRENT_STATE.md`, register substantive progress, important failures, or level changes in `verification-ledger.md`, and update route/dependency files only when their structure changes. Explorers write separate artifacts such as `notes/branches/<round>/<branch-id>/RESULT.md`. Use `templates/blind-research-packet.md` for blind packets.

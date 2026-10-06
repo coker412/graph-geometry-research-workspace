@@ -1,40 +1,43 @@
 # {{TITLE}}
 
-## 问题陈述
+## Problem statement
 
-请写出完整、可独立阅读的猜想。明确所有量词，不要只写“证明某某猜想”。
+Write a complete, standalone conjecture with all quantifiers. A name followed by "prove this conjecture" is insufficient.
 
-## 定义与归一化
+## Definitions and normalization
 
-- 对象类别：
-- 有限性、连通性、光滑性或其他基础假设：
-- 权、测度、距离、拉普拉斯符号或曲率归一化：
-- 非标准记号：
+- Object class:
+- Research field(s), not limited to graph geometry:
+- Applicable dimension, regularity, boundary, compactness/completeness, finiteness, or connectedness:
+- Weights, measures, distance, Laplacian sign, or curvature normalization:
+- For limits/variations/flows: convergence topology, admissible changes, and existence interval:
+- Nonstandard notation:
 
-## 目标
+Fill in applicable entries only. Consult `agents/protocols/geometry-scope.md` for geometric conventions.
 
-证明或构造反例：
+## Goal
 
-> 在这里写完整的正式结论。
+Prove or construct a counterexample to:
 
-## 已知结果与可信来源
+> Complete formal conclusion.
 
-- 已知特殊情形：
-- 不能直接解决本题的相近定理：
-- 原始论文或书籍：
+## Known results and reliable sources
 
-## 已尝试路线
+- Known special cases:
+- Nearby theorems that do not directly resolve this problem:
+- Original papers or books:
 
-- 路线及其精确失败位置：
+## Attempts so far
 
-## 老师的优先关注点（可选）
+- Route and exact failure point:
+- Next testable assertion and its effect on the original problem:
 
-- 希望优先尝试的方法：
-- 暂时不要尝试的方法：
-- 其他约束：
+## Researcher priorities (optional)
 
-## 给研究 Agent 的固定要求
+- Preferred approaches:
+- Approaches to defer:
+- Other constraints:
 
-直接尝试证明或构造反例；不得以问题可能公开为理由停止；得到候选结果后严格检查。
-搜索承诺以 `config.toml` 为准。`affirmative-proof` 表示在搜索调度上假定完整肯定证明
-存在并持续寻找，但该工作假定本身不是数学证据。
+## Standing instruction
+
+Attempt a proof or counterexample directly. Do not stop because the problem may be open. Check candidate results rigorously. The search contract is set in config.toml. Affirmative-proof treats a complete affirmative proof as the search objective; this assumption is not mathematical evidence.

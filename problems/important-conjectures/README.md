@@ -1,22 +1,22 @@
-# 重要猜想 Codex 长跑队列
+# Persistent Codex conjecture queue
 
-这套队列让老师只负责投放和排序重要猜想，由 Codex 在 tmux 后台逐题轮转研究。它不依赖 Danus 或 Claude Code；Rethlas 只作为老师明确批准后的升级通道。
+The researcher supplies and prioritizes formal problems. Codex works through them in tmux, retaining research state on disk. The queue does not require Danus or Claude Code. Rethlas is an optional escalation path requiring explicit authorization.
 
-## 工作方式
+## Workflow
 
 ```text
-老师填写题目
+Researcher completes problem
     ↓ ready = true
-Codex 回合 1：定义审计、最小例子、路线生成
-    ↓ 把状态写入项目文件
-轮到下一道猜想
-    ↓ 下一轮回来继续当前最小缺口
-完整证明主猜想 / 严格反例彻底否定主猜想
-    ↓ 十项审查通过后进入全局解答冻结并退出队列
-老师审查并决定完成、恢复或批准 Rethlas 升级
+Bounded Codex step: definitions, examples, approaches, or current gap
+    ↓ Save project state
+Next eligible problem
+    ↓ Return to the remaining gap on a later pass
+Complete main proof or decisive main counterexample
+    ↓ Ten audit checks, global hold, queue exit
+Researcher reviews and decides whether to finish, resume, or authorize escalation
 ```
 
-每个 Codex 调用只做一个有边界的研究回合。长期记忆不依赖聊天上下文，而是写入：
+A call is an execution step, not necessarily a completed mathematical task. Ordinary V2 and task-enabled mixed-isolated runs can preserve a task across calls, with its original objective and acceptance criteria.
 
 ```text
 projects/conjecture-<slug>/
@@ -30,35 +30,28 @@ projects/conjecture-<slug>/
 ├── proof-map.md
 ├── notes/
 ├── code/
-├── lean/
 ├── rethlas/
 ├── input-snapshots/
 ├── CURRENT_INPUT.md
 └── .conjecture-status
 ```
 
-题目原文始终保留在 `problems/important-conjectures/items/<slug>/`。Runner 会建立不可变输入快照，不会让研究 Agent 改写老师的原题。
+The original problem remains under `problems/important-conjectures/items/<slug>/`. The runner saves immutable input snapshots; agents must not change the researcher's statement.
 
-第一次真正调度某题时，runner 会自动创建这个完整项目骨架。`CURRENT_STATE.md` 是下一回合
-默认读取的短入口，目标 6 KiB，超过 8 KiB 提醒；V2 新写入限 12 KiB/300 行，旧摘要兼容上限 32 KiB；历史台账只按其中的 ID 和路径读取。每个回合
-由 researcher 提交结构化结果、runner 追加 `progress.md` 和更新 `CURRENT_STATE.md`；只把实质数学推进、关键失败或证据等级
-变化登记到 `verification-ledger.md`。README 不再承载逐回合日志。
+The first actual execution creates missing project structure. `CURRENT_STATE.md` is the next round's short entry point: target 6 KiB, warning above 8 KiB, V2 limit 12 KiB/300 lines, legacy limit 32 KiB/300 lines. Follow its IDs and direct pointers instead of rereading whole ledgers. The researcher submits structured results; the V2 runner appends progress and updates state. Register substantive findings, important failures, or evidence changes in the ledger. Keep round logs out of README files.
 
-旧项目升级后先运行：
+For older projects:
 
 ```bash
 ./queue.sh state-init
 ./queue.sh state-audit
 ```
 
-`state-init` 只补建缺失文件，从不覆盖已有摘要。旧项目会标记为 `migration-status: pending`；
-下一研究回合从当前状态段、最近完整回合和精确证据建立保守摘要，未读历史不会被擅自升级
-或降级。
+Initialization creates only missing files. A legacy project starts with `migration-status: pending`; establish a conservative summary from current state, the latest complete round, and exact evidence. Unread history remains unknown.
 
-## V2 运行时
+## V2 runtime
 
-阶段协议、证据片段、ROUND_RESULT 格式、自动写入边界、兼容模式与故障恢复见
-[运行时 V2](../../shared/runtime-v2-guide.md)。根规则已经缩短，普通回合按阶段读取。
+See the [runtime guide](../../shared/runtime-v2-guide.md) for phase protocols, evidence slices, ROUND_RESULT, writer ownership, compatibility, and recovery.
 
 ```bash
 ./queue.sh packet --slug <slug>
@@ -66,34 +59,25 @@ projects/conjecture-<slug>/
 ./queue.sh usage --slug <slug> --json
 ```
 
-`packet` 只读预览，不创建项目或调用模型。`status` 同时显示已记录回合的用量。
-旧回合没有 telemetry 时显示未知，不把模型额度与订阅价格简单换算。
+`packet` previews without creating a project or calling a model. `status` also shows recorded usage. Missing historical telemetry remains unknown; token counts are not converted into subscription prices.
 
-## 老师的最短操作流程
+## Add and run a problem
 
-所有命令都在工作区根目录执行。
-
-### 1. 新建题目
+Run all commands from the workspace root.
 
 ```bash
 ./tools/conjecture_queue.sh add hadwiger-conjecture "Hadwiger conjecture"
 ```
 
-然后填写：
+Complete `items/hadwiger-conjecture/problem.md` under this directory. Put references under that item's `references/`. Review its `config.toml` and set `ready = true`.
 
-```text
-problems/important-conjectures/items/hadwiger-conjecture/problem.md
-```
+### Before startup
 
-参考论文、讲义或已有笔记可放入：
+An explicit request for continuous/background research uses this queue. Do not substitute one manual round or a chat Goal. An explicit request for mix mode means `mixed-isolated` in the item's configuration, with two isolated branches and integration.
 
-```text
-problems/important-conjectures/items/hadwiger-conjecture/references/
-```
+Use `project_path` to adopt an existing project. Check `ready`, `enabled`, `max_attempts`, and the state schema. `doctor --slug <slug>` checks the selected problem and required tools; unrelated format faults do not block a dedicated startup, but complete-candidate global holds still apply.
 
-最后编辑同目录的 `config.toml`，把 `ready = false` 改成 `ready = true`。
-
-### 2. 启动前检查
+After explicit researcher acceptance, reconcile machine status through `set-status` within the accepted scope and record its evidence. Use `paused` if continued research was not requested. Do not retain a stale acceptance hold or remove one based on self-review.
 
 ```bash
 ./tools/conjecture_queue.sh doctor
@@ -101,147 +85,99 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 ./tools/conjecture_queue.sh run --dry-run
 ```
 
-`--dry-run` 会显示下一题、项目路径和 Codex 命令，但不会消耗模型额度。
+Dry runs show the next problem, project path, and Codex command. They neither invoke the model nor change attempt counts, budget state, or interrupted-execution recovery state.
 
-### 3. 后台长跑
+### Background research
 
-公平轮转全部可运行题目：
+Fair rotation:
 
 ```bash
 ./tools/conjecture_queue.sh start
 ```
 
-让不同题目各占一个 tmux 并行运行：
+Dedicated concurrent problems:
 
 ```bash
 ./tools/conjecture_queue.sh start --slug problem-a
 ./tools/conjecture_queue.sh start --slug problem-b
 ```
 
-这两个命令建立两个独立 session。每个 runner 只读写自己的研究项目，不在题目之间轮转。
-公平队列和单题 runner 不能同时运行，防止同一项目被两个根 Agent 并发修改。
+Each dedicated runner has its own session and project. The fair queue and dedicated runners must not run simultaneously. Two slugs resolving to the same project cannot run concurrently either.
 
-查看实时输出：
+Before reporting successful startup, verify the tmux session and runner lock. A zero tmux exit code is insufficient. In chat, also inspect actual attempt logs and mixed branch processes; distinguish startup, active research, and a completed round. Do not concurrently edit shared project files from chat or another task while a runner owns them.
 
 ```bash
 ./queue.sh watch
-```
-
-退出查看但不中断运行：按 `Ctrl-b`，然后按 `d`。
-
-查看总状态：
-
-```bash
 ./tools/conjecture_queue.sh status
-```
-
-安全停止：
-
-```bash
 ./tools/conjecture_queue.sh stop
-```
-
-单独停止或查看一道题：
-
-```bash
 ./tools/conjecture_queue.sh watch --slug problem-a
 ./tools/conjecture_queue.sh stop --slug problem-a
-```
-
-安全停止全部 runner：
-
-```bash
 ./tools/conjecture_queue.sh stop --all
 ```
 
-安全停止不会强杀正在写文件的 Codex；当前研究回合结束后，runner 才退出。
+Detach from tmux with `Ctrl-b`, then `d`. Safe stop waits for the current round rather than killing Codex while it writes files.
 
-## 调度规则
-
-研究进展与运行状态分开查看：
+## Scheduling and progress
 
 ```bash
 ./queue.sh progress
 ./queue.sh progress --slug problem-a
 ```
 
-队列每轮保存开工基线并封存计划与结果。普通回合不默认新增独立评审调用；无 REVIEW 时
-保留自报/未知，不计作已验证推进或数学停滞。评估区分核心缺口缩小、有效
-排除、辅助结果、计算线索、重新表述与重复。下一轮读取继续、换路线或策略复核建议。
-材料缺失不算空转；脚本不自动停止整题或改变证据等级。记录格式、判据和局限见
-[研究进展评估](../../shared/research-progress-guide.md)。
+Each round saves a baseline and seals its plan and result. Ordinary rounds do not automatically add a reviewer call. Without independent REVIEW, progress remains self-reported/unknown, not verified progress or mathematical stagnation. Assessments distinguish reduced gaps, exclusions, tools, computational leads, reformulation, and repetition. Missing material is not evidence of wasted mathematical work. See the [progress guide](../../shared/research-progress-guide.md).
 
-- `priority` 数字越大越先运行。
-- 每一轮中，每道可运行题最多获得一个 Codex 回合；然后调度器转到下一题，避免难题独占机器。
-- 一轮结束后重新扫描目录，因此老师可以在 runner 运行时继续添加题目或调整优先级。
-- `max_attempts = 0` 表示不限制该题的累计回合数；早期试运行建议先设为 `3` 或 `5`。
-- `runner.toml` 的 `max_wall_hours` 控制一次后台启动的总时长。默认 24 小时；设为 `0` 才是持续运行直到人工停止。
-- 单回合默认 90 分钟超时。连续三次 CLI 或超时故障会冻结为 `runtime-error`，防止无休止消耗额度。
-- `start --slug <slug>` 固定研究一道题。不同 slug 使用不同 tmux、锁文件和停止文件，可以
-  真正并行；同一 slug 不能重复启动。
+- Higher `priority` runs first.
+- Each eligible problem receives at most one execution per scheduling pass.
+- The runner rescans between passes, so problems and priorities can be updated.
+- `max_attempts = 0` removes the cumulative execution limit. A trial may use `3` or `5`.
+- `max_wall_hours` bounds one background run; `0` removes that bound. The public configuration defaults to 24 hours.
+- The default call timeout is 90 minutes. Three consecutive CLI/timeout failures produce `runtime-error`.
+- Dedicated slugs have separate sessions, locks, and stop files. The project lock rechecks status and remaining allowance before execution.
 
-## Agent 使用方式与额度
+## Agents and evidence
 
-普通回合只启动一个根 Agent，只有研究者明确要求时才使用多智能体协议。并行授权
-与信息模式分开管理。mixed-isolated 是研究者显式配置的两支加汇合流程，通常三次调用。
-新增 Agent 不自动代表进展，也不能代替独立审查的具体证据。
+Use one root researcher by default. Multi-agent work requires an explicit request. Agent authorization and information mode are separate. Explicit mixed-isolated configuration normally produces three calls: two branches and integration.
 
-多 Agent 搜索仍须遵守盲隔离协议。盲问题包不包含热门路线、失败记录或发现过程；创建
-子 Agent 时也不应继承不必要的完整对话。由于所有 Agent 共享工作区，盲隔离目前依靠
-允许读取清单和分支目录，而不是文件系统权限。盲 Agent 若读取共享台账，便不能再把其
-结果记为独立重新发现。
+Initial independent explorers receive blind packets without favored approaches, failures, or persuasive discovery history. Later directed continuations may receive scoped failure/dependency evidence, with exposure recorded; they must not claim independent rediscovery. Auditor packets exclude author confidence and other reviewers' conclusions. Chat agents share a workspace, so allowed-read lists and separate output paths support procedural blindness. Mixed-isolated uses actual filesystem isolation.
 
-当前不开展形式化。探索可以沿明确标为 conditional/GAP 的引理推进；普通中间步骤做局部
-检查，不默认触发十项审计。完整候选解、决定性反例、高风险共同依赖或证据升级时，冻结
-受影响的依赖分支并进入认证；无依赖分支可以继续。只有完整解决主问题的
-候选证明或严格决定性反例，才停止全题探索并触发全局解答冻结。
+Current research does not use formalization. Explicit conditional/GAP exploration may continue on unverified lemmas. Routine steps receive local checks. Important auxiliary candidates and high-risk dependencies require stronger self-checks and applicable certification; freeze their use as certified premises, retain conditional dependencies, and propagate errors. Missing independent review alone does not pause a problem. Complete main candidates require whole-problem certification and a pause.
 
-## 信息模式的选择
+## Information modes
 
-当前 runner 可以在全局配置或单题配置中选择信息模式：
+- `offline`: no public internet or connectors.
+- `connected`: external checks with source attribution.
 
-- `offline`：不使用公共互联网或连接器。
-- `connected`：允许联网核查，并记录外部来源。
+Connected work reuses checked known results and establishes the covered scope before a long investment. Re-derivation needs a stated verification purpose or concrete extension; rediscovery is not new progress.
 
-工作流还支持人工执行的 `staged` 模式：先完成若干 `offline` 回合并冻结原创路线快照，
-再由研究者把全局开关改成 `connected` 做文献和新颖性核查。
+The manual `staged` workflow freezes a bounded independent exploration before an authorized connected step checks coverage and tool transfer. Prefer per-item mode overrides so other problems are unaffected. Change modes only at a safe boundary, retaining pre-connection snapshots and recording literature influence. `staged` is a workflow, not a configuration enum.
 
-`mixed-isolated`：离线探索分支与联网核查分支并行运行。离线分支不带网页搜索能力，并在
-真实项目中推进；联网分支带搜索能力，但只能读取回合开始时的冻结副本，并在系统临时目录
-中工作。两边结束后，runner 才把联网报告复制到
-`notes/mixed-isolated/attempt-<n>/connected/RESULT.md`，随后启动一个不做新增搜索的汇合
-审计，按 `internal-offline`、`web-source` 和 `mixed` 更新来源标签。Runner 使用 Linux
-`bubblewrap` 隐藏真实工作区和并行分支目录；`bwrap` 不可用时拒绝启动该模式，不会降级
-为只靠提示词约束的隔离。
-两个分支还使用各自的临时 Codex 运行目录，只复制登录所需的最小文件，不共享旧会话、
-状态数据库或另一分支的运行信息。
+Offline work does not establish novelty. At important findings, strategy reviews, or batch boundaries, reuse existing comparisons and follow the [offline-to-literature handoff](../../agents/protocols/literature-check.md#reconcile-offline-exploration-with-literature). Pass only substantive uncovered questions to the next authorized connected step and test whether the tool applies to the original problem. Without network authorization, preserve pending checks and overlap risks rather than silently switching mode.
 
-一次 `mixed-isolated` 回合通常包含三次 Codex 调用：两个并行分支和一个汇合审计，因此比
-普通回合消耗更多额度。该模式必须由研究者在全局或单题配置中主动选择，不是默认模式。
-对于研究者明确要求不联网的题目，所有分支都必须保持 `offline`。
+### Mixed-isolated
 
-题目级并发和信息分支并发是两层不同的并行。两个 `start --slug` 可以让两道题同时运行；
-如果两题都配置为 `mixed-isolated`，每道题又会在自己的回合内并行运行离线分支与联网
-分支，再各自执行汇合审计。两道题不会共享项目写入目录，联网分支也不能在汇合前读取
-对应离线分支的实时结果。
+The offline branch works in the real project without web search. The connected branch searches from a frozen starting copy in a system temporary directory. Once both finish, the runner imports the connected report to `notes/mixed-isolated/attempt-<n>/connected/RESULT.md` and starts an integration audit without fresh browsing. Preserve `internal-offline`, `web-source`, and `mixed` provenance.
 
-## 状态机
+Linux `bubblewrap` hides the actual workspace and parallel branch directories. If `bwrap` is unavailable, the runner refuses this mode; it does not fall back to prompt-only separation. Branches have separate temporary Codex homes with minimal authentication material, not shared sessions or state databases.
 
-| 状态 | 是否自动继续 | 含义 |
-|---|---:|---|
-| `queued` | 是 | 等待第一次运行 |
-| `pushing` | 是 | 有明确的下一研究动作 |
-| `paused` | 否 | 老师暂时暂停 |
-| `needs-human-review` | 否 | 重要中间结果或审计问题需要老师判断；只暂停当前题，其他题继续 |
-| `solved-awaiting-human-verification` | 否 | 主猜想有完整候选证明或严格反例；触发全局解答冻结 |
-| `needs-human-input` | 否 | 题目存在实质歧义或缺少老师决定 |
-| `needs-escalation-approval` | 否 | Codex 已压缩出精确缺口并申请 Rethlas；尚未获准运行 |
-| `blocked` | 否 | 主要路线均结构性阻塞，且已满足再发散门槛 |
-| `attempt-limit` | 否 | 达到该题 `max_attempts` |
-| `runtime-error` | 否 | 连续运行故障达到上限 |
-| `completed` | 否 | 老师确认不再继续队列研究 |
+One mixed execution normally uses three calls and more quota than an ordinary round. It must be explicitly selected. A problem required to remain offline must keep every branch offline.
 
-老师可手动改变状态：
+Problem-level concurrency and branch concurrency are separate. Two dedicated mixed problems each run their own branches and integration, with separate project ownership and no early cross-branch reading.
+
+## State machine
+
+| State | Automatic continuation | Meaning |
+|---|---|---|
+| `queued` | Yes | Awaiting first execution |
+| `pushing` | Yes | Concrete next research action |
+| `paused` | No | Researcher pause |
+| `needs-human-review` | No | Incomplete main-candidate audit, a required researcher decision, or integrity recovery |
+| `solved-awaiting-human-verification` | No | Complete main candidate; global hold |
+| `needs-human-input` | No | Substantive ambiguity or missing decision |
+| `needs-escalation-approval` | No | Further work depends on an unauthorized external call |
+| `blocked` | No | Structural route exhaustion with the required renewed exploration |
+| `attempt-limit` | No | Cumulative execution limit reached |
+| `runtime-error` | No | Consecutive runtime failures reached the limit |
+| `completed` | No | Researcher has instructed that queue research is finished |
 
 ```bash
 ./tools/conjecture_queue.sh set-status hadwiger-conjecture paused
@@ -249,91 +185,76 @@ problems/important-conjectures/items/hadwiger-conjecture/references/
 ./tools/conjecture_queue.sh set-status hadwiger-conjecture completed
 ```
 
-`needs-human-review` 只暂停当前题，runner 会继续轮询其他猜想。老师阅读该题的 `progress.md`、候选证明或反例文件及 `proof-map.md` 后，可用 `set-status` 明确设为 `pushing`、`paused`、`blocked` 或 `completed`。
+`needs-human-review` pauses only that problem. Read its progress, candidate, and proof map before a researcher-directed status change. Important auxiliary results and absent independent review do not alone justify that state.
 
-只有 `solved-awaiting-human-verification` 会冻结整个 runner：它表示 Codex 声称已经完整证明主猜想，或用严格核验的反例彻底否定主猜想，并已在同一回合完成十项检查。单个 Codex 回合自检通过仍最多是 `proof-draft`；老师仍须逐步复核，恢复或完成都不会自动把证据等级升级为 `human-verified`。
+`solved-awaiting-human-verification` means the main claim has a complete candidate proof or decisive counterexample with all ten checks completed. It triggers a global hold. One agent's self-check still supports at most `proof-draft`; resuming or completing the queue item does not itself create `human-verified` evidence.
 
-## 配置文件
+`set-status` accepts only `queued`, `pushing`, `paused`, `blocked`, and `completed`. Research-return states such as `needs-human-review` and `solved-awaiting-human-verification` go through V2 ROUND_RESULT validation, or the root writer in manual/compatibility rounds. Check subcommand `--help` before suggesting a command; not every table entry is a CLI argument.
 
-全局配置位于 `runner.toml`：
+## Configuration
 
-- `model = ""`：使用 Codex CLI 当前默认模型；老师也可填写账户实际可用的 GPT/Codex 模型。
-- `reasoning_effort = "high"`：普通数学研究强度；阶段配置优先。
-- `phase` 与 `[phase_effort]`：triage/experiment/literature 使用 medium，research/audit 使用 high，critical-audit/stuck-escalation 使用 xhigh。单题可覆盖 phase。
-- `runtime_version = 2`：普通回合启用研究包与结构化收尾；mixed-isolated 使用兼容收尾。
-- `[context_budget]`：初始包预算和证据片段上限，详见 V2 说明。
-- `attempt_timeout_minutes`：单回合最长时间，`0` 表示不限制。
-- `max_wall_hours`：一次 `start` 的总运行时间，`0` 表示持续运行。
-- `idle_seconds`：没有可运行题目时的重扫间隔。
-- `information_mode`：可填写 `offline`、`connected` 或 `mixed-isolated`。留空时继续读取
-  `web_search`，以兼容已有配置。
-- `web_search`：信息模式开关。`false` 为离线源隔离，不传递网页搜索能力，并要求 Agent
-  忽略题目参考资料和项目中的外部文献内容；`true` 为联网核查模式。推荐先以 `false`
-  进行若干原创发散回合并保存方法族快照，再由老师改为 `true` 做文献和新颖性核查。
-- `max_consecutive_runtime_failures`：连续运行故障冻结阈值。
-- `codex_path`：只有 `codex` 不在 `PATH` 时才需要填写绝对路径。
+Global `runner.toml`:
 
-每题配置位于 `items/<slug>/config.toml`：
+- `model`: an explicit available model, or empty to use the CLI default.
+- `reasoning_effort`, `[phase_effort]`, and optional `[phase_model]`: actual overrides can differ from built-in defaults. The synchronized research effort is medium; first decisions and strategy reviews use high. Triage/audit/stuck-escalation use high and critical-audit uses xhigh. Check your account's supported models.
+- `phase`: the current phase, optionally overridden per item.
+- `research_task_version = 1`: persistent tasks for new ordinary V2 and mixed-isolated runs. V2 also accepts structured route changes. Mixed integration supplies a task in RESULT for runner sealing and saving, without extra calls. Old START=0 rounds retain their protocol.
+- `runtime_version = 2`: packets and structured closing for ordinary rounds; mixed-isolated retains compatibility closing.
+- `[context_budget]`: initial packet and evidence-slice limits; see the runtime guide.
+- `attempt_timeout_minutes`: per-call timeout; `0` disables it.
+- `max_wall_hours`: total time for one start; `0` means continuous.
+- `idle_seconds`: rescan delay with no eligible work.
+- `information_mode`: `offline`, `connected`, or `mixed-isolated`; empty uses `web_search` for compatibility.
+- `web_search`: false removes search and requires agents to ignore external literature in references/project files; true permits connected checks. Blind exploration is not a mandatory prerequisite for connected research.
+- `max_consecutive_runtime_failures`: failure threshold.
+- `codex_path`: absolute executable path, needed only if Codex is absent from `PATH`.
 
-- `ready`：老师是否已确认题目可以运行。
-- `enabled`：是否参与调度；与研究状态分开。
-- `search_contract`：长跑目标。`affirmative-proof` 在搜索调度上假定存在完整肯定证明，
-  `counterexample` 以严格反例为目标，`either` 接受任一完整解决。该字段不改变证据等级。
-- `stagnation_rounds_before_blocked`：当前方法族全部阻塞后，至少连续完成多少个没有发现
-  新机制的再发散回合，才允许把题目设置为 `blocked`。设为 `0` 表示永不因停滞自动
-  `blocked`，适合不设终止轮数的肯定证明长跑。
-- `information_mode`：可选的单题覆盖。留空时继承 `runner.toml`；混合隔离只对明确选择
-  该模式的题目生效。
-- `project_path`：可选；复用 `projects/` 下已有项目的工作区相对路径。留空时自动使用
-  `projects/conjecture-<slug>/`。首次调度只补齐缺失骨架，不覆盖已有研究文件。
-- `priority`：调度优先级。
-- `max_attempts`：该题允许的累计 Codex 回合数。
+Per-item `items/<slug>/config.toml`:
 
-## 证明安全与升级边界
+- `ready`: the researcher has approved the problem for execution.
+- `enabled`: scheduling eligibility, separate from research status.
+- `search_contract`: `affirmative-proof`, `counterexample`, or `either`. It controls the search objective, not evidence.
+- `stagnation_rounds_before_blocked`: required consecutive renewed-exploration rounds without a new mechanism after all current families fail. `0` forbids automatic stagnation blocking.
+- `information_mode`: optional override; empty inherits the global setting.
+- `project_path`: existing workspace-relative project under `projects/`; empty uses `projects/conjecture-<slug>/`. Only missing structure is initialized.
+- `priority`: scheduling order.
+- `max_attempts`: cumulative executions, not completed mathematical tasks. A mixed execution may contain three calls.
 
-队列提示词强制继承根目录 `AGENTS.md`：
+## Proof and escalation boundaries
 
-- 公开问题也必须实际尝试证明或寻找反例，不能只写综述。
-- `affirmative-proof` 模式把完整肯定证明作为工作假定和预期终点，以避免过早停止；工作
-  假定不是证据，严格的主命题反例仍必须认证并上报。
-- `ideas.md` 必须按核心数学机制维护方法族登记表，而不是把措辞变化计作多样路线。
-- 多智能体长跑采用早期盲隔离、动态改派和持续对抗审计；阻塞路线只有出现新机制才重开。
-- 计算结果只能标为 `experimental`。
-- 每条新数学推进必须冻结依赖它的分支，执行与其强度相称的十项验证，再允许该分支继续建立下游结论；无依赖的隔离分支可以继续，证据等级最高先标为 `proof-draft`。
-- 中间引理、部分结果或潜在新现象不冻结整个队列。它们经审查后可以继续 `pushing`；确需老师判断时设置 `needs-human-review`，只暂停当前题。
-- 只有完整解决主猜想的候选证明，或严格反例彻底推翻主猜想，才设置 `solved-awaiting-human-verification` 并冻结整个队列。
-- Codex 无权自动启动 Rethlas。它只能准备 Rethlas 问题稿并设置 `needs-escalation-approval`；老师明确批准某一次运行后，才按 `AGENTS.md` 的 Rethlas 流程执行。
-- 队列不会调用网页端 Pro，不会自行宣称猜想已解决，也不会把结果升级为 `human-verified`。
+The queue inherits `AGENTS.md`:
 
-## 日志与恢复
+- Attempt proofs or counterexamples even for open problems; a survey alone does not satisfy proof work.
+- An affirmative search assumption is not evidence. A decisive counterexample still requires certification and reporting.
+- Group routes by mechanism, not renamed approaches. Authorized multi-agent work uses blind starts, dynamic reassignment, and adversarial audits.
+- Computation initially supports only `experimental` evidence.
+- Auxiliary candidates receive stronger checks without automatically pausing the whole problem. Keep explicit conditions and report important findings and outstanding checks.
+- Only a complete main candidate can enter `solved-awaiting-human-verification` after the required audit.
+- Preparing a Rethlas packet does not pause other authorized routes. Use `needs-escalation-approval` only for a real dependency on an unauthorized external run. Once approved, follow the escalation protocol without requesting the same permission again.
+- The queue does not invoke web Pro or grant `human-verified` status.
 
-调度日志位于：
+## Logs and recovery
 
 ```text
 agents/important-conjectures/history.jsonl
 agents/important-conjectures/logs/<slug>/
 ```
 
-每个 Codex 回合都有完整 JSONL 事件日志和最终答复。累计回合数、最近错误和最近日志路径保存在各项目的 `.queue-runtime.json`。
+Each call has JSONL events and a final response. `.queue-runtime.json` retains cumulative attempts, recent errors, and log paths.
 
-机器重启后直接再次运行 `./tools/conjecture_queue.sh start`。Runner 会从项目文件和状态继续，不依赖旧聊天会话。
-
-空间占用只读报告：
+After a restart, completed rounds resume from saved state. An `active_execution` marker or unfinished transaction requires inspection and recovery first; do not silently rerun or reset counts. See [execution counts and abnormal exits](../../shared/runtime-v2-guide.md#execution-counts-and-abnormal-exits).
 
 ```bash
 ./queue.sh hygiene report
+./queue.sh hygiene latex
+./queue.sh hygiene logs --older-than-days 30 --keep-latest-per-slug 5
 ```
 
-清理命令默认 dry run。`./queue.sh hygiene latex` 只列出可重新生成的 LaTeX 中间文件；
-`./queue.sh hygiene logs --older-than-days 30 --keep-latest-per-slug 5` 只列出可无损压缩的旧
-JSONL。只有显式增加 `--apply` 才会执行，项目环境始终只报告、不自动删除。
+Cleanup defaults to a dry run. Only explicit `--apply` removes reproducible LaTeX intermediates or losslessly compresses old logs. Environments are reported, never deleted automatically.
 
-## 当前限制
+## Limitations
 
-- 默认 `start` 仍是公平轮转的串行队列。同一时刻只启动一个题目的根回合。需要题目级
-  并发时，必须为每道题分别执行 `start --slug`；系统不自动决定并发题数，也不允许公平
-  队列和单题 runner 同时运行。
-- 一个题目的根回合内部可以按盲问题包协议使用子 Agent；根 Agent 仍是该项目共享台账的
-  唯一写入者。
-- LLM 自检不是形式证明。任何 `needs-human-review` 或 `solved-awaiting-human-verification` 结果仍需老师逐步复核；必要时再升级到 Rethlas 或 Lean。
-- `stop` 是回合边界停止。如果必须立即终止，应由操作者进入 tmux 后发送中断，并检查项目文件是否留下半写状态。
+- Fair rotation is serial. Problem-level concurrency requires explicit dedicated starts; the system does not choose a concurrency count.
+- Additional agents require a researcher request. V2 shared ledgers belong to the transaction writer; compatibility rounds follow root ownership.
+- Self-review is not independent certification. The current workflow does not use Lean. Complete main results await stepwise researcher acceptance; technical holds follow the specific recovery issue.
+- `stop` takes effect at a round boundary. For an immediate stop, the operator must interrupt the tmux process and inspect possible partial writes.
