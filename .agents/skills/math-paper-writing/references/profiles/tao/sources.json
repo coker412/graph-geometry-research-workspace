@@ -1,0 +1,801 @@
+[
+  {
+    "id": "T01",
+    "title": "Almost all orbits of the Collatz map attain almost bounded values",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1909.03562",
+    "url": "https://arxiv.org/abs/1909.03562",
+    "version": "1909.03562v7",
+    "date": "2019-09-08",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 58,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Famous conjecture and quantitative progress",
+    "structure_pattern": "Precise partial result → Syracuse model → labeled probability heuristic → first-passage stabilization → mixing → Fourier decay → closure",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Heuristic is followed by a precise distribution statement; closing paragraph discharges the chain of reductions.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          3,
+          5,
+          6,
+          8,
+          9,
+          13,
+          16,
+          20,
+          28,
+          33,
+          36,
+          41,
+          44,
+          56
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "62cf49d4d8e8e681c7a4738ebaf56f3dbb7b67de95f37ccbac6e428ef3fc394e",
+    "raw_sha256": "3518a5ce1f5cb4485b1692ac30a693c01fd1f43f38611793a95c3faab866b3a0"
+  },
+  {
+    "id": "T02",
+    "title": "Quantitative bounds for critically bounded solutions to the Navier-Stokes equations",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1908.04958",
+    "url": "https://arxiv.org/abs/1908.04958",
+    "version": "1908.04958v2",
+    "date": "2019-08-14",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 45,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Known qualitative regularity theorem",
+    "structure_pattern": "Critical equation → quantitative substitute → spacetime overview → basic estimates → Carleman inequalities → main estimate → applications",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "The diagram explains where separate estimates operate; triple-exponential cost is part of the contribution.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          4,
+          5,
+          6,
+          8,
+          27,
+          36,
+          41,
+          44
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "8afe3ebfd88e9b852260e6276c86edddb33abdf373057e765029abc544f68a2b",
+    "raw_sha256": "5f38f97e7d11bedb0d2e1a86563fca11090c28ae18b380ffef905775b966bc11"
+  },
+  {
+    "id": "T03",
+    "title": "An integration approach to the Toeplitz square peg problem",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1611.07441",
+    "url": "https://arxiv.org/abs/1611.07441",
+    "version": "1611.07441v2",
+    "date": "2016-11-22",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 53,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Geometric conjecture and obstruction",
+    "structure_pattern": "Known regular cases → small-square obstruction → integration method → proved case → periodic/combinatorial variants → special cases and unresolved step",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "A proposed route to the general conjecture stays separate from the proved positive result.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          5,
+          6,
+          11,
+          14,
+          33,
+          37,
+          42,
+          51
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "e79b105a7d86ed28a56a61723a2f70159e8d84d99902c82de758ec4b3c820534",
+    "raw_sha256": "b826bc447591e9819af4f60f899b751594fa1d8086a70d8824f9e1e1ff9d8534"
+  },
+  {
+    "id": "T04",
+    "title": "On the universality of potential well dynamics",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1707.02389",
+    "url": "https://arxiv.org/abs/1707.02389",
+    "version": "1707.02389v3",
+    "date": "2017-07-08",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 20,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Embedding a class of dynamics",
+    "structure_pattern": "Potential-well model → embedding question → geometric criterion → examples and obstruction → proof → Turing-machine encoding",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "A geometric criterion makes cross-field universality a testable mathematical interface; the counterexample is attributed to Bryant.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          8,
+          11,
+          15,
+          18,
+          20
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "80eb7712e98d9347d831e2091a316c5668b52e0c2ce6c8ebf4918d1a176863fe",
+    "raw_sha256": "ce6d1e1bd59af3a6a5d4efef511083362cd4af01617c6a7a5dd9f86ed75e53e0"
+  },
+  {
+    "id": "T05",
+    "title": "Embedding the Heisenberg group into a bounded dimensional Euclidean space with optimal distortion",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1811.09223",
+    "url": "https://arxiv.org/abs/1811.09223",
+    "version": "1811.09223v2",
+    "date": "2018-11-22",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 46,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Two competing quantitative targets",
+    "structure_pattern": "Known distortion/dimension tradeoff → simultaneous improvement → informal oscillatory construction → orthogonality obstacle → iterative reductions → perturbation → closure",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Imports Nash–Moser-type ideas by naming derivative loss; does not claim the borrowed theorem applies verbatim.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          3,
+          4,
+          5,
+          8,
+          11,
+          16,
+          23,
+          26,
+          41,
+          45
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "3c09cc522c5f3951013b16ac1da6eb0aa645e95e09b31d723ac94a232093e1fb",
+    "raw_sha256": "1908548df0e2a42aca41c429ccf6cdc64aceda5cb6842ed54898f973569e8efe"
+  },
+  {
+    "id": "T06",
+    "title": "On the universality of the incompressible Euler equation on compact manifolds, II. Non-rigidity of Euler flows",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1902.06313",
+    "url": "https://arxiv.org/abs/1902.06313",
+    "version": "1902.06313v2",
+    "date": "2019-02-17",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 21,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Equation and enlarged ambient class",
+    "structure_pattern": "Euler setting → extension notion → non-rigidity/generic obstruction → coordinate formulation → separate proofs",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Degree-of-freedom heuristic is bounded by dimension; explicitly admits the argument fails in dimension two.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          7,
+          9,
+          12,
+          14,
+          15,
+          20
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "db4d9a31a7359091b4bfb0df1e35047a9ad48933924252ad91eceb64d08c3cfe",
+    "raw_sha256": "3e2f3e6405e0c282ea4527cc1a2d8e3df84527645ee69f6f991f2987d3a4f109"
+  },
+  {
+    "id": "T07",
+    "title": "Perfectly packing a square by squares of nearly harmonic sidelength",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "2202.03594",
+    "url": "https://arxiv.org/abs/2202.03594",
+    "version": "2202.03594v2",
+    "date": "2022-02-08",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 11,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Packing conjecture and previous range",
+    "structure_pattern": "Problem → improved range → perimeter obstruction → near-lattice remedy → recursive reduction → local packing construction",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "A short paper can still identify the exact invariant blocking the old algorithm.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          2,
+          3,
+          6,
+          7,
+          10,
+          11
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "c2e77a28d69b1e4c38f7854f0f1df34111a1f8f005fd9a18dc9f553444be6215",
+    "raw_sha256": "433d06ab9bb7654e3c7acecee78ee3b6f768b9405bd39bd4539adeabfc58d12b"
+  },
+  {
+    "id": "T08",
+    "title": "Sendov's conjecture for sufficiently high degree polynomials",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "2012.04125",
+    "url": "https://arxiv.org/abs/2012.04125",
+    "version": "2012.04125v2",
+    "date": "2020-12-08",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 38,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Conjecture and degree regime",
+    "structure_pattern": "Conjecture → large-degree theorem → locations of the distinguished root → asymptotic conventions → regime-specific contradictions → equality discussion",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Distinct root regimes receive distinct tools; notation explains the meaning of small parameters before use.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          10,
+          12,
+          15,
+          17,
+          19,
+          25,
+          28,
+          37
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "d177cb5218a7e06ceea374d5e04fa8e39332c666ca832a4102b2dff2c570687e",
+    "raw_sha256": "c7f0c56b1a03e41d85404989396ed9881ebfbd07f72673a73b0b346c14e8e6a6"
+  },
+  {
+    "id": "T09",
+    "title": "Finite time blowup for an averaged three-dimensional Navier-Stokes equation",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1402.0290",
+    "url": "https://arxiv.org/abs/1402.0290",
+    "version": "1402.0290v3",
+    "date": "2014-02-03",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 77,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Limits of a proof strategy",
+    "structure_pattern": "Original problem and retained identities → modified equation theorem → informal cascade model → averaging → ODE reduction → circuit components → blowup closure",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Modified-equation blowup is used to delimit a method, not advertised as solving the original Navier–Stokes problem.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          5,
+          10,
+          11,
+          15,
+          16,
+          18,
+          29,
+          35,
+          48,
+          75
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "743c802bd9ecf90ec8d022292885f886a321ab1f7c2dfb601b3c860b98b3f07d",
+    "raw_sha256": "702808cf1c8a35020d295bf62c0f3a8bba3f6bc702e81ad0ee468fbf47212694"
+  },
+  {
+    "id": "T10",
+    "title": "The Erdos discrepancy problem",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1509.05363",
+    "url": "https://arxiv.org/abs/1509.05363",
+    "version": "1509.05363v6",
+    "date": "2015-09-17",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 27,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Precise discrepancy theorem",
+    "structure_pattern": "Result and provenance → three ingredients → Fourier reduction → multiplicative-function input → residual model → generalization",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Credits shared/previous ingredients and singles out the new assembly; a remark tests why a tempting example does not contradict the reduction.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          7,
+          8,
+          10,
+          11,
+          12,
+          18,
+          23,
+          26
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "9c13d7a396da3354bf30bc719464230cf91ddf16ef0666612c9530b07e1d68a2",
+    "raw_sha256": "c2f1ec9c0ac7c2058077f6a36e5c81cf7a78f9c347205005568119b79e1eecfa"
+  },
+  {
+    "id": "T11",
+    "title": "Finite time blowup for a supercritical defocusing nonlinear wave system",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1602.08059",
+    "url": "https://arxiv.org/abs/1602.08059",
+    "version": "1602.08059v3",
+    "date": "2016-02-25",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 32,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Known critical versus supercritical regimes",
+    "structure_pattern": "System and parameter range → self-similar target → eliminate potential → eliminate field → dimension reduction → constructive closure",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Section names identify the unknown eliminated at each stage and the last paragraph returns to the main theorem.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          5,
+          6,
+          9,
+          12,
+          15,
+          22,
+          23,
+          24,
+          25,
+          31
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "63a937148c8afc54e3fee13111ecc0018e8f56bbed360981a40008206e94f90b",
+    "raw_sha256": "385d0604d4d3a31497c6cc449fc713835c0a0bc797d4b983e86d86e383549077"
+  },
+  {
+    "id": "T12",
+    "title": "Finite time blowup for a supercritical defocusing nonlinear Schr\\\"odinger system",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1612.00526",
+    "url": "https://arxiv.org/abs/1612.00526",
+    "version": "1612.00526v1",
+    "date": "2016-12-02",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 55,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Scalar/system distinction",
+    "structure_pattern": "System and forcing → limitation statement → self-similar target → eliminate variables/constraints → construction → embedding appendix",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Explains why forcing and a large target dimension remain; their removal is not an established consequence.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          5,
+          8,
+          9,
+          10,
+          15,
+          20,
+          26,
+          33,
+          35,
+          43,
+          54
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "4dd92b84df32ee0c521a37ea4448b4922ecf56d177dd4d1af681ae6ab1ae4146",
+    "raw_sha256": "9ba6f98cab232e9c655ac311c83eb99bb8503d4044ea303036ab04118e520809"
+  },
+  {
+    "id": "T13",
+    "title": "Finite time blowup for high dimensional nonlinear wave systems with bounded smooth nonlinearity",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1603.01908",
+    "url": "https://arxiv.org/abs/1603.01908",
+    "version": "1603.01908v3",
+    "date": "2016-03-07",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 27,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Dimension threshold",
+    "structure_pattern": "Known low-dimensional regularity → high-dimensional counterexample → explicitly non-rigorous scaling picture → wave profiles → construction → low-dimensional appendix",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Keeps scalar, system and unresolved dimension ten apart; heuristic numerology is explicitly not a proof.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          3,
+          4,
+          6,
+          12,
+          13,
+          21,
+          26
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "0c05869d38e462f5598954e3f679f23b60434edf5b8f1fab9690e59b3e22aea6",
+    "raw_sha256": "677bcf40aa9e480d9e66222e08a3e683fceb6347a8755643413aa2d492882261"
+  },
+  {
+    "id": "T14",
+    "title": "Commutators close to the identity",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1805.11131",
+    "url": "https://arxiv.org/abs/1805.11131",
+    "version": "1805.11131v3",
+    "date": "2018-05-28",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 15,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Gap between lower and upper bounds",
+    "structure_pattern": "Quantitative obstruction → old construction → improved bound → operator system → abstract solving lemma → open questions",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Short note includes a comparison construction; nonoptimized exponent is disclosed rather than presented as sharp.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          3,
+          6,
+          11,
+          13
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "7a8ebad434cd9fe321ea8555540a82e52f15052bc83747abd0568ec5fbe9f7fb",
+    "raw_sha256": "13c24b530919ede25597af3a27d99e0ce4920c72219ad20a0a22a129c7179893"
+  },
+  {
+    "id": "T15",
+    "title": "Some remarks on the lonely runner conjecture",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1701.02048",
+    "url": "https://arxiv.org/abs/1701.02048",
+    "version": "1701.02048v4",
+    "date": "2017-01-09",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 31,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Concrete conjecture",
+    "structure_pattern": "Runner picture → Bohr-set formulation → multiple partial results → preliminaries → separate theorem proofs → short-progression case",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "A concrete problem is translated into a reusable language before the proof; scope remains partial.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          2,
+          8,
+          12,
+          21,
+          27,
+          30
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "a65c771fb04c416b1c81a5b07560700b75dd897488f5a17d894a4acc3a93eccc",
+    "raw_sha256": "9842e5b74b1d5c4f5312ba20d308c7f02bd4e17c3cc3f11b53303f9cd47d4871"
+  },
+  {
+    "id": "T16",
+    "title": "An inverse theorem for an inequality of Kneser",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "1711.04337",
+    "url": "https://arxiv.org/abs/1711.04337",
+    "version": "1711.04337v4",
+    "date": "2017-11-12",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 30,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Classical inequality and equality cases",
+    "structure_pattern": "Strengthened inequality → extremal examples → stable inverse theorem → error-suppressed sketch → formal argument → further questions",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Explicitly suppresses epsilon/delta only in the outline, not in the theorem; examples explain the target structure.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          2,
+          4,
+          5,
+          7,
+          8,
+          28,
+          29
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "3abad05e4953b242da62182362c581fedecfc3b56cdc7cd21badfc66f44f8320",
+    "raw_sha256": "2e0d441742bfe513dc818772208dfdb83a3e2410a5226a0ed08ef27c2104ae75"
+  },
+  {
+    "id": "T17",
+    "title": "The Ionescu--Wainger multiplier theorem and the adeles",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "2008.05066",
+    "url": "https://arxiv.org/abs/2008.05066",
+    "version": "2008.05066v2",
+    "date": "2020-08-12",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 39,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Reformulation of a known theorem",
+    "structure_pattern": "Unified group language → lattice/adelic dictionary → sampling bridge → superorthogonality → sunflower bound → theorem → major-arc construction → background appendix",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Explains what continuous and arithmetic features each factor models and proves a comparison returning to lattice norms.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          2,
+          9,
+          11,
+          13,
+          21,
+          24,
+          35,
+          36,
+          38
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "8b106bb635a697b1c282ea557fc7aad7654285f28eb277782a8af914d6b57457",
+    "raw_sha256": "35a5723678bfef48d0c324a203dae74503039f006d5e33158d9e009b0e160525"
+  },
+  {
+    "id": "T18",
+    "title": "Perelman's proof of the Poincar\\'e conjecture: a nonlinear PDE perspective",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "math/0610903",
+    "url": "https://arxiv.org/abs/math/0610903",
+    "version": "math/0610903v1",
+    "date": "2006-10-29",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 42,
+    "article_type": "survey",
+    "author_attribution": "sole-authored",
+    "hook_type": "Major theorem for a different audience",
+    "structure_pattern": "Perelman theorem → declared audience and omissions → nonlinear-PDE overview → scaling/local existence → monotonicity → blowup → surgery/extinction",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Survey deliberately rearranges chronology and declares simplifications; do not apply its omissions to research proofs.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          2,
+          4,
+          6,
+          8,
+          10,
+          12,
+          15,
+          19,
+          22,
+          24,
+          41
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "3b06e122d7ec474040fbb6b2bf73636d3dbddaf838882abf52e4c1b97d41aebe",
+    "raw_sha256": "6f49b715fb49c4facbea1056dd0fc3f22c9172af3be07fc6473fd915ce212f83"
+  },
+  {
+    "id": "T19",
+    "title": "Szemer\\'edi's regularity lemma revisited",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "math/0504472",
+    "url": "https://arxiv.org/abs/math/0504472",
+    "version": "math/0504472v2",
+    "date": "2005-04-22",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 21,
+    "article_type": "research paper",
+    "author_attribution": "sole-authored",
+    "hook_type": "Known graph lemma in another language",
+    "structure_pattern": "Graph statement → probability/information reformulation → recover graph consequence → prove stronger formulation → entropy variant",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "Translation is operational: a graph becomes an event and partitions become sigma-algebras, followed by a return application.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          9,
+          10,
+          12,
+          15,
+          20
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "30be94b27109d0fdc3e2a5f0926a580464e182502d65dde5c9314ee44afb6d2c",
+    "raw_sha256": "a7e9c66bad553fa8fd599f39ce93461b5eda623be729e2786e064340ca2bc7d4"
+  },
+  {
+    "id": "T20",
+    "title": "The dichotomy between structure and randomness, arithmetic progressions, and the primes",
+    "author": [
+      "Tao, Terence"
+    ],
+    "arxiv": "math/0512114",
+    "url": "https://arxiv.org/abs/math/0512114",
+    "version": "math/0512114v2",
+    "date": "2005-12-06",
+    "date_semantics": "First arXiv submission; the inspected PDF is the recorded later version, not necessarily a journal version.",
+    "pages": 27,
+    "article_type": "survey",
+    "author_attribution": "sole-authored",
+    "hook_type": "Common principle across proofs",
+    "structure_pattern": "Structure/randomness thesis → ergodic formulation → Fourier formulation → graph regularity → primes application",
+    "source_types": [
+      "primary mathematical papers",
+      "explicit earlier theorem or model"
+    ],
+    "notable": "One organizing distinction is instantiated across fields; this is a survey, not a template for every theorem paper.",
+    "inspected_loci": [
+      {
+        "pdf_pages": [
+          1,
+          5,
+          9,
+          13,
+          16,
+          21,
+          25
+        ],
+        "scope": "title-page author check, sampled introduction/strategy text, section map and ending excerpts; not full proof audit"
+      }
+    ],
+    "pdf_sha256": "a8865169202b0fe95082219e1c00da2457a22181e7d9d1389bc33d81a7b98525",
+    "raw_sha256": "3f179d6e2911410bf6a3b2d152590283e62dffb2dda3ab8152b3ea09b539508a"
+  }
+]

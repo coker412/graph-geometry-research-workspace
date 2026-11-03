@@ -1,0 +1,30 @@
+{
+  "repository": "https://github.com/larashero3-dotcom/writing-dna-skill",
+  "commit": "35a38cf4690d6048aca10fd2692c2b55de5bcb3f",
+  "checked": "2026-11-02",
+  "license": "MIT",
+  "scope": "Unmodified upstream runtime: SKILL.md, LICENSE, references/, templates/, and skills/. Repository artwork, examples and release documentation are omitted.",
+  "sha256": {
+    "LICENSE": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
+    "SKILL.md": "6edb2cca7e938d301c79b6605189d7dd7243fefe30e91de31b5cd9ab5df4b6d7",
+    "references/workflow.en.md": "8c13efd81ec070a945faf7d6cc6013ed8bec6af50335d067d6ace7ff47164a14",
+    "skills/lieflat-less-ai-tone/SKILL.md": "16661f5c97fc856d21d7bd0b33471e7f0ca20fbc13c4d5136ef5288680bea7d1",
+    "templates/author-corpus/README.md": "2e2321dae2b272fd4ec52ddc7270387032bbab852c7c4bbad281cfd350eeaeb0",
+    "templates/author-corpus/en/README.md": "5285aebbb953c3db4ccee0ac6185aff5aab772dd1f86c1d4c77a93237aa4cfda",
+    "templates/author-corpus/en/Writing-DNA.md": "17ec8c6074bf2d53979d8736210357f99797440c80c037e1f1b916e0985e27ff",
+    "templates/author-corpus/en/_meta/example.schema.json": "8c8c2a0ddcde2fee2ecde4b570148f18bb64f583b381e1d638238330e3c41149",
+    "templates/author-corpus/en/cognitive-framework.md": "b58638d60dae5cf78ec3a0bd38bba350611cdb1378383fedfd1e848020490141",
+    "templates/author-corpus/en/language-dna.md": "142d7d8af70af1654ecd1196af836aecef8f09e18c48d1424d675d0668ae9108",
+    "templates/author-corpus/en/raw/.gitkeep": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "templates/author-corpus/en/structure-patterns.md": "a212d4f6f8147092c04d4404d36493a7bb01cc2157689322d24149880c7a8cb2",
+    "templates/author-corpus/en/visual-style-guide.md": "e2e9d1f3294e17d732452f608f0f051c402c4e6479e629484a25cbb3d38d2b4e",
+    "templates/author-corpus/zh/README.md": "b954fc1acf4b2263865baa619e75c6f9a1093f1cd3a903f7a8350c06a076cdb5",
+    "templates/author-corpus/zh/Writing-DNA.md": "b1043c1ca187e5422184d987d15d4d1362dd4216c1f1ea4bf1212bd55bac4cd9",
+    "templates/author-corpus/zh/_meta/example.schema.json": "61f2989f6a436f12bc7b509ff5d028059ed3e6bf0db527bce4ceb360963ff087",
+    "templates/author-corpus/zh/raw/.gitkeep": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+    "templates/author-corpus/zh/写作视角与认知框架.md": "88520683916a2efb14f4187514d0886d99042d4ad2cb4c9e03f77fdf10529edf",
+    "templates/author-corpus/zh/文章结构模板.md": "84eee8b355261ef0cffb54d73d5ef00e14da68b6292c0b7ce10477816f033d16",
+    "templates/author-corpus/zh/视觉风格指南.md": "7de68631cdb2fe3718e5d0122cdf5e3ffc6953c5e03b9d951fa506e3356eb446",
+    "templates/author-corpus/zh/语言DNA.md": "20fcd0bb7350ff8cd5260d0fa8b965bf320e577fa62871a3166db24109a85186"
+  }
+}

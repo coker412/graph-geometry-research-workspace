@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 import sys
 from collections import deque
@@ -23,6 +25,7 @@ def main(skill_root: Path) -> int:
     entrypoint = skill_root / "SKILL.md"
     references = skill_root / "references"
     ui = skill_root / "agents" / "openai.yaml"
+    upstream = skill_root / "assets" / "writing-dna-skill"
 
     if not entrypoint.is_file():
         failures.append("SKILL.md is missing")
@@ -31,6 +34,15 @@ def main(skill_root: Path) -> int:
     if failures:
         print("\n".join(failures))
         return 1
+
+    try:
+        pinned = json.loads((upstream / "UPSTREAM.json").read_text(encoding="utf-8"))
+        for name, expected_hash in pinned["sha256"].items():
+            source = upstream / name
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != expected_hash:
+                failures.append(f"missing or changed upstream resource: {name}")
+    except (OSError, ValueError, KeyError) as error:
+        failures.append(f"Writing DNA provenance cannot be read: {error}")
 
     markdown_files = [entrypoint, *sorted(references.rglob("*.md"))]
     graph: dict[Path, set[Path]] = {path.resolve(): set() for path in markdown_files}

@@ -1,0 +1,1727 @@
+{
+  "method": "PDF prose-block proxy: >=12 English word tokens and >=65% alphabetic characters; all material after the first References heading excluded (including any later appendix). Sentence candidates require >=3 English word tokens, not a character-length cutoff. Formula splits, ligatures, footnotes and PDF blocks bias the counts. Character thresholds retained from the skill; they do not define good English prose.",
+  "papers": [
+    {
+      "id": "T01",
+      "prose_blocks": 257,
+      "sentences": 543,
+      "mean_sentence_characters": 116.11233885819522,
+      "mean_sentence_words": 19.607734806629836,
+      "short_le15_char_fraction": 0.007366482504604052,
+      "long_ge50_char_fraction": 0.7753222836095764,
+      "mean_sentences_per_block": 2.11284046692607,
+      "parenthesis_pairs": 609,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 5,
+        "we study": 0,
+        "in particular": 19,
+        "it suffices": 4,
+        "the main difficulty": 2,
+        "heuristic": 19,
+        "informally": 8,
+        "on the other hand": 4,
+        "more precisely": 11,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T02",
+      "prose_blocks": 178,
+      "sentences": 328,
+      "mean_sentence_characters": 105.1890243902439,
+      "mean_sentence_words": 17.164634146341463,
+      "short_le15_char_fraction": 0.009146341463414634,
+      "long_ge50_char_fraction": 0.75,
+      "mean_sentences_per_block": 1.8426966292134832,
+      "parenthesis_pairs": 287,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 2,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 12,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 1,
+        "on the other hand": 3,
+        "more precisely": 4,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T03",
+      "prose_blocks": 298,
+      "sentences": 601,
+      "mean_sentence_characters": 127.74542429284526,
+      "mean_sentence_words": 20.474209650582363,
+      "short_le15_char_fraction": 0.013311148086522463,
+      "long_ge50_char_fraction": 0.8668885191347754,
+      "mean_sentences_per_block": 2.0167785234899327,
+      "parenthesis_pairs": 242,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 1,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 13,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 0,
+        "on the other hand": 5,
+        "more precisely": 1,
+        "we reduce": 0,
+        "counterexample": 5
+      }
+    },
+    {
+      "id": "T04",
+      "prose_blocks": 167,
+      "sentences": 320,
+      "mean_sentence_characters": 116.365625,
+      "mean_sentence_words": 20.040625,
+      "short_le15_char_fraction": 0.003125,
+      "long_ge50_char_fraction": 0.79375,
+      "mean_sentences_per_block": 1.9161676646706587,
+      "parenthesis_pairs": 148,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 1,
+        "we show": 5,
+        "we study": 1,
+        "in particular": 9,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 4,
+        "on the other hand": 0,
+        "more precisely": 1,
+        "we reduce": 0,
+        "counterexample": 4
+      }
+    },
+    {
+      "id": "T05",
+      "prose_blocks": 230,
+      "sentences": 452,
+      "mean_sentence_characters": 121.90486725663717,
+      "mean_sentence_words": 19.88716814159292,
+      "short_le15_char_fraction": 0.00663716814159292,
+      "long_ge50_char_fraction": 0.8030973451327433,
+      "mean_sentences_per_block": 1.9652173913043478,
+      "parenthesis_pairs": 434,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 3,
+        "we show": 3,
+        "we study": 0,
+        "in particular": 12,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 1,
+        "on the other hand": 4,
+        "more precisely": 1,
+        "we reduce": 1,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T06",
+      "prose_blocks": 116,
+      "sentences": 207,
+      "mean_sentence_characters": 130.98067632850243,
+      "mean_sentence_words": 22.067632850241544,
+      "short_le15_char_fraction": 0.014492753623188406,
+      "long_ge50_char_fraction": 0.8502415458937198,
+      "mean_sentences_per_block": 1.7844827586206897,
+      "parenthesis_pairs": 230,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 7,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 1,
+        "informally": 1,
+        "on the other hand": 2,
+        "more precisely": 1,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T07",
+      "prose_blocks": 70,
+      "sentences": 107,
+      "mean_sentence_characters": 114.18691588785046,
+      "mean_sentence_words": 19.186915887850468,
+      "short_le15_char_fraction": 0.009345794392523364,
+      "long_ge50_char_fraction": 0.8317757009345794,
+      "mean_sentences_per_block": 1.5285714285714285,
+      "parenthesis_pairs": 50,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 1,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 2,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 0,
+        "on the other hand": 0,
+        "more precisely": 2,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T08",
+      "prose_blocks": 216,
+      "sentences": 455,
+      "mean_sentence_characters": 123.0967032967033,
+      "mean_sentence_words": 20.285714285714285,
+      "short_le15_char_fraction": 0.013186813186813187,
+      "long_ge50_char_fraction": 0.8175824175824176,
+      "mean_sentences_per_block": 2.1064814814814814,
+      "parenthesis_pairs": 574,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 3,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 25,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 3,
+        "on the other hand": 7,
+        "more precisely": 3,
+        "we reduce": 0,
+        "counterexample": 18
+      }
+    },
+    {
+      "id": "T09",
+      "prose_blocks": 387,
+      "sentences": 730,
+      "mean_sentence_characters": 133.74246575342465,
+      "mean_sentence_words": 20.945205479452056,
+      "short_le15_char_fraction": 0.005479452054794521,
+      "long_ge50_char_fraction": 0.8438356164383561,
+      "mean_sentences_per_block": 1.8863049095607236,
+      "parenthesis_pairs": 504,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 21,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 7,
+        "informally": 0,
+        "on the other hand": 1,
+        "more precisely": 6,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T10",
+      "prose_blocks": 172,
+      "sentences": 334,
+      "mean_sentence_characters": 113.66766467065868,
+      "mean_sentence_words": 18.53293413173653,
+      "short_le15_char_fraction": 0.03293413173652695,
+      "long_ge50_char_fraction": 0.7694610778443114,
+      "mean_sentences_per_block": 1.941860465116279,
+      "parenthesis_pairs": 269,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 1,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 6,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 1,
+        "on the other hand": 1,
+        "more precisely": 1,
+        "we reduce": 0,
+        "counterexample": 6
+      }
+    },
+    {
+      "id": "T11",
+      "prose_blocks": 190,
+      "sentences": 377,
+      "mean_sentence_characters": 117.12732095490716,
+      "mean_sentence_words": 19.23342175066313,
+      "short_le15_char_fraction": 0.005305039787798408,
+      "long_ge50_char_fraction": 0.8381962864721485,
+      "mean_sentences_per_block": 1.9842105263157894,
+      "parenthesis_pairs": 184,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 1,
+        "we study": 2,
+        "in particular": 10,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 0,
+        "on the other hand": 2,
+        "more precisely": 3,
+        "we reduce": 0,
+        "counterexample": 1
+      }
+    },
+    {
+      "id": "T12",
+      "prose_blocks": 361,
+      "sentences": 729,
+      "mean_sentence_characters": 122.61728395061728,
+      "mean_sentence_words": 19.986282578875173,
+      "short_le15_char_fraction": 0.0027434842249657062,
+      "long_ge50_char_fraction": 0.8271604938271605,
+      "mean_sentences_per_block": 2.0193905817174516,
+      "parenthesis_pairs": 429,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 2,
+        "we study": 1,
+        "in particular": 19,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 1,
+        "on the other hand": 3,
+        "more precisely": 7,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T13",
+      "prose_blocks": 160,
+      "sentences": 290,
+      "mean_sentence_characters": 114.32068965517242,
+      "mean_sentence_words": 18.97586206896552,
+      "short_le15_char_fraction": 0.02413793103448276,
+      "long_ge50_char_fraction": 0.8310344827586207,
+      "mean_sentences_per_block": 1.8125,
+      "parenthesis_pairs": 133,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 3,
+        "we study": 0,
+        "in particular": 7,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 1,
+        "informally": 0,
+        "on the other hand": 3,
+        "more precisely": 2,
+        "we reduce": 0,
+        "counterexample": 1
+      }
+    },
+    {
+      "id": "T14",
+      "prose_blocks": 52,
+      "sentences": 103,
+      "mean_sentence_characters": 112.46601941747574,
+      "mean_sentence_words": 19.932038834951456,
+      "short_le15_char_fraction": 0.009708737864077669,
+      "long_ge50_char_fraction": 0.8155339805825242,
+      "mean_sentences_per_block": 1.9807692307692308,
+      "parenthesis_pairs": 114,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 5,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 0,
+        "on the other hand": 1,
+        "more precisely": 0,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T15",
+      "prose_blocks": 157,
+      "sentences": 310,
+      "mean_sentence_characters": 101.96774193548387,
+      "mean_sentence_words": 17.474193548387095,
+      "short_le15_char_fraction": 0.00967741935483871,
+      "long_ge50_char_fraction": 0.7870967741935484,
+      "mean_sentences_per_block": 1.9745222929936306,
+      "parenthesis_pairs": 205,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 7,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 5,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 3,
+        "on the other hand": 7,
+        "more precisely": 0,
+        "we reduce": 0,
+        "counterexample": 1
+      }
+    },
+    {
+      "id": "T16",
+      "prose_blocks": 150,
+      "sentences": 317,
+      "mean_sentence_characters": 108.05678233438486,
+      "mean_sentence_words": 18.62776025236593,
+      "short_le15_char_fraction": 0.00946372239747634,
+      "long_ge50_char_fraction": 0.8138801261829653,
+      "mean_sentences_per_block": 2.1133333333333333,
+      "parenthesis_pairs": 312,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 1,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 11,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 1,
+        "on the other hand": 5,
+        "more precisely": 2,
+        "we reduce": 0,
+        "counterexample": 2
+      }
+    },
+    {
+      "id": "T17",
+      "prose_blocks": 205,
+      "sentences": 385,
+      "mean_sentence_characters": 101.78181818181818,
+      "mean_sentence_words": 17.306493506493506,
+      "short_le15_char_fraction": 0.023376623376623377,
+      "long_ge50_char_fraction": 0.7740259740259741,
+      "mean_sentences_per_block": 1.8780487804878048,
+      "parenthesis_pairs": 350,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 4,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 6,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 0,
+        "on the other hand": 2,
+        "more precisely": 1,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T18",
+      "prose_blocks": 303,
+      "sentences": 825,
+      "mean_sentence_characters": 162.01090909090908,
+      "mean_sentence_words": 25.487272727272728,
+      "short_le15_char_fraction": 0.0036363636363636364,
+      "long_ge50_char_fraction": 0.8957575757575758,
+      "mean_sentences_per_block": 2.722772277227723,
+      "parenthesis_pairs": 578,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 30,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 3,
+        "informally": 4,
+        "on the other hand": 8,
+        "more precisely": 4,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T19",
+      "prose_blocks": 128,
+      "sentences": 309,
+      "mean_sentence_characters": 130.14886731391584,
+      "mean_sentence_words": 21.333333333333332,
+      "short_le15_char_fraction": 0.006472491909385114,
+      "long_ge50_char_fraction": 0.8478964401294499,
+      "mean_sentences_per_block": 2.4140625,
+      "parenthesis_pairs": 213,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 1,
+        "we study": 0,
+        "in particular": 11,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 7,
+        "on the other hand": 3,
+        "more precisely": 4,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    },
+    {
+      "id": "T20",
+      "prose_blocks": 171,
+      "sentences": 517,
+      "mean_sentence_characters": 145.58994197292068,
+      "mean_sentence_words": 23.810444874274662,
+      "short_le15_char_fraction": 0.007736943907156673,
+      "long_ge50_char_fraction": 0.9052224371373307,
+      "mean_sentences_per_block": 3.0233918128654973,
+      "parenthesis_pairs": 453,
+      "em_dashes": 0,
+      "rhetorical_phrases": {
+        "we prove": 0,
+        "we show": 0,
+        "we study": 0,
+        "in particular": 8,
+        "it suffices": 0,
+        "the main difficulty": 0,
+        "heuristic": 0,
+        "informally": 4,
+        "on the other hand": 0,
+        "more precisely": 5,
+        "we reduce": 0,
+        "counterexample": 0
+      }
+    }
+  ],
+  "word_frequencies": [
+    [
+      "the",
+      11183
+    ],
+    [
+      "and",
+      3428
+    ],
+    [
+      "that",
+      3097
+    ],
+    [
+      "for",
+      2512
+    ],
+    [
+      "this",
+      1884
+    ],
+    [
+      "with",
+      1287
+    ],
+    [
+      "one",
+      1220
+    ],
+    [
+      "theorem",
+      1091
+    ],
+    [
+      "can",
+      1039
+    ],
+    [
+      "from",
+      999
+    ],
+    [
+      "which",
+      982
+    ],
+    [
+      "are",
+      883
+    ],
+    [
+      "then",
+      860
+    ],
+    [
+      "will",
+      700
+    ],
+    [
+      "all",
+      690
+    ],
+    [
+      "not",
+      643
+    ],
+    [
+      "some",
+      626
+    ],
+    [
+      "have",
+      596
+    ],
+    [
+      "see",
+      563
+    ],
+    [
+      "also",
+      559
+    ],
+    [
+      "such",
+      554
+    ],
+    [
+      "let",
+      534
+    ],
+    [
+      "thus",
+      498
+    ],
+    [
+      "any",
+      468
+    ],
+    [
+      "smooth",
+      468
+    ],
+    [
+      "has",
+      442
+    ],
+    [
+      "case",
+      434
+    ],
+    [
+      "but",
+      421
+    ],
+    [
+      "time",
+      405
+    ],
+    [
+      "where",
+      394
+    ],
+    [
+      "function",
+      387
+    ],
+    [
+      "there",
+      381
+    ],
+    [
+      "now",
+      380
+    ],
+    [
+      "large",
+      373
+    ],
+    [
+      "these",
+      351
+    ],
+    [
+      "proposition",
+      334
+    ],
+    [
+      "set",
+      326
+    ],
+    [
+      "more",
+      310
+    ],
+    [
+      "use",
+      288
+    ],
+    [
+      "argument",
+      287
+    ],
+    [
+      "than",
+      284
+    ],
+    [
+      "when",
+      284
+    ],
+    [
+      "form",
+      281
+    ],
+    [
+      "may",
+      266
+    ],
+    [
+      "small",
+      263
+    ],
+    [
+      "using",
+      258
+    ],
+    [
+      "space",
+      257
+    ],
+    [
+      "proof",
+      254
+    ],
+    [
+      "solution",
+      252
+    ],
+    [
+      "each",
+      248
+    ],
+    [
+      "bound",
+      248
+    ],
+    [
+      "particular",
+      246
+    ],
+    [
+      "conjecture",
+      245
+    ],
+    [
+      "only",
+      245
+    ],
+    [
+      "other",
+      244
+    ],
+    [
+      "lemma",
+      241
+    ],
+    [
+      "number",
+      239
+    ],
+    [
+      "here",
+      233
+    ],
+    [
+      "positive",
+      229
+    ],
+    [
+      "energy",
+      225
+    ],
+    [
+      "curvature",
+      225
+    ],
+    [
+      "bounded",
+      224
+    ],
+    [
+      "conclude",
+      217
+    ],
+    [
+      "order",
+      216
+    ],
+    [
+      "equation",
+      215
+    ],
+    [
+      "functions",
+      213
+    ],
+    [
+      "obtain",
+      212
+    ],
+    [
+      "show",
+      208
+    ],
+    [
+      "was",
+      205
+    ],
+    [
+      "since",
+      200
+    ],
+    [
+      "random",
+      198
+    ],
+    [
+      "constant",
+      197
+    ],
+    [
+      "above",
+      194
+    ],
+    [
+      "fact",
+      191
+    ],
+    [
+      "point",
+      191
+    ],
+    [
+      "claim",
+      187
+    ],
+    [
+      "two",
+      180
+    ],
+    [
+      "inequality",
+      178
+    ],
+    [
+      "arguments",
+      177
+    ],
+    [
+      "manifold",
+      177
+    ],
+    [
+      "ricci",
+      177
+    ],
+    [
+      "following",
+      175
+    ],
+    [
+      "given",
+      174
+    ],
+    [
+      "section",
+      171
+    ],
+    [
+      "out",
+      170
+    ],
+    [
+      "regularity",
+      169
+    ],
+    [
+      "compact",
+      166
+    ],
+    [
+      "does",
+      165
+    ],
+    [
+      "most",
+      163
+    ],
+    [
+      "however",
+      162
+    ],
+    [
+      "our",
+      157
+    ],
+    [
+      "blowup",
+      157
+    ],
+    [
+      "paper",
+      155
+    ],
+    [
+      "into",
+      154
+    ],
+    [
+      "quantity",
+      154
+    ],
+    [
+      "map",
+      153
+    ],
+    [
+      "solutions",
+      153
+    ],
+    [
+      "follows",
+      152
+    ],
+    [
+      "instance",
+      147
+    ],
+    [
+      "enough",
+      146
+    ],
+    [
+      "establish",
+      146
+    ],
+    [
+      "zero",
+      146
+    ],
+    [
+      "would",
+      144
+    ],
+    [
+      "even",
+      142
+    ],
+    [
+      "theory",
+      140
+    ],
+    [
+      "almost",
+      139
+    ],
+    [
+      "need",
+      137
+    ],
+    [
+      "used",
+      136
+    ],
+    [
+      "hence",
+      136
+    ],
+    [
+      "exists",
+      135
+    ],
+    [
+      "analysis",
+      135
+    ],
+    [
+      "note",
+      134
+    ],
+    [
+      "local",
+      134
+    ],
+    [
+      "operator",
+      133
+    ],
+    [
+      "probability",
+      132
+    ],
+    [
+      "well",
+      131
+    ],
+    [
+      "fourier",
+      131
+    ],
+    [
+      "bounds",
+      129
+    ],
+    [
+      "remark",
+      129
+    ],
+    [
+      "problem",
+      129
+    ],
+    [
+      "sense",
+      128
+    ],
+    [
+      "prove",
+      128
+    ],
+    [
+      "results",
+      127
+    ],
+    [
+      "could",
+      127
+    ],
+    [
+      "suppose",
+      127
+    ],
+    [
+      "linear",
+      126
+    ],
+    [
+      "between",
+      123
+    ],
+    [
+      "assume",
+      122
+    ],
+    [
+      "potential",
+      122
+    ],
+    [
+      "least",
+      121
+    ],
+    [
+      "property",
+      120
+    ],
+    [
+      "equations",
+      120
+    ],
+    [
+      "natural",
+      119
+    ],
+    [
+      "possible",
+      119
+    ],
+    [
+      "denote",
+      119
+    ],
+    [
+      "many",
+      119
+    ],
+    [
+      "scalar",
+      118
+    ],
+    [
+      "rather",
+      117
+    ],
+    [
+      "version",
+      116
+    ],
+    [
+      "variables",
+      114
+    ],
+    [
+      "hypothesis",
+      114
+    ],
+    [
+      "after",
+      114
+    ],
+    [
+      "example",
+      114
+    ],
+    [
+      "notation",
+      113
+    ],
+    [
+      "depending",
+      113
+    ],
+    [
+      "because",
+      111
+    ],
+    [
+      "values",
+      110
+    ],
+    [
+      "initial",
+      110
+    ],
+    [
+      "being",
+      109
+    ],
+    [
+      "supported",
+      108
+    ],
+    [
+      "measure",
+      107
+    ],
+    [
+      "control",
+      107
+    ],
+    [
+      "structure",
+      107
+    ],
+    [
+      "log",
+      106
+    ],
+    [
+      "work",
+      106
+    ],
+    [
+      "indeed",
+      105
+    ],
+    [
+      "product",
+      104
+    ],
+    [
+      "implies",
+      104
+    ],
+    [
+      "embedding",
+      104
+    ],
+    [
+      "term",
+      103
+    ],
+    [
+      "result",
+      101
+    ],
+    [
+      "very",
+      101
+    ],
+    [
+      "lower",
+      100
+    ],
+    [
+      "global",
+      100
+    ],
+    [
+      "formula",
+      100
+    ],
+    [
+      "equal",
+      100
+    ],
+    [
+      "vector",
+      99
+    ],
+    [
+      "standard",
+      98
+    ],
+    [
+      "while",
+      98
+    ],
+    [
+      "coordinates",
+      98
+    ],
+    [
+      "density",
+      96
+    ],
+    [
+      "properties",
+      96
+    ],
+    [
+      "say",
+      96
+    ],
+    [
+      "take",
+      96
+    ],
+    [
+      "terms",
+      95
+    ],
+    [
+      "sequence",
+      95
+    ],
+    [
+      "must",
+      95
+    ],
+    [
+      "origin",
+      95
+    ],
+    [
+      "sets",
+      94
+    ],
+    [
+      "taking",
+      93
+    ],
+    [
+      "volume",
+      93
+    ],
+    [
+      "asymptotic",
+      92
+    ],
+    [
+      "independent",
+      92
+    ],
+    [
+      "identity",
+      91
+    ],
+    [
+      "same",
+      91
+    ],
+    [
+      "later",
+      91
+    ],
+    [
+      "squares",
+      91
+    ],
+    [
+      "further",
+      90
+    ],
+    [
+      "every",
+      90
+    ],
+    [
+      "norm",
+      90
+    ],
+    [
+      "close",
+      89
+    ],
+    [
+      "estimate",
+      89
+    ],
+    [
+      "turns",
+      89
+    ],
+    [
+      "step",
+      89
+    ],
+    [
+      "certain",
+      88
+    ],
+    [
+      "instead",
+      88
+    ],
+    [
+      "region",
+      88
+    ],
+    [
+      "lies",
+      88
+    ],
+    [
+      "system",
+      87
+    ],
+    [
+      "curve",
+      87
+    ],
+    [
+      "metric",
+      87
+    ],
+    [
+      "estimates",
+      86
+    ],
+    [
+      "component",
+      86
+    ],
+    [
+      "construct",
+      85
+    ],
+    [
+      "side",
+      85
+    ],
+    [
+      "square",
+      85
+    ],
+    [
+      "known",
+      84
+    ],
+    [
+      "complex",
+      84
+    ],
+    [
+      "type",
+      83
+    ],
+    [
+      "integer",
+      82
+    ],
+    [
+      "below",
+      81
+    ],
+    [
+      "equivalent",
+      81
+    ],
+    [
+      "critical",
+      81
+    ],
+    [
+      "real",
+      81
+    ],
+    [
+      "factor",
+      81
+    ],
+    [
+      "remains",
+      80
+    ],
+    [
+      "times",
+      80
+    ],
+    [
+      "applying",
+      80
+    ],
+    [
+      "operators",
+      80
+    ],
+    [
+      "depend",
+      79
+    ],
+    [
+      "similar",
+      79
+    ],
+    [
+      "dimensions",
+      79
+    ],
+    [
+      "principle",
+      78
+    ],
+    [
+      "similarly",
+      78
+    ],
+    [
+      "over",
+      78
+    ],
+    [
+      "unit",
+      78
+    ],
+    [
+      "cannot",
+      77
+    ],
+    [
+      "odd",
+      77
+    ],
+    [
+      "general",
+      77
+    ],
+    [
+      "observe",
+      77
+    ],
+    [
+      "previous",
+      77
+    ],
+    [
+      "give",
+      76
+    ],
+    [
+      "points",
+      76
+    ],
+    [
+      "components",
+      76
+    ],
+    [
+      "dimensional",
+      76
+    ],
+    [
+      "technical",
+      75
+    ],
+    [
+      "holds",
+      75
+    ],
+    [
+      "condition",
+      75
+    ],
+    [
+      "course",
+      75
+    ],
+    [
+      "without",
+      74
+    ],
+    [
+      "derivatives",
+      74
+    ],
+    [
+      "pseudorandom",
+      74
+    ],
+    [
+      "value",
+      73
+    ],
+    [
+      "subset",
+      73
+    ],
+    [
+      "constants",
+      73
+    ],
+    [
+      "whenever",
+      73
+    ],
+    [
+      "scale",
+      73
+    ],
+    [
+      "data",
+      73
+    ],
+    [
+      "closed",
+      73
+    ],
+    [
+      "uniformly",
+      72
+    ],
+    [
+      "extend",
+      72
+    ],
+    [
+      "matrix",
+      72
+    ],
+    [
+      "interval",
+      72
+    ],
+    [
+      "essentially",
+      72
+    ],
+    [
+      "simple",
+      71
+    ],
+    [
+      "negative",
+      71
+    ],
+    [
+      "triangle",
+      71
+    ],
+    [
+      "obeying",
+      71
+    ],
+    [
+      "variable",
+      70
+    ],
+    [
+      "precisely",
+      70
+    ],
+    [
+      "viewed",
+      70
+    ],
+    [
+      "parameter",
+      70
+    ],
+    [
+      "write",
+      70
+    ],
+    [
+      "non-negative",
+      70
+    ],
+    [
+      "euler",
+      70
+    ],
+    [
+      "continuous",
+      70
+    ],
+    [
+      "already",
+      69
+    ],
+    [
+      "second",
+      69
+    ],
+    [
+      "three",
+      69
+    ],
+    [
+      "group",
+      68
+    ],
+    [
+      "limit",
+      68
+    ],
+    [
+      "hand",
+      68
+    ],
+    [
+      "again",
+      68
+    ],
+    [
+      "corollary",
+      68
+    ],
+    [
+      "additional",
+      68
+    ],
+    [
+      "homogeneous",
+      68
+    ],
+    [
+      "numbers",
+      67
+    ],
+    [
+      "quantities",
+      67
+    ],
+    [
+      "setting",
+      67
+    ],
+    [
+      "details",
+      67
+    ],
+    [
+      "chosen",
+      67
+    ],
+    [
+      "lie",
+      67
+    ],
+    [
+      "strictly",
+      67
+    ],
+    [
+      "contradiction",
+      67
+    ],
+    [
+      "lzq",
+      67
+    ],
+    [
+      "perelman",
+      67
+    ],
+    [
+      "just",
+      66
+    ],
+    [
+      "figure",
+      66
+    ],
+    [
+      "gives",
+      66
+    ],
+    [
+      "how",
+      65
+    ],
+    [
+      "nature",
+      65
+    ],
+    [
+      "under",
+      65
+    ],
+    [
+      "thanks",
+      65
+    ],
+    [
+      "remaining",
+      65
+    ],
+    [
+      "vanishing",
+      65
+    ],
+    [
+      "multiplicative",
+      64
+    ],
+    [
+      "easily",
+      64
+    ],
+    [
+      "author",
+      64
+    ],
+    [
+      "arbitrary",
+      64
+    ],
+    [
+      "key",
+      64
+    ]
+  ]
+}

@@ -2,6 +2,8 @@
 
 These editorial options come from a 2026-11-02 study of twenty Tao papers: eighteen research papers/notes and two surveys, first submitted during 2005–2022, with later revisions where recorded. The study used full texts, individual structure annotations, selected close reading, extraction statistics and five visually inspected papers. It did not audit all proofs or independently validate stylistic fidelity. These options do not define a mandatory author imitation.
 
+The complete [Tao profile](profile-tao.md) includes all five reports, twenty source records and inspected passage locations. This page remains a short entry for targeted borrowing.
+
 ## Tao corpus: explain reformulations and obligations
 
 | Choice | Direct evidence | Limit |

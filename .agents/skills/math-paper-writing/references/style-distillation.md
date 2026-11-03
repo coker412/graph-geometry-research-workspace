@@ -2,7 +2,9 @@
 
 Use this mode when asked to learn, compare, or update writing methods from selected papers, including the researcher's own writing. For ordinary polishing, the voice reference is enough. This mode is self-contained: no separately installed distillation skill, fixed workspace, particular connector or paid service is required.
 
-Adapted from the six-layer workflow of [writing-dna-skill](https://github.com/larashero3-dotcom/writing-dna-skill). Its [MIT notice](../licenses/writing-dna-MIT.txt) is retained. The mathematical specialization below preserves the original twenty-work standard while adding an explicitly chosen small-sample mode, guards against coauthor/genre confounding, and treats a profile as defeasible editorial guidance rather than identity imitation.
+For distillation, first read and use the bundled original [Writing DNA skill](../assets/writing-dna-skill/SKILL.md), then apply the mathematical specializations in this reference. Its English workflow, Chinese/English templates and referenced cleanup skill are included unchanged, with [pinned version and file hashes](../assets/writing-dna-skill/UPSTREAM.json) and [MIT license](../assets/writing-dna-skill/LICENSE). Resolve upstream relative paths from that bundled skill directory. No separate installation or network access is needed to load the workflow.
+
+For mathematical work, the user’s decisions and this adaptation govern conflicts: retain exact mathematical scope and notation; treat the upstream similarity-score goal as an aspiration, not a measured result; allow explicitly chosen small-sample/local modes; and use cleanup only when needed, without compulsory successive passes. Choose templates by artifact language, translate their genre fields to mathematical uses, and fill them with evidence rather than copying their placeholders. The mathematical specialization below preserves the original twenty-work standard while adding an explicitly chosen small-sample mode, guards against coauthor/genre confounding, and treats a profile as defeasible editorial guidance rather than identity imitation.
 
 ## Resolve what is being learned
 
