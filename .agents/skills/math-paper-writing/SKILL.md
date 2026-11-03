@@ -40,7 +40,7 @@ Read only applicable references, once. Combine routes when an edit crosses their
 | Figures, diagrams, tables, or captions | [figures-tables-and-diagrams.md](references/figures-tables-and-diagrams.md) |
 | Cover letters, submission packages, or referee responses | [submission-and-peer-review.md](references/submission-and-peer-review.md) |
 | Genre, audience changes, or researcher-specific voice | [voice-and-genre.md](references/voice-and-genre.md) |
-| Distilling, comparing, or updating a writing profile from papers or the researcher's own drafts | [style-distillation.md](references/style-distillation.md); optional examples: [Tao](references/profile-tao.md) and [field profiles](references/field-profiles.md). Load only a requested or relevant profile |
+| Distilling, comparing, or updating a writing profile from papers or the researcher's own drafts | Invoke the original [writing-dna-skill](assets/writing-dna-skill/SKILL.md) directly, with [mathematical adaptations](references/style-distillation.md); optional examples: [Tao](references/profile-tao.md) and [field profiles](references/field-profiles.md). Load only a requested or relevant profile |
 | Natural-language polishing with an available Humanizer skill | [humanizer-interface.md](references/humanizer-interface.md) |
 | Defensive contribution statements, repetitive caveats, or vague self-limitation | Read [anti-defensive-interface.md](references/anti-defensive-interface.md), then use the original `anti-defensive-writing` skill directly |
 | Detailed Chinese learning edition | Use the separate `math-paper-study-guide` skill; do not impose its teaching structure on a manuscript |

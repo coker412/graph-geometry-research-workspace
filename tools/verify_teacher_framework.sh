@@ -102,6 +102,13 @@ public_skill_files=(
 )
 
 required_files=(
+  "examples/math-paper-skills/01-conditional-abstract.md"
+  "examples/math-paper-skills/02-proof-overview.md"
+  "examples/math-paper-skills/03-hessian-study.md"
+  "examples/math-paper-skills/OPENAI-MATH-LICENSE"
+  "examples/math-paper-skills/README.md"
+  "examples/math-paper-skills/check_examples.py"
+  "examples/math-paper-skills/sources.json"
   "tools/tests/test_setup.py"
   "agents/protocols/geometry-scope.md"
   "agents/protocols/cross-field.md"

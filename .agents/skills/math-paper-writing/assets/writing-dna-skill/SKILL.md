@@ -7,6 +7,10 @@ description: 从至少 20 篇完整文章中蒸馏可复用的写作 DNA，分�
 
 > 英文名：`writing-dna-skill`
 
+## Mathematical papers: bundled integration
+
+For mathematical-paper distillation, use this original workflow directly and read the accompanying [mathematical adaptation](../../references/style-distillation.md) once. It supplies mathematical fidelity, explicit small-sample modes, and optional cleanup scope; these specializations govern mathematical tasks. Ordinary non-mathematical distillation follows the upstream workflow below. This paragraph is a local integration addition; the remaining upstream text is unchanged.
+
 ## 使用语言与模板
 
 将“对话语言”和“产物语言”分开处理：

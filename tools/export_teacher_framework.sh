@@ -60,6 +60,13 @@ copy_file "tools/tests/test_research_tasks.py" "tools/tests/test_research_tasks.
 copy_file "tools/tests/test_setup.py" "tools/tests/test_setup.py"
 
 # Publish only the reviewed, reusable writing skill resources.
+copy_file "examples/math-paper-skills/01-conditional-abstract.md" "examples/math-paper-skills/01-conditional-abstract.md"
+copy_file "examples/math-paper-skills/02-proof-overview.md" "examples/math-paper-skills/02-proof-overview.md"
+copy_file "examples/math-paper-skills/03-hessian-study.md" "examples/math-paper-skills/03-hessian-study.md"
+copy_file "examples/math-paper-skills/OPENAI-MATH-LICENSE" "examples/math-paper-skills/OPENAI-MATH-LICENSE"
+copy_file "examples/math-paper-skills/README.md" "examples/math-paper-skills/README.md"
+copy_file "examples/math-paper-skills/check_examples.py" "examples/math-paper-skills/check_examples.py"
+copy_file "examples/math-paper-skills/sources.json" "examples/math-paper-skills/sources.json"
 copy_file ".agents/skills/math-paper-writing/assets/writing-dna-skill/LICENSE" ".agents/skills/math-paper-writing/assets/writing-dna-skill/LICENSE"
 copy_file ".agents/skills/math-paper-writing/assets/writing-dna-skill/SKILL.md" ".agents/skills/math-paper-writing/assets/writing-dna-skill/SKILL.md"
 copy_file ".agents/skills/math-paper-writing/assets/writing-dna-skill/UPSTREAM.json" ".agents/skills/math-paper-writing/assets/writing-dna-skill/UPSTREAM.json"

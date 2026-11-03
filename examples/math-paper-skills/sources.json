@@ -1,0 +1,39 @@
+{
+  "repository": "https://github.com/openai/math",
+  "license": "Apache-2.0",
+  "sources": [
+    {
+      "id": "348-02",
+      "version": "4eaee87548250b2682affda7d05d947c05554bae",
+      "pdf_url": "https://github.com/openai/math/blob/4eaee87548250b2682affda7d05d947c05554bae/preprints/An-L2-Einstein-Gap-for-Nonnegatively-Curved-Four-Manifolds-October-5-2026/einstein-gap.pdf",
+      "pdf_sha256": "3be17e2ac8ba5f5f2f8de7af7c5d8c47321d3366b0fe012d9b9771b1aaf772ef",
+      "pdf_pages": 13,
+      "inspected_pages": [
+        1,
+        2
+      ],
+      "title": "An L2 Einstein Gap for Nonnegatively Curved Four-Manifolds",
+      "author": "OpenAI",
+      "manuscript_date": "2026-10-05",
+      "quoted_excerpt": "The conclusion concerns the smooth manifold, not an isometry of the original metric.",
+      "inspection_scope": "Selected pages and local formulas, not a complete proof audit."
+    },
+    {
+      "id": "353-01",
+      "version": "4eaee87548250b2682affda7d05d947c05554bae",
+      "pdf_url": "https://github.com/openai/math/blob/4eaee87548250b2682affda7d05d947c05554bae/preprints/Smooth-Nonquadratic-Affine-Maximal-Graph-in-Dimension-Ten-October-5-2026/affine-maximal-dimension-ten.pdf",
+      "pdf_sha256": "f7851c8489621a2df0e520d7aebe9c4dca5e6d3e68c9086d914b479dc9983da9",
+      "pdf_pages": 7,
+      "inspected_pages": [
+        1,
+        2,
+        3
+      ],
+      "title": "A Smooth Nonquadratic Entire Affine Maximal Graph in Dimension Ten",
+      "author": "OpenAI",
+      "manuscript_date": "2026-10-05",
+      "quoted_excerpt": "The main obstacle is then global existence: a priori the auxiliary function P could vanish at a finite radius.",
+      "inspection_scope": "Selected pages and local formulas, not a complete proof audit."
+    }
+  ]
+}

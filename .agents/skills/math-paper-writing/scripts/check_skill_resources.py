@@ -44,10 +44,12 @@ def main(skill_root: Path) -> int:
     except (OSError, ValueError, KeyError) as error:
         failures.append(f"Writing DNA provenance cannot be read: {error}")
 
-    markdown_files = [entrypoint, *sorted(references.rglob("*.md"))]
+    markdown_files = [entrypoint, upstream / "SKILL.md", *sorted(references.rglob("*.md"))]
     graph: dict[Path, set[Path]] = {path.resolve(): set() for path in markdown_files}
 
     for path in markdown_files:
+        if not path.is_file():
+            continue  # Missing entrypoints/resources were reported above.
         text = path.read_text(encoding="utf-8")
         if TODO_RE.search(text):
             failures.append(f"unfinished TODO marker: {path}")
