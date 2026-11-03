@@ -6,6 +6,8 @@ Read this reference for `.tex` or `.bib` edits, build verification, or synchroni
 
 Inspect the existing document structure, class, packages, macros, theorem environments, bibliography system, build command, and applicable repository instructions. Do not replace a journal template or reorganize the project merely to match a preferred layout.
 
+If the author asks to match an approved earlier paper, compare its actual class options, page setup, numbering, bibliography style, and relevant front/end matter. Sharing the same document class is not sufficient. Apply the latest author-approved exceptions and current paper's metadata; do not copy another paper's subject-specific macros or evidence warnings. Record the selected baseline in an existing project entry if it must survive later turns.
+
 When editing:
 
 - preserve commands, labels, citation keys, and file boundaries unless their change is requested;
@@ -37,6 +39,8 @@ Do not add a bibliography entry that has not been checked, and do not infer that
 ## Build and log checks
 
 Use the repository's documented build command. If none exists, infer the engine and bibliography workflow from the source before choosing a command. Rebuild every affected output after changing source, bibliography, figures, or included files.
+
+Resolve output paths before running the build. Reuse the established build, preview, and clean-rebuild locations; configure the native tool's output directory when it prevents recurring root-level artifacts. An isolated submission rebuild needs a clean working location, not a new permanent directory on every edit. Preserve only the backups and evidence required for the actual change. Inspect the final file listing as well as the logs; a location-only check cannot establish that the project is uncluttered.
 
 A zero exit code is necessary but not sufficient. Inspect the log for at least:
 

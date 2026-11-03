@@ -1,4 +1,4 @@
 interface:
-  display_name: "Chinese Mathematical Study Edition"
-  short_description: "Build Chinese study editions with explanations and proof reconstruction"
-  default_prompt: "Use $math-paper-study-guide to turn this mathematical paper into a detailed Chinese study edition."
+  display_name: "数学论文阅读与学习"
+  short_description: "用精确数学陈述串起主线，分层展开依赖与推导；整篇学习先交付完整 PDF，支持中英文"
+  default_prompt: "Use $math-paper-study-guide to explain this mathematical paper at my reading level; for whole-paper study, deliver a self-contained PDF with editable source, and for a focused question, explain the requested step directly."

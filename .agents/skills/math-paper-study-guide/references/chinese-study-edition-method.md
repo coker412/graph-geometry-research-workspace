@@ -1,126 +1,270 @@
-# Method for a Chinese mathematical study edition
+# 数学论文阅读与学习稿方法
 
-## Origin and scope
+## 来源与适用范围
 
-This method was developed from an internal scalar-curvature study edition. The recorded entry-point SHA-256 is `c127be33068ee0ce812d154a7a4236a3795dc502bb130808349269806d777bc2`; its modules were study-guide, introduction, slices, path, clock, ambient, completion, and reconstruction. The private manuscript is not part of the public framework.
+本方法由实际学习稿的编写与读者反馈整理而成，保留可迁移的教学决策，不依赖维护者的私有论文或目录。使用时重新识别源论文的证明依赖、难点和证据状态，不套用旧稿的章节名或模块数量。默认中文；用户指定英文或其他语言时，保持同样的解释标准，语言变化不自动提高读者起点。
 
-This records teaching and exposition choices, not the source paper's mathematics. Identify each new paper's own dependencies, difficult steps, and evidence status instead of copying module names or counts.
+下文关于构造动机、概念边界、结构理解和自我解释的指导，还参考了 [数学教育心理学专题笔记](mathematics-education-psychology.md)。该笔记区分原著观点、研究发现和对论文自学的教学推论；这些指导是可检验的设计选择，不是已验证对本读者有效的固定教学程序。教育学术语通常留在方法说明中，学习稿正文直接完成相应教学。
 
-## Core design
+## 这套写法的核心
 
-Preserve a mathematical core that can be compared with the source, supply prerequisites/calculations where readers actually need them, and enable eventual reconstruction without the text. Sentence-by-sentence translation and pasted review records are insufficient.
+学习稿不是把英文论文逐句翻译成中文，也不是把审稿记录搬进正文。它应同时做到三件事：
+
+1. 忠实保存可以逐项对照的数学主干；
+2. 在读者真正会卡住的位置补基础和计算；
+3. 让读者最终能够脱离正文重建证明。
+
+各主题按自身的数学依赖组织以下层次；短证明可在连续几段中完成，不必搭建多级目录：
 
 ```text
-Precise problem and main result
+精确问题与主结果
         ↓
-One-sentence mechanism and proof dependencies
+主线概览：机制、少量模块的精确输入输出与连接
         ↓
-Prerequisites → proof module → decisive calculation → checkpoint
-        ↑                                             |
-        └──────── repeat for essential modules ────────┘
+模块内部：所需命题、联合前提与外部输入
         ↓
-Proof-reconstruction list and mastery criteria
+具体推导：必要基础、选择理由、关键计算与可选检查
+        ↓
+证明重构清单与最终掌握标准
 ```
 
-## Front matter
+## 阅读过程与交付形式
 
-### Source and status
+整篇论文学习默认按“先交付 PDF → 读者阅读 → 反馈卡点 → 改进学习稿与 skill”的顺序推进，除非用户明确指定只在对话里讲解或使用其他格式。先提供覆盖约定范围、可独立阅读的中文 PDF 和可编辑源，再在实际使用中改进。首份 PDF 就要按读者基础补足必要解释和决定性计算；不能有意留下已知的教学缺口，等待读者提问才补。无需先完成诊断问答或测验才能获得学习稿。
 
-Use a short status box naming the source/frozen version, its evidence level, and any new teaching calculations. Keep it concise rather than defensive.
+优先把首稿写到可独立学习，再根据反馈修订。对已有学习稿的单段疑问，直接在对话中解释，随后在相应修订中整合到原稿。PDF 承担连续阅读和复习，对话或交互阅读器帮助定位、对照和追问；已有工具可复用，但完善它们不能占用本次学习稿尚未完成的必要教学工作。完整解释、关键图示及参考答案须能在 PDF 内找到。
 
-### Mechanism in one sentence
+阅读沿理解依赖推进，不机械沿论文页码推进。先说明原问题、准确结论、前人成果的实际输入输出和本文接上的步骤。遇到操作门槛，补恰好能使该步骤成立的基础与具体计算，再回到同一个证明对象。读者应始终知道：此处在解决哪个困难，做完能拿到什么，下一步为什么需要它。
 
-Explain the causal chain: what is constructed, how pieces connect, which positive term controls which error, and how the target follows. Do not merely repeat the abstract.
+读者说“这里不懂”时，应识别缺少的是哪一层：
 
-### Staged reading
+- 不认识对象：先说它是什么类型，并给一个可计算的实例。
+- 记得定义但只认可某类熟悉实例：选一个能暴露概念边界的变式或非例，逐项对照定义。
+- 认识名称但不会操作：完整做一次本证明将用到的操作，再解释一般公式。
+- 能看懂计算却不知道为何这样做：指出当前障碍、构造或参数选择的理由，以及输出怎样接回目标。
+- 知道整体思路但某一步接不上：明确这一推断使用的前提、定义或定理，补上缺失的逻辑连接。
+- 被深层外部定理卡住：说明可接受的精确输入，以及本处的假设核验；需要继续学习该定理证明时，再展开那条依赖。
 
-- First pass: objects, target quantity, mechanism, module inputs/outputs; long calculations may be skipped.
-- Second pass: recompute decisive identities/inequalities and identify how each error is absorbed.
-- Third pass: close the text and reconstruct definitions, dependencies, and estimates.
+例如读到分数次幂，先将一个具体正定矩阵对角化，算 A^s 和相应能量，再解释函数空间算子增加了哪些定义域要求；不能仅将“由谱定理”改写成更长的一句话。类比负责建立理解，严谨的一般化仍需指出实际调用的定理。
 
-Give testable completion criteria for each pass. Vague requests to read carefully or understand deeply are insufficient.
+练习用于观察是否能复述和复算，提供必要提示或解答；用户可以直接选择看完整推导。没有用户作答不能标记“已掌握”，也不应阻止交付完整学习稿。用户请求整篇时，应完成其要求的范围，不停在首轮导读等待测验。
 
-### Key quantities
+在已授权修改的学习稿中，将对话中解决的困难整合到相应位置，并保持原论文定位信息。复用既有源文件、构建目录和交付 PDF。通常只维护这一套学习材料，不为每次问答建立另一套摘要、基础册、题库或交互网站；新的形式应由实际学习需要或用户要求决定。
 
-List only persistent quantities with distinct roles. Give their type, definition, and proof function. Introduce one-use notation locally.
+每次根据实际反馈修订时，区分两种改进：这篇论文特有的符号、例子和推导放回学习稿；能迁移到其他论文的教学经验，更新 skill 中相应的已有指导或方法示例。说明原解释漏掉了什么，以及新解释怎样补上，并核对数学内容是否保持准确。不要把一次局部困难变成所有论文必须遵守的新章节或流程。优先合并、修正已有指导，不逐次堆积规则，也不默认新增反馈日志。尚未得到读者反馈的新讲法只能算待检验的改进，不能宣称已经解决理解问题；阅读反馈也不提升数学证据等级。
 
-## Proof modules
+## 首稿怎样写到可独立学习
 
-The following are teaching functions, not five blocks to concatenate. Supply prerequisites before first use and decisive calculations beside the steps they explain. Short checks can close a section. Do not make readers finish a compressed proof before receiving the knowledge needed to understand it.
+把下列动作落实到现有稿件及其引用关系中，无需另建计划、难点台账或检查表文件。
 
-1. State the module's inputs, obstacle, and output in a paragraph.
-2. Review only definitions, formulas, and intuition immediately needed; identify details that can be skipped on the first pass.
-3. Preserve exact statements/dependencies while reorganizing the learning narrative. Match source mathematics and citations, not necessarily paragraph order.
-4. Expand error-prone calculations: second derivatives/chain rules, curvature signs/index raising, scaling/volume factors, boundary terms/endpoint parity/smooth extension, block-matrix positivity/mixed terms, and the distinctions between limits, limsups, subsequences, and all sufficiently large parameters.
-5. Ask why the module works, which step drives it, and where its output is used.
+1. **从结论倒查依赖，先写可调用的主线。** 固定约定范围，从精确主结论追到关键估计、构造、定义及外部定理。将必要步骤归入少量有独立数学任务的模块，先实际写出各模块的输入条件、精确输出、后续使用处及其来源定位，再据此安排正文。区分读者已能使用的知识、本稿需要教会的操作、明确接受的外部输入。模块数量由论证决定，不照搬范本，不把每行公式都拆成节点；避免写了大量背景，却遗漏真正接不上证明的一步。
+2. **先展开最容易断开的证明段。** 在大量润色前，实际写出最难的一条依赖链：对象是否认识，参数为何这样选，从上一行到下一行调用了什么，所得结论在哪里使用。依据原文展开计算，遇到陌生操作先示范一个足以支持本步的具体例子，再回接一般情形。原文的数学缺口应如实标明，不能用流畅讲解掩盖；前置知识的展开止于本处能够正确使用的程度，以及已声明的外部定理接口。
+3. **把解释写进连续证明。** 将上述讲解置于需要它的位置，随后完成其余模块。每次展开后回到同一目标与对象；已经讲过的操作可用准确定位复用。先保证约定范围的数学链条与必要教学完整，再压缩重复内容、调整版式。不得把尚未补齐的解释改写成“请读者自行验证”或留给聊天、网站补充。
+4. **只拿完成的 PDF，先看主线再展开难点。** 先只读概览及模块陈述，检查能否追到主结论、所有必要前提是否可见；再打开最难的一条依赖链。暂不借助聊天、源码注释和未声明的高阶知识，在 PDF 中定位所需的定义、选择理由、计算依据和后续用途，并核对两层使用同一对象、量词和参数。检查参考答案能否由前文得到；检查长公式、符号、图注和跨页衔接实际是否可读。凡需临时口头补讲的必要连接，先原位修复并重新核对、编译，再交付。此举是编辑自查，不是模拟出的读者掌握证据。
 
-Give decisive constructions and estimates full treatment; combine easy connecting passages.
+首稿完成与否，取决于约定范围内这些连接是否实际写出；篇幅、补充框数量或形式上覆盖全部定理均不能替代它。核对记录可沿用已有交付说明，简要指出抽查了哪段、对应位置和残留问题，不另造一套审核文档。
 
-### Proof continuity
+## 读者起点与操作熟练度
 
-Start a long proof with its target quantity, proposition, or contradiction. Keep stable notation for persistent objects. Present the main equality/implication chain before a long technical verification, then explicitly connect that verification to the formula it establishes.
+默认读者熟练掌握微积分和线性代数；其他高阶课程仅大概知道概念。见过“曲率”“弱导数”“谱定理”不等于能计算或调用。不能让读者靠回忆一门熟练学过的课程才能接上下一行。
 
-For stepwise constructions, identify the prior input, output quantifiers, later use on the same object, and whether final outputs concern the same box, subsequence, parameters, or candidate family. A sequence of disconnected local achievements is insufficient.
+写作要把必要概念教到本证明所需的使用程度。对实际阻断阅读的对象，依次交代它是什么类型、符号如何读、一个具体模型如何计算，以及原证明为何需要它。操作性解释放在使用处；跨数个模块共用的基础可以设短预备节，但不要额外搭建与正文脱节的大部头教材。
 
-Check the central object throughout: if it disappears for a long stretch or an auxiliary construction never reconnects to the goal, repair the exposition. Reading step openings, endings, and connecting formulas should reconstruct the causal chain.
+例子应帮助读者区分定义允许什么、假设排除了什么。当熟悉的图景容易造成误解时，加入一个有针对性的对照即可，不必给每个概念固定配置正例、反例和练习。具体模型回接原证明时，说明哪些操作保留、哪些条件新增；读者能识别例子与能使用一般定义要分别检查。
 
-### Lemmas and appendices
+解释某个条件的作用时，优先在同一对象类、方程或构造中改变该条件，再算出差别。一般函数的反例可以区分逻辑概念，但未必说明原方程中也会发生同样的现象；应说清例子实际支持哪一层结论。
 
-A long technical passage with a clear hypothesis/conclusion interface, used later only through its conclusion, should normally become a lemma. Approximation, regularity, boundary-trace, or lengthy constant checks may move to an appendix if they are not the conceptual mechanism. State the result precisely before use and point to its full proof.
+例如，用正定对称矩阵的对角化算一次分数次幂，解释特征值为何变成 λ^s、能量为何出现 A^(s/2)，随后明确无界算子新增了定义域和收敛问题。只写“由谱演算定义”仍不足。曲率计算可先从位置依赖的正定矩阵解释长度和体积，再引入本节所需的联络与曲率分量；先展开一个实际收缩，再使用省略求和记号。具体模型提供理解，不代替一般情形的证明。
 
-Keep short one-use algebra and direct substitutions inline. Split by meaningful mathematical interfaces and clearer causality, not page count or desired numbering.
+外部深定理可以明确作为输入，不必在每份学习稿中从头证明整套理论。但必须使读者看懂其对象、条件和结论，知道本处怎样核验条件、代入哪个对象、拿走哪个输出；只列定理名和文献不足。本文自身关键步骤不能因为需要补基础就全部改成黑箱。
 
-## Auxiliary environments
+分别检查三种掌握程度：
 
-`prerequisite` supplies the minimum background needed for the next page: geometric meaning, formulas, conventions, or endpoint/regularity intuition. It is not an unlimited textbook chapter.
+1. 能说清问题、对象和结论的精确范围。
+2. 能说明外部输入如何连接到本文各步，为什么引入当前辅助量。
+3. 在保留已声明外部定理的前提下，能跟算本文决定性推导，并完成一个近似的具体计算。
 
-`calculation` explains the move between two source lines: differentiation variables, identities, signs, and sufficient estimate margins. End by stating what the calculation accomplishes in the main proof.
+“知道结论”“看懂证明路线”“能够复算”应分别报告。页数和覆盖全部定理不证明第三项；熟悉背景的助手自读顺畅也不等于本科生阅读验收。抽取一条难链，逐处检查是否凭空调用未教过的操作。学习检查要检验已经教过的内容，不能把尚未解释的主要工作推给读者。
 
-`checkpoint` asks what the reader can reconstruct with the text closed. Test causality or a decisive calculation, not yes/no responses or irrelevant constant memorization.
+## 首页应解决的四件事
 
-## Track distinct obligations separately
+### 1. 说明来源和状态
 
-The source example separately tracked nonnegative Ricci curvature and divergent scalar-curvature mass. Other papers may separate existence/regularity, local construction/global gluing, main-term lower bounds/error control, geometric/integral or topological properties, or qualitative results/optimality.
+首页用一个短状态框说明学习稿依据哪个源文件或冻结版本、源结果的证据等级，以及哪些额外计算只是为学习新增。状态框只承担边界说明，不写成长篇防御性叙述。
 
-Explain which obligation each new object serves so readers understand why a formula is needed.
+### 2. 用一句话说出机制
 
-## Detail level
+先让读者看见问题和主结论的准确陈述，再用一句话说明从已有输入到结论的关键连接。估计型证明可以说明哪个主项控制哪个误差，分类、代数或概率论证则应写出各自的机制；不要统一套成“构造—吸收误差”。读者应在尚未进入技术细节前知道为什么这种证明可能成立。
 
-Expand steps where one error invalidates the conclusion; nontrivial arguments hidden behind direct calculation or standard reasoning; ambiguous variables, scales, endpoints, measures, or tensor types; and passages from local/subsequence results to global quantifiers.
+### 3. 给出分遍阅读法
 
-Do not repeat identical mechanical substitutions, unrelated background, already explained standard facts, or audit/revision history.
+- 第一遍：理解对象、目标量、核心机制和各模块的输入输出；允许跳过长计算。
+- 第二遍：逐项复算决定结论的等式和不等式，并标出每个误差由什么吸收。
+- 第三遍：合上正文，按重构清单重新写出定义、依赖和关键估计。
 
-## Source synchronization
+每一遍都要写明可检验的完成标准，避免“认真阅读”“深入理解”这类空指令。
 
-Match theorems, formulas, assumptions, and labels wherever possible. Make added explanations identifiable, including concise markings on expansions placed directly in proofs. Keep source-comparison records; do not disguise a new proof as the source argument.
+### 4. 列出少量关键量
 
-A proof-bearing source change makes the companion potentially stale. Added calculations aid understanding without raising evidence levels. If they expose a gap, return to the source and proof-audit process rather than bypassing it only in the companion.
+只列贯穿全文、承担不同功能的量。每一项写清类型、定义和证明中的作用。局部一次性符号留在相应章节首次出现处解释。
 
-## Completion checklist
+## 单个证明模块的标准结构
 
-1. Does the opening state the problem, conclusion, source version, and evidence boundary accurately?
-2. Does the short mechanism describe the full chain from construction to conclusion?
-3. Does each module specify inputs, obstacle, and output?
-4. Is every nonstandard object typed, defined, and motivated before use?
-5. Can decisive calculations be recomputed line by line, including signs, powers, norms, and boundary terms?
-6. Are pointwise/integral, local/global, subsequence/full-limit, and fixed/uniform parameters distinguished?
-7. Do checkpoints test the actual bottlenecks?
-8. Does reconstruction cover all essential dependencies rather than summarize sections?
-9. Have duplicate translations, empty encouragement, audit logs, and defensive prose been removed?
-10. Are source comparison, forced LaTeX builds, and log checks complete?
-11. Do long proofs retain their target objects, reconnect technical detours, and combine outputs on the same objects?
-12. Are long technical steps factored through clear interfaces without fragmenting short calculations?
+下面描述教学功能，不是要求拼接五个完整区块。基础应在首次使用前给出；决定性计算应紧邻被解释的证明步骤，必要时直接将该步骤展开。短的检查或回顾可以放在节末。不能让读者先读完压缩证明，才在后置补充中获得读懂它所需的知识。
 
-## Lessons from a later internal study edition
+每个主要章节应安排这些功能：
 
-A later private study edition refined these rules; its files are optional teaching references, not required mathematical inputs for other projects.
+1. **本节任务。** 用一段话说明输入、要解决的障碍和输出。
+2. **基础补充。** 只复习马上要用的定义、公式和直观图景，并说明第一遍可跳过哪些细节。
+3. **数学主干。** 精确保留陈述和逻辑依赖；学习叙事可以调整、分步和穿插解释。与源稿对应的是数学内容及引用关系，不要求逐段照抄阅读顺序。
+4. **计算补充。** 展开真正容易出错的局部步骤，例如：
+   - 二阶导数和链式法则；
+   - 曲率符号和指标提升；
+   - 缩放幂次和体积因子；
+   - 边界项、端点奇偶性和光滑延拓；
+   - 块矩阵正定性和混合项；
+   - `lim`、`limsup`、子序列与全体充分大参数的区别。
+5. **学习检查。** 围绕本模块的瓶颈，邀请读者解释关键推断的依据、模块作用，或尝试一个小变式，并提供参考解释。
 
-Show the complete target chain early. For example, explain the incompatible upper/lower bounds on the same pair of boxes before the finite-tree argument that selects them. Find the new paper's own persistent objects and closed chain rather than listing module names.
+并非每个模块都需要同样长。容易的连接段可以合并；决定性构造或估计应完整展开。
 
-Use a short example to explain an unfamiliar object's purpose only when it removes a real obstacle, and check the example's hypotheses. An affine map's translation increment can explain why subtracting a constant vector suffices.
+### 主线、模块与严格陈述
 
-Organize hard proofs causally, expand necessary calculations in place, and track objects and parameter dependence. Checkpoints test material already taught; they must not delegate omitted essential derivations to the reader.
+分层控制第一遍同时出现的信息量：先给少量有数学任务的主线模块，再展开一个模块中的依赖，最后阅读具体推导及所需背景。层级按可调用的数学接口组织，不按页码、节点数量或图算法层数切分；短证明无需强行凑层级。主线上的每块应给出用途、输入条件与精确输出，并指出后续使用处。
 
-Reading routes should point to exact propositions, equations, or pages, specifying which input is provisionally accepted and when to return to its proof. Three generic reading passes do not replace this route.
+可用严格式子表达的地方要实际写出：不只说“积分很大”“保持曲率”“参数足够小”，而应写明相应的积分下界、张量恒等式或不等式、参数范围。先说明要控制什么，定义符号，再写公式及必要量词，最后用文字解释其作用。第一遍可以暂时接受一个尚未展开证明的精确命题，不能省去使它成立的条件。公式读不清或源文缺失时保留缺口，不为补齐界面而猜写。
 
-For teaching acceptance, read the hardest chain from the intended reader's starting knowledge. At each step ask why the quantity is introduced, how the next line follows, and where the output is used. Record and repair actual sticking points. Report this reading check separately from mathematical audit; page counts, supplement counts, and matching labels do not establish teaching quality.
+证明依赖必须说明“用了哪个结论，在这里满足哪些条件，得到什么”。若结论同时依赖若干前提，应显示它们的联合使用，例如 \((P\land Q)\Rightarrow R\)，不能把两条独立箭头画成 \(P\Rightarrow R\)、\(Q\Rightarrow R\)。节点不必承载完整证明，但详细解释应能定位到实际调用处。外部输入也给出可调用的条件与结论、来源和核验条件的位置；概念相近、历史相关或建议先读均不自动构成证明依赖。由主定理证明的推论不得反过来充当前提。
+
+在交互地图中，默认展示模块概览，打开某块才显示内部节点；外部依赖保留清楚的入口与身份。模块归属、建议阅读次序与证明依赖是不同关系，用标签或图例区分；聚合导航不暗示单条箭头足以推出下游，隐藏细节也不能丢失前提或外部出处。提供返回主线的入口，大图提供缩放、平移和适应视图，检查节点文字、公式和连线可读。分层本身仍须减少首屏信息量，不能只让读者把一张密图缩小。
+
+PDF 用前置概览、可定位的模块章节及局部推导实现同样的层次。分支和共同前提较多时，画一张紧凑的依赖图；短线性论证写蕴含链即可。概览给精确结果，细节入口指向本 PDF 内的命题、公式或附录，不依赖网页才能学懂。展开后要回接原主线，不能成为孤立的知识卡片。
+
+### 构造动机与结构理解
+
+遇到关键辅助对象、分解、截断或参数选择，应写清目标要求什么、已有方法还差什么，以及这个选择怎样补足差距。动机解释是一条合理的理解路径；没有历史材料时，不叙述成作者实际的发现经过，也不虚构失败尝试。不要只写“考虑特殊情形”：说明选哪一种、观察什么关系、怎样回到一般论证。
+
+当符号展开掩盖了含义，可将同一对象重新组织为读者能理解的结构，例如残差的平方范数、正交分解，或主项与可控误差。给出新旧表达之间的计算连接，并说明它为何让下一步变得可行。图像或一句机制说明不能替代关键等式和条件核验。可参考专题笔记中 Cauchy–Schwarz 不等式的教学示例。
+
+例如，已得 E ≤ A + CεE，其中 E、A 为有限非负量，C≥0 且不依赖 ε。若证明允许任意充分小的正 ε，就应解释：我们要把右侧的 E 项移回左侧，并保留正的系数；因此在允许范围内取 Cε≤1/2，便有 (1−Cε)E≤A，进而 E≤2A。这里还要核对 A 是否随 ε 变化、其他步骤对 ε 的限制是否兼容。这样“取 ε 足够小”才成为有理由、可核验的选择。不能把这一模式套给不满足上述条件的估计。
+
+同一例子的主线模块可以叫“吸收误差项”，但不能只留下这个标题。其精确接口是：有限非负量 E、A 满足 E≤A+δE 且 0≤δ≤1/2，则 E≤2A。展开时再说明本处 δ=Cε，分别定位原估计与参数可选范围，并展示 (1−δ)E≤A 的移项依据。这两个前提须同时满足；“取小参数”本身推不出 E≤2A。这一短计算可留在同一模块中，不需要为移项、除法和参数选择各建一个节点。
+
+### 证明主线连续性
+
+“分步详细”不等于“主线清楚”。每个较长证明开始时先写出唯一目标量、目标命题或最终矛盾，
+并给贯穿多步的对象固定记号。若证明包含长技术核验，先把主等式链或主蕴含链集中写完，
+再补充该核验；核验结束时明确说它证明了前面使用的哪条公式。
+
+逐步构造尤其要避免只写若干独立的“到这里得到……”。应同时说明：
+
+- 本步的输入来自前面的哪个对象或公式；
+- 本步的输出具有怎样的量词；
+- 后面哪一步会在同一个对象上使用这个输出；
+- 最后组合的是不是同一方块、同一子序列、同一参数选择或同一个候选族。
+
+完稿时做一次“主角检查”：定理陈述中的核心对象若在证明主体中长期消失，或者一个辅助对象
+构造后没有明确回接目标，就说明叙事仍未闭合。只读各步开头、结尾及连接公式，也应能重建
+目标、输入、输出和下一箭头。
+
+### 何时拆成引理或移入附录
+
+长技术段若有清楚的“假设—结论”接口，并且后文只调用其结论，应优先拆成独立引理。
+若该段主要处理逼近、正则性、边界迹或冗长常数核验，而且不是正文的概念发动机，可以把
+完整证明放入附录；正文必须先准确陈述结果，并在使用处明确指向附录。这样依赖顺序仍是
+“先有可引用的结论，再使用结论”，而不是在同一个证明中先借用、很久以后才补证。
+
+反过来，两三行的一次性代数或直接代入通常留在原证明里。拆分的判断标准不是篇幅或编号数量，
+而是能否形成有意义的数学接口，以及拆分后是否让主证明的因果链更容易重建。
+
+## 三种辅助环境的职责
+
+### 基础补充 `prerequisite`
+
+回答“为了看懂下一页，现在最低限度要知道什么”。它不是教材章节，不应无边界扩张背景知识。优先包含：对象的几何含义、标准公式、符号约定、端点或正则性直觉。
+
+### 计算补充 `calculation`
+
+回答“正式论文为何可以从这一行到下一行”。逐项展示变量对谁求导、使用哪条恒等式、符号从哪里来、估计的余量是否足够。计算结束时说明这段代数在主证明中完成了什么，而不是只停在公式。
+
+### 学习检查 `checkpoint`
+
+回答“读者怎样判断自己理解了哪一层”。按本处难点选择检查，不要求每节齐备所有题型：局部推理看能否指出前提与推断依据；整体理解看能否解释本模块服务于哪个目标；方法迁移看能否处理一个只改变相关条件的小变式，并说明适用范围。
+
+先示范一次自我解释：把当前结论与此前的条件、定义或定理连接起来，再给出邻近步骤的可选尝试。比如上一例中，可问“若 C 也依赖 ε，仅让 ε 变小是否足够？”参考解释是“不足够；需要实际控制 C(ε)ε，例如 C(ε)=1/ε 时无法得到所需的小系数”。单纯把公式念成中文或说“这一行我懂了”，没有提供这种依据。
+
+检查及参考解释放在同一学习稿中，读者可以先尝试再看，也可以直接读完整解释。少量关键位置的暂停即可，不强制逐行问答；不考察无关常数记忆。练习中的新困难若来自未教过的知识，应先补教学，不能据此断定读者没有理解原证明。记录时区分“稿件提供了什么”“编辑自查发现什么”和“读者实际表现了什么”。
+
+## 两条账分开记
+
+复杂证明常有两条或更多彼此独立的任务。范本把“保证 Ricci 非负”和“保证标量曲率质量发散”分开追踪。一般化时可改为：
+
+- 存在性与正则性；
+- 局部构造与整体拼接；
+- 主项下界与误差控制；
+- 几何性质与积分/拓扑性质；
+- 定性结论与最优性。
+
+每引入一个对象，都说明它服务于哪一条账。这样可以避免读者知道公式成立，却不知道为什么需要它。
+
+## 解释的颗粒度
+
+台阶大小按读者尚不能完成的认知操作来定，不按句长、公式行数或固定步骤数量来定。一个有意义的台阶应能说清“已有前提—所用操作或依据—得到的结论”，并保持它在整体证明中的作用可见。若一步同时引入陌生对象、调用未教过的定理并选择参数，应先补这些连接；对已经掌握的机械运算则可合并。给出可选细节时，必要的依据仍须在同一 PDF 内有清楚的入口。
+
+应当展开：
+
+- 一处错误会推翻结论的步骤；
+- 源论文以“直接计算”“标准论证”略过、但读者难以自行补出的步骤；
+- 变量复用、尺度变化、端点退化、测度变化和张量类型容易混淆之处；
+- 从局部或子序列结论升级到全局量词的步骤。
+
+通常不必展开：
+
+- 每次代入都完全相同的机械计算；
+- 与主证明无下游关系的广泛背景；
+- 已在前文完整解释、此处只需引用的标准结论；
+- 审核历史、修订过程和“我们检查过”的元叙述。
+
+## 与源论文同步
+
+- 数学定理、公式、假设和标签尽量与源稿一一对应。
+- 新增说明须可辨识，但不必全部放在单独的后置环境中。可以在学习版证明中原位展开并用简短标记区分；保持源稿对照记录，不把新证明悄悄冒充原证明。
+- 源稿发生 proof-bearing 修改后，学习稿立即视为可能不同步。
+- 学习稿新增计算只能帮助理解和复核，不能提高源结果的证据等级。
+- 若新增计算发现问题，应回到源稿和证明审计流程处理，不能只在学习稿中绕过。
+
+## 完稿检查表
+
+1. 首页是否准确写出问题、结论、来源版本和证据边界？
+2. 只读概览与少量主线模块，能否看到通向主结论的完整路线？是否避免用密集节点代替层次，或照搬其他论文的模块数？
+3. 每个主要模块是否用已定义符号及必要条件写出精确输入、输出，并说明障碍、后续用途与细节位置？展开前后是否保持同一对象、量词和参数，关键选择是否给出了可追踪的理由？
+4. 每个非标准对象是否在首次使用前说明类型、定义和作用？例子是否澄清了本处相关的概念边界，并说明如何回接一般情形？
+5. 所有决定性计算是否能逐行复算，尤其是符号、幂次、范数和边界项？
+6. 是否区分了点态/积分、局部/全局、子序列/全极限、固定参数/一致参数？
+7. 学习检查是否针对真实瓶颈，区分局部依据、整体作用或近迁移，并提供基于已教内容的提示或参考解释？
+8. 重构清单是否包含全部关键依赖，而不是章节摘要？图或依赖链是否保留联合前提、外部来源和缺口，并区分逻辑依赖、知识背景、分组和阅读次序？若有交互视图，展开与返回、缩放及公式显示是否实际检查？
+9. 是否删掉了重复翻译、空泛鼓励、审核日志和防御性语言？
+10. 是否完成源稿对照、LaTeX 强制编译和日志扫描，并查看实际 PDF 中的关键公式、符号及跨页衔接？
+11. 每个长证明的目标对象是否贯穿正文，技术岔路是否回接原公式，最后是否在同一对象上组合各步输出？
+12. 是否把会打断主线的长技术步骤拆成了有明确接口的引理或附录，同时避免把短计算过度拆碎？
+13. 只使用 PDF、预设读者基础及明确声明的外部输入，能否定位一条困难证明链的全部必要连接？是否仍有只能靠聊天、源码注释或未来网站才能补上的教学内容？是否区分了外部定理的调用与它的完整证明？
+
+## 从学习稿修订中提炼的具体做法
+
+以下做法来自实际修订；可按当前论文的困难选择，不需要访问原有私有稿件。
+
+- 先让读者看见完整目标链。例如同一对方块上的积分差同时大于和小于两个不相容的界，再解释有限树如何选出这对方块。新稿要找出自己的核心对象和闭合链，不能只列若干模块名称。
+- 陌生对象先用一个短例子解释用途；例如仿射映射的平移增量说明为什么减常向量就足够。只在例子确实消除理解障碍时加入，并检查它的假设。
+- 难证明按因果分步，必要计算原位展开，始终追踪同一对象和参数依赖。学习检查用于验证已经教过的内容，不能把省掉的关键推导转交给读者。
+- 阅读路线应指向具体命题、公式或页码，并说明暂时接受哪个精确输入、何时返回其证明；笼统的“三遍阅读”不能代替这条路线。
+
+按“首稿怎样写到可独立学习”完成 PDF 自查；数学审查、编辑自查和读者理解反馈分别报告，前两者通过不能代替第三者。研究者或教师提供反馈后，将具体修改落回对应解释，按反馈范围记录其支持了什么；专家建议本身不等于学习效果已经验证。
+
+
+## 可移植构建与源文可用性
+
+先检查源文是否足以覆盖请求范围。只有摘要时可以讲清摘要中的对象与结论，不能把推测的证明写成整篇学习稿；先取得缺失正文，并明确尚未覆盖的部分。
+
+PDF 模板使用 XeLaTeX、ctex、AMS 宏包和 Fandol 字体。优先沿用项目已有构建方式；新目录可用 `latexmk -xelatex -outdir=_build <主题>-中文学习稿.tex`。没有 latexmk 时可直接运行 XeLaTeX 至交叉引用稳定；不要依赖维护者机器上的固定路径。只有英文的稿件可使用适合现有环境的普通 LaTeX 模板。
+
+缺少引擎或字体时，说明实际缺失项，保留完成的可编辑源及尚待生成的 PDF 状态；不得伪造下载链接、将源文件改成 PDF 扩展名，或把未编译源稿称作已交付 PDF。编译成功后仍检查日志与渲染结果；不要把模板里的说明占位文字留在正式学习稿中。

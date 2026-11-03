@@ -32,7 +32,7 @@ def main(skill_root: Path) -> int:
         print("\n".join(failures))
         return 1
 
-    markdown_files = [entrypoint, *sorted(references.glob("*.md"))]
+    markdown_files = [entrypoint, *sorted(references.rglob("*.md"))]
     graph: dict[Path, set[Path]] = {path.resolve(): set() for path in markdown_files}
 
     for path in markdown_files:
@@ -59,7 +59,7 @@ def main(skill_root: Path) -> int:
         reachable.add(current)
         queue.extend(graph.get(current, set()) - reachable)
 
-    for reference in sorted(references.glob("*.md")):
+    for reference in sorted(references.rglob("*.md")):
         if reference.resolve() not in reachable:
             failures.append(f"unrouted reference: {reference}")
 
@@ -67,7 +67,8 @@ def main(skill_root: Path) -> int:
     if evaluation.is_file():
         evaluation_text = evaluation.read_text(encoding="utf-8")
         cases = CASE_RE.findall(evaluation_text)
-        expected = [f"E{number:02d}" for number in range(1, 13)]
+        # E01–E15: inherited; E16–E21: distillation; E22–E24: direct writing.
+        expected = [f"E{number:02d}" for number in range(1, 25)]
         if cases != expected:
             failures.append(f"evaluation cases are incomplete or unordered: {cases}")
         for case in expected:
@@ -80,7 +81,7 @@ def main(skill_root: Path) -> int:
             if "**Required behavior:**" not in section:
                 failures.append(f"{case} lacks required behavior")
             if not any(
-                marker in section for marker in ("**Hard failure:**", "**Soft failure:**")
+                marker in section for marker in ("**Hard failure:**", "**Soft failure:**", "**Failure:**")
             ):
                 failures.append(f"{case} lacks a failure criterion")
 
@@ -102,7 +103,7 @@ def main(skill_root: Path) -> int:
 
     print(
         f"Skill resource checks passed: {len(markdown_files)} Markdown files, "
-        "all references routed, 12 evaluation cases complete."
+        "all references routed, 24 evaluation cases complete."
     )
     return 0
 

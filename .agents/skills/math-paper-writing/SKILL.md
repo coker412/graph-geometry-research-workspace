@@ -1,11 +1,19 @@
 ---
 name: math-paper-writing
-description: Draft, revise, audit, or prepare mathematical manuscripts and submission materials. Use for paper-facing work, not standalone proof search or learning editions.
+description: Draft, revise, audit, or prepare mathematical manuscripts and submission materials; distill reusable mathematical writing choices from an author's papers or the researcher's own drafts, including small samples. Use for writing and style analysis, not standalone proof search or learning editions.
 ---
 
 # Mathematical Paper Writing
 
 Produce clear mathematical papers while preserving the established mathematics and the author's defensible voice.
+
+State established contributions directly at their supported strength, with necessary scope. Do not add a default limitations paragraph.
+
+## Resolve the editing baseline before writing
+
+Use the current request together with earlier accepted choices to identify the authoritative manuscript, requested change, protected content, approved style sample, and existing build/delivery locations. Keep this compact in working context or the project's existing state; do not create a new tracking file for each edit.
+
+Inspect the relevant baseline before choosing alternatives. An explicit author preference overrides this skill's generic defaults; a formatting request does not reopen an accepted abstract, notation, or author declaration. Translate the applicable requirements into concrete edits and comparisons before the first write. At handoff, compare the actual diff and rendered artifact with that baseline, not merely with a generic checklist.
 
 ## Scope and mathematical boundaries
 
@@ -32,12 +40,18 @@ Read only applicable references, once. Combine routes when an edit crosses their
 | Figures, diagrams, tables, or captions | [figures-tables-and-diagrams.md](references/figures-tables-and-diagrams.md) |
 | Cover letters, submission packages, or referee responses | [submission-and-peer-review.md](references/submission-and-peer-review.md) |
 | Genre, audience changes, or researcher-specific voice | [voice-and-genre.md](references/voice-and-genre.md) |
+| Distilling, comparing, or updating a writing profile from papers or the researcher's own drafts | [style-distillation.md](references/style-distillation.md); optional examples: [Tao](references/author-models.md) and [field profiles](references/field-profiles.md). Load only a requested or relevant profile |
 | Natural-language polishing with an available Humanizer skill | [humanizer-interface.md](references/humanizer-interface.md) |
+| Defensive contribution statements, repetitive caveats, or vague self-limitation | Read [anti-defensive-interface.md](references/anti-defensive-interface.md), then use the original `anti-defensive-writing` skill directly |
 | Detailed Chinese learning edition | Use the separate `math-paper-study-guide` skill; do not impose its teaching structure on a manuscript |
 
 For substantial drafting, organize from mathematical dependencies outward and write the abstract and introduction once the body is stable. For existing text, make the smallest change that solves the requested writing problem. Proof exposition must keep the target and persistent objects visible, return from technical detours, and factor long arguments at meaningful interfaces; the exposition reference gives the checks.
 
+Use author profiles, `anti-defensive-writing` and Humanizer only as the task needs; preserve mathematical meaning and accepted author choices.
+
 ## Delivery and maintenance
+
+Standard author-profile distillation uses at least twenty complete works and five synthesis documents. Also support an explicitly chosen provisional profile from three or more works; fewer works support local analysis only. Never reduce a requested count using the small-sample option. Keep author profiles optional and subordinate to mathematical integrity, the user's accepted choices, and the destination manuscript's conventions.
 
 Before handoff, apply the relevant [delivery checks](references/delivery-checks.md). Report changed paths, checks, unresolved mathematical or bibliographic risks, and preserved evidence status. A successful build checks typesetting, not mathematics.
 

@@ -8,6 +8,8 @@ Choose a concrete target reader. Estimate what that reader already knows, what m
 
 State the paper's central mathematical contribution in one accurate paragraph before designing the full narrative. If there are too many unrelated messages, narrow the paper or make their relationship explicit.
 
+When turning research notes into an English paper, organize around the strongest supported results and their proof method, not the latest research steps. State the principal theorems and their relationship early; develop the lemmas that prove them, and explain a limitation when it affects the result or its interpretation. An internal draft still needs this paper structure. Keep a concise evidence qualification, but move task numbers, audit history, failed attempts and source-file inventories outside the paper. A counterexample belongs in the narrative when it establishes a stated mathematical limitation. If a project-specific argument is central to a main theorem, include its proof rather than treating the project's own note as an unexplained black box.
+
 At each transition, ask:
 
 - What does the reader know at this point?
@@ -24,7 +26,7 @@ A common research-paper order is:
 3. examples, counterexamples, or preliminary results;
 4. lemmas that isolate the real obstacles;
 5. main proof;
-6. applications, limitations, and well-posed open questions.
+6. applications, and mathematically consequential boundary cases or open questions when relevant.
 
 This is a default, not a template to impose. Reorder when the reader benefits, but do not require the reader to use an object before learning what it is.
 
@@ -38,10 +40,13 @@ An abstract should stand alone and answer:
 
 - What problem is studied, and in what setting?
 - What is the main result at its actual evidence level?
-- What method or mechanism is essential?
-- What important limitation is needed to prevent overreading?
+- What scope or qualification must accompany the result for this standalone statement to be accurate?
 
-Do not put proof details, undefined notation, or claims absent from the body into the abstract. Prefer a precise modest result to a broad slogan.
+State an established result directly at its supported strength. A precise object class, parameter range or hypothesis often supplies the required scope by itself. Do not append a generic disclaimer or a list of extensions the paper never aimed to prove.
+
+Mention a method only when needed to identify the contribution or requested by the author. An explicit request for a short setting-and-results abstract takes precedence over a generic problem-method-results pattern; do not add a stock proof-method sentence or reopen an accepted abstract during unrelated edits.
+
+Do not put proof details, undefined notation, or claims absent from the body into the abstract. Prefer a precise modest result to a broad slogan. State the contribution and each necessary qualification once; do not pad an approximate word target by restating the same hypothesis or by commenting on the wording (for example, that the abstract “retains an explicit hypothesis”). If the available content supports a shorter abstract, keep it shorter and put any editing explanation outside the manuscript.
 
 ## Introduction
 
@@ -53,9 +58,25 @@ Write the introduction after the mathematical body is stable enough to summarize
 - the main result, with accurate scope;
 - the central proof idea and technical obstruction;
 - where the arguments are located;
-- the limitations of the result.
+- a limitation or boundary case when it materially affects the claim, its interpretation, or a verified comparison with prior work.
+
+There is no default requirement for a limitations paragraph. Lead with the mathematical contribution, retaining the conditions needed to understand it. A specific failure of a natural extension can explain the theorem; a routine reminder that the paper does not solve every larger problem adds no information. For repetitive or apologetic framing, use the [anti-defensive diagnosis](anti-defensive-interface.md).
 
 "Sell" the paper by making its exact contribution visible, not by adding praise. Compare with previous work only after checking the comparison. If the formal theorem is too technical for the introduction, give a useful special case or a clearly marked informal statement, then point to the precise version.
+
+## Transfer arguments and informal overviews
+
+### Explain a transfer at the point where the old argument changes
+
+When extending an established result to a new setting, identify the relevant earlier theorem, the property its proof uses that is unavailable here, and the replacement actually established in this paper. State what survives unchanged and where assumptions or constants change. Do not invent a failed step if the contribution is a new application rather than a new proof mechanism.
+
+For a cross-field method, give the necessary correspondence between objects and explain how the imported conclusion returns to the original problem. A useful explanation names the estimate, compactness principle or construction that does the work; merely naming another field does not. Preserve the target manuscript's notation and introduce new language only when it earns its place.
+
+### Make the simplifications in a proof overview explicit
+
+If a sketch suppresses error terms, replaces an object by a model, or temporarily ignores a boundary case, say which simplification is being made and point to the formal statement that restores it. If no such statement is available, preserve the gap. A heuristic should explain the mechanism without being mistaken for the proof. A result for a modified equation or larger class must remain distinct from a result for the original problem.
+
+These are optional exposition tools supported by the [corpus models](author-models.md), not requirements to lengthen every introduction or accepted abstract.
 
 ## Examples and abstraction
 

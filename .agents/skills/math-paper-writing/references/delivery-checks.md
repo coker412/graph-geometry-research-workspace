@@ -2,6 +2,8 @@
 
 Apply the checks relevant to the edited material and its affected dependencies. A local wording edit does not require unrelated submission or figure checks. Repository requirements for declaring a whole paper finished still apply.
 
+First compare the actual change against the current request and inherited author decisions: approved template, unchanged content, declarations, and output locations. For every applicable requirement, use direct artifact or diff evidence; identify what was not checked. Reading this skill, matching a class name, passing a build, or passing a file-location check cannot substitute for that comparison. Reuse existing check records rather than generating another report tree.
+
 Check, in proportion to the task:
 
 1. formal statements against their source of truth;
@@ -11,7 +13,7 @@ Check, in proportion to the task:
 5. proof factorization: long technical passages with a genuine interface are lemmas or appendices, dependencies are stated before use, and short calculations are not over-fragmented;
 6. citations against the claims they support;
 7. abstract, introduction, and conclusion against the body;
-8. language-only edits for semantic drift;
+8. language-only edits for semantic drift and rhetorical weakening: established contributions remain direct, necessary scope remains attached, and generic or repeated disclaimers have not been added merely because internal checking was cautious;
 9. visual claims, captions, accessibility, and reproducibility when figures or tables changed;
 10. cover letters and referee responses against the manuscript, decision letter, and current venue requirements;
 11. changed LaTeX and all affected versions with the repository's build procedure.

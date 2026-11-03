@@ -1,0 +1,7 @@
+# Anti-defensive-writing integration
+
+For repetitive caveats, apologetic contribution statements or unnecessary hedging, read and apply the installed `anti-defensive-writing` skill to the requested passage. If unavailable locally and browsing is available, read the [original instructions](https://github.com/Kiterlin/anti-defensive-writing/blob/main/skill/anti-defensive-writing/SKILL.md). This is an optional dependency: if neither route is available, continue with this skill's existing exposition and semantic-preservation guidance, and say that the original add-on was not loaded. Do not require installation or claim to have applied unread instructions.
+
+Apply primarily to abstracts, introductions and discussion. Keep formal statements and proofs unchanged unless their revision is explicitly requested. Supply the passage, intended contribution and the mathematical content to preserve: hypotheses, quantifiers, formulas, references and proof status. Keep necessary conditions with the claim. Apply experimental advice only to actual experiments. After revision, compare mathematical meaning using the existing [semantic checks](humanizer-interface.md); no separate audit workflow is needed.
+
+Use author profiles for writing choices and Humanizer for mechanical wording as needed. Do not make all three compulsory passes. Follow the original skill's procedure rather than duplicating it here.

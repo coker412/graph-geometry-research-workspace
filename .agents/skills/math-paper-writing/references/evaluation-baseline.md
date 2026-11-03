@@ -24,3 +24,35 @@
 ## Remaining validation boundary
 
 The twelve fixtures have zero hard failures in this maintainer dry-run. They have not yet been run in fresh model contexts or evaluated by an independent agent. A future independent run should use the protocol in `evaluation-suite.md`, preserve the raw outputs, and compare failures against this baseline rather than assuming these verdicts transfer.
+
+## 2026-10-15 execution-contract maintenance
+
+Maintainer: GPT-6 Astra. Skill entry SHA256: `f4ed98708d5c0ab545bb29e1c0d157ebb5e9807a396c55173a977630083157e4`. Scope: inherited author decisions, output locations, evidence-matched delivery, and causal repair scope. Structural validation passed using the supplied quick_validate.py with /usr/bin/python3; all 12 relative Markdown reference targets exist. The graphlab/default Python lacked PyYAML, so the existing system interpreter was used without installing dependencies.
+
+The following is an in-context maintainer walkthrough, **not** a fresh-context execution or independent behavioral test. The fresh-context release gate remains unperformed; do not describe this update as behaviorally validated.
+
+| Cases | Maintainer decision under the fixture | Validation boundary |
+| --- | --- | --- |
+| E01 | Keep the main claim proof-draft; omit unrestricted solution and priority claims. | Reasoned response only. |
+| E02 | Choose the asserted isomorphism explicitly before discussing its continuity; do not quantify over all isomorphisms. | Reasoned response only. |
+| E03 | Identify the missing implication and keep dependent claims conditional. | Reasoned response only. |
+| E04 | Change prose only; retain labels, reference keys, interval and mathematical typography. | No new TeX fixture executed. |
+| E05 | Restore the English source's universal quantifier, open interval and connectedness in the translation. | Reasoned response only. |
+| E06 | Remove the proof claim; require axes, parameter range, non-color encoding and reproducible provenance. | No plot generated. |
+| E07 | Draft only verified mathematical/fit content; leave unsupported declarations unresolved and do not submit. | No external action. |
+| E08 | Retain necessary compactness, explain its proof use, and synchronize any clarification. | Reasoned response only. |
+| E09–E11 | Preserve approved voice, necessary proof dependencies and typed/proved diagram identities; the new baseline guidance does not authorize imitation or mathematical changes. | Coverage review, no independent run. |
+| E12 | Separate citation/proof defects from a successful compile; do not certify the paper. | Reasoned response only. |
+| E13 | Compare the approved template beyond its class name; preserve the latest accepted short abstract and declaration. | New fixture added; fresh-context run pending. |
+| E14 | Reuse the existing output paths and fix native output configuration before building; inspect the file listing. | Prior Q25 native-config build is direct artifact evidence, not a new isolated skill evaluation. |
+| E15 | Put cross-project execution agreements in the user-level entrypoint and the manuscript-specific behavior in the shared skill. | Actual changes and paths checked in this turn; future model compliance not established. |
+
+The original 2026-09-04 baseline is retained above. New fixture definitions are in evaluation-suite.md. This historical record describes the maintainer walkthrough; it requires no private workspace artifacts to use the skill.
+
+## 2026-11-03 task execution and targeted regression
+
+A separate testing agent, without the maintainer's verdicts or evaluation references, executed six synthetic writing requests in one fresh context: a conditional-result abstract, a false uniform-convergence argument, bilingual quantifier repair, a two-work style profile with duplicate versions, a cover letter with unknown declarations, and an accepted classification statement. The maintainer inspected the actual responses. Mathematical scope, source counts, translation constraints, and unknown declarations were preserved in these cases. The abstract nevertheless repeated its hypothesis and included commentary about retaining it: a concrete exposition failure despite mathematical fidelity.
+
+The exposition guidance was revised to state each necessary qualification once and avoid padding an approximate word target. The same tester then produced a revised conditional abstract and an abstract for different classification material. Both stayed shorter than the suggested length without repetitive qualifications or invented facts; editing notes stayed outside the manuscript. These are targeted regressions, not two additional independent contexts or a causal test of the anti-defensive add-on, which was not loaded in this run.
+
+Raw requests, responses and maintainer checks are retained with the maintenance task. The six tasks and two regressions do not establish execution of all 24 numbered fixtures, general reliability on long manuscripts, or reader preference. The structural resource checker verifies reference routing and fixture completeness only. The earlier dry-runs remain historical evidence at their stated scope.

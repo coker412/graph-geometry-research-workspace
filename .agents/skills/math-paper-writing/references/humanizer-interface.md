@@ -10,7 +10,8 @@ Apply constraints in this order:
 2. applicable repository and publication policy;
 3. formal statements, evidence status, and checked citations;
 4. this skill's mathematical integrity rules;
-5. Humanizer's style preferences.
+5. explicit author voice choices and compatible, selected writing-profile traits;
+6. Humanizer's style preferences.
 
 When a style preference conflicts with mathematical convention or semantic preservation, preserve the mathematics.
 
@@ -48,6 +49,8 @@ Do not alter:
 Humanizer's ordinary preference to remove dash characters applies only to editable prose. It must not rewrite LaTeX double hyphens, mathematical minus signs, name compounds, or numeric ranges.
 
 ## Controlled pipeline
+
+For defensive framing, use the [anti-defensive-writing interface](anti-defensive-interface.md); reuse the semantic checks below.
 
 ### 1. Freeze the semantic contract
 

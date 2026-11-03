@@ -15,6 +15,8 @@ Different mathematical documents make different promises:
 | Internal review draft | Enable verification and expose uncertainty | May include ledgers and status warnings excluded from publication prose |
 | Submission correspondence | Help an editor or referee evaluate a specific manuscript | Concise, factual, and synchronized with the submitted snapshot |
 
+When the user requests a paper version, select the full research-paper genre even if the mathematics remains a draft. Research verification status and document genre are separate: retain the required concise status qualification, but deliver the actual manuscript, with focused results, proofs, related work and the established paper template. A progress report or an outline with paper-like headings does not satisfy this request. Move secondary mathematical developments to justified appendices when they obscure the principal argument.
+
 Do not compress a paper by deleting the information needed to state or verify its result. Do not make a research paper read like a teaching chapter unless the audience and venue call for that level of exposition.
 
 ## Build an audience contract
@@ -50,6 +52,8 @@ Apply the profile only where it does not conflict with mathematics, venue rules,
 If no approved sample exists, use a neutral, direct mathematical register. Do not claim to reproduce the researcher's personal voice from a few isolated sentences.
 
 ## Learning from other mathematicians
+
+For an explicit corpus study or reusable personal profile, use [style-distillation.md](style-distillation.md). A short approved sample can guide the local edit without justifying an author-wide profile. Keep observed habits, explicitly preferred habits, collaborator interventions and habits the researcher wants to change separate. Frequency alone is not a reason to preserve a defect or to update the shared skill.
 
 Use published mathematicians' advice and papers to learn abstract decisions such as audience control, example placement, proof navigation, notation economy, and expository restraint. Do not imitate distinctive wording, rhetorical signatures, jokes, anecdotes, or recognizable passages.
 

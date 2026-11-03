@@ -251,14 +251,16 @@ Input, cached input, output tokens, and elapsed time are separate measurements. 
 
 The [runtime guide](shared/runtime-v2-guide.md) explains budgets, transactions, and recovery. The [progress guide](shared/research-progress-guide.md) distinguishes mathematical progress from execution status and self-reported activity. Usage statistics and structural checks cannot raise evidence levels.
 
-## Papers and Chinese study editions
+## Mathematical writing and paper study
 
-The repository and distribution include two skills with supporting resources:
+The repository and distribution include the same two skills as the standalone [math-paper-skills repository](https://github.com/coker412/math-paper-skills):
 
-- [math-paper-writing](.agents/skills/math-paper-writing/SKILL.md): theorem and proof exposition, citations, bilingual consistency, LaTeX, figures, and submission materials.
-- [math-paper-study-guide](.agents/skills/math-paper-study-guide/SKILL.md): a Chinese companion to a stable source, with staged reading, prerequisites, expanded calculations, checkpoints, and proof reconstruction.
+- [math-paper-writing](.agents/skills/math-paper-writing/SKILL.md): manuscript drafting and revision, proof exposition, bilingual consistency, LaTeX, submission materials, and Writing DNA distillation.
+- [math-paper-study-guide](.agents/skills/math-paper-study-guide/SKILL.md): focused proof explanations or complete study PDFs with editable source, prerequisites, worked calculations and proof reconstruction. Chinese is the default; another language or conversation-only output can be requested.
 
-Invoke `$math-paper-writing` or `$math-paper-study-guide` and identify the source files. The documentation is in English; the study-guide skill intentionally produces Chinese teaching material when requested.
+The optional [Evans, Stanley, Mumford and Milnor profiles](.agents/skills/math-paper-writing/references/field-profiles.md) each contain twenty distinct complete training works and five analysis reports. Standard distillation uses at least twenty works; an explicitly chosen small-sample mode also supports provisional profiles from three or more. Sources, inspected passages, genres and limits are recorded in the profiles. Load only the profile relevant to the current task.
+
+Invoke `$math-paper-writing` or `$math-paper-study-guide` and identify the source files. Writing DNA is included; anti-defensive-writing and Humanizer are optional add-ons. For installation outside this workspace and the scoped publication checks, see the [standalone README](https://github.com/coker412/math-paper-skills#readme) and [test record](https://github.com/coker412/math-paper-skills/blob/main/TESTING.md).
 
 Follow the [paper rules](agents/instructions/paper-writing.md). Active and candidate manuscript files and their build outputs belong under the owning project's `paper/` directory from the first write. Rebuild affected versions and inspect the logs. Language and layout checks do not verify a proof.
 

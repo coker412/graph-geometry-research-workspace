@@ -1,6 +1,7 @@
 \documentclass[11pt]{article}
 
-\usepackage[UTF8]{ctex}
+% Build with XeLaTeX; Fandol fonts are provided by TeX Live Chinese support.
+\usepackage[UTF8,fontset=fandol]{ctex}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
 \usepackage{booktabs,array}
 \usepackage{xcolor}
@@ -17,13 +18,13 @@
 \newtheorem{remark}[theorem]{注}
 
 \newenvironment{prerequisite}[1]
-  {\par\medskip\noindent\color{studyteal}\textbf{基础补充：#1}\par\smallskip\color{black}}
+  {\par\medskip\noindent{\color{studyteal}\textbf{基础补充：#1}}\par\nobreak\smallskip\nobreak\noindent}
   {\par\medskip}
 \newenvironment{calculation}[1]
-  {\par\medskip\noindent\color{studyblue}\textbf{计算补充：#1}\par\smallskip\color{black}}
+  {\par\medskip\noindent{\color{studyblue}\textbf{计算补充：#1}}\par\nobreak\smallskip\nobreak\noindent}
   {\par\medskip}
 \newenvironment{checkpoint}[1]
-  {\par\medskip\noindent\color{studyorange}\textbf{学习检查：#1}\par\smallskip\color{black}}
+  {\par\medskip\noindent{\color{studyorange}\textbf{学习检查：#1}}\par\nobreak\smallskip\nobreak\noindent}
   {\par\medskip}
 
 \title{数学论文中文学习版}
@@ -46,31 +47,51 @@
 \section*{快速学习指南}
 \addcontentsline{toc}{section}{快速学习指南}
 
-用一段话写出全文的核心机制，再给出分遍阅读计划、证明依赖关系和少量关键量。
+写出精确问题与主结论的定位，用一段话解释核心机制，再给出分遍阅读路线：
+先看主线模块的输入输出，再打开模块内部依赖，最后复算关键推导。
+每条路线指向本稿内具体命题或公式，并说明暂时接受哪个结果、在哪里返回其证明。
 
-\begin{checkpoint}{读正文前}
-列出读者开始第一遍前应能回答的两至四个实质问题。
-\end{checkpoint}
+\paragraph{阅读起点。}
+说明预设读者已会什么，本稿会补教哪些必要操作，以及哪些深定理作为明确的外部输入。
+读者无需先回答问题才能开始；本稿应包含完成约定阅读范围所需的解释。
 
 \section{问题、主结果与证明主线}
 
-准确说明对象、假设、维数、量词、目标量和主定理，然后解释各证明模块之间的关系。
+准确说明对象、假设、维数、量词、目标量和主定理；能够写成公式的数学陈述应实际写出，
+定义符号后再解释其作用。用少量有数学任务的模块串起主线，不按公式行数切节点，
+也不照搬其他论文的模块数。
+
+每块概括输入条件、精确输出及后续使用处，并链接到相应章节。
+分支或联合前提较多时给紧凑依赖图；短线性证明给蕴含链即可。
+共同需要的前提应表达为联合使用，图例区分证明依赖、背景与阅读顺序。
 
 \section{第一个证明模块}
+\label{sec:first-module}
+
+% 按本篇实际数学任务重命名；此处为写作占位说明，不是交付正文。
+先说明本节的任务与障碍。用明确假设和数学式写出本模块的输入与输出，
+交代输出将在哪里使用。概览中的条件、对象和参数应与这里一致；允许先接受结论再读证明。
+
+接着定位内部需要的命题和外部定理：分别用了哪个结论，本处如何满足其条件，
+多个输入怎样共同推出下一步。保留源文编号或页码与已知缺口；背景说明不自动充当证明。
 
 \begin{prerequisite}{本节最低限度的背景}
-解释马上要使用的定义、标准公式及其几何意义。
+解释马上要使用的对象类型、定义和操作。对陌生操作给出一个可算的实例，
+说明如何回接本证明以及一般情形增加了哪些条件。
 \end{prerequisite}
 
 这里放与源论文对应的定义、命题和证明主干。以下计算补充应放在实际用到它的证明步骤旁；
 不要先排完一个长证明再集中追加读懂该证明所需的解释。
 
 \begin{calculation}{决定结论的一步}
-逐行展开变量、求导对象、符号、缩放或边界项，并在结尾说明该计算解决了什么障碍。
+交代为什么选择当前辅助对象或参数，再展开本步所需的变量、求导对象、符号、缩放或边界项。
+使每个关键推断的前提和依据可定位，并在结尾将所得结果接回主证明。
+短的连续运算保留在此处；只有形成可独立调用的结论时才再拆成子模块。
 \end{calculation}
 
 \begin{checkpoint}{本模块}
-要求读者不看正文重建本节的输入、关键估计和输出。
+给出一个针对已讲难点的可选重构或小变式，并在本稿中提供参考解释及对应位置。
+读者可直接阅读答案；不能用练习代替尚未写出的关键推导。
 \end{checkpoint}
 
 \section*{证明重构清单}

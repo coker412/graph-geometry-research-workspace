@@ -8,6 +8,8 @@ Identify the source of truth before writing: a researcher-approved statement, a 
 
 Language editing, compilation, additional citations, and repeated model review do not raise a claim's evidence status. Do not present a claim without qualification in an abstract or conclusion merely because it appears as a theorem in a draft.
 
+The converse matters too: once the applicable evidence and author-approval conditions are met, state the established result at its actual strength. Do not turn a proved statement into “may suggest” because the drafting process included caution or review. Put audit history in the designated internal record; keep required status notices where repository policy places them. Essential mathematical conditions stay with the claim, including in a standalone abstract.
+
 For each main claim, maintain a compact ledger, explicitly or mentally:
 
 | Field | Question |

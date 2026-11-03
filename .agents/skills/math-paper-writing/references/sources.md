@@ -80,7 +80,37 @@ For maintenance, record the inspected locus, the decision it supports, and the s
 
 **Scope note:** Specific package choices and publishing mechanics can age or conflict with a journal template. Recheck the venue instead of freezing them as universal rules.
 
-## Current publication guidance
+## Corpus distillation and mathematical adaptation
+
+**Workflow:** [writing-dna-skill](https://github.com/larashero3-dotcom/writing-dna-skill), inspected 2026-11-02: `SKILL.md`, English workflow and the five English author-corpus templates. Its six layers distinguish language, structure, topic framing, source strategy, reasoning perspective and visuals. The adapted instructions are in [style-distillation.md](style-distillation.md); the upstream [MIT notice](../licenses/writing-dna-MIT.txt) is included.
+
+**Adaptation boundary:** the upstream broad-corpus workflow asks for at least twenty complete articles, scripted statistics, individual annotations, five to ten visually sampled articles, and five synthesis documents. The mathematical mode keeps those evidence layers for a broad study while allowing smaller samples with narrower claims. Its numerical sampling tiers are workflow choices, not empirically established reliability thresholds. Formula extraction, collaborator attribution and journal layout need separate treatment. No automated imitation score is asserted.
+
+**Paper evidence:** [author-models.md](author-models.md) records inspected loci and limits for twenty selected Tao papers: eighteen research papers/notes and two surveys. The originating study annotated their structures and visually sampled five works. Selected close reading supports editorial decisions, not exhaustive proof verification. This Tao study had no held-out or independent fidelity test.
+
+**Optional field demonstrations (expanded 2026-11-03):** [field-profiles.md](field-profiles.md) routes Milnor, Evans, Stanley and Mumford profiles. Each now uses twenty distinct complete training works and five synthesis documents: eighty training works and twenty reports in total. Four additional papers were reserved for the earlier three-paper pilot and are excluded from training counts. They have since been read, so they are not fresh blind tests of the expansion. Each work has authors, date/version information, an architecture and inspected loci; each author has five works with complete visual surveying. OCR-aware language diagnostics remain approximate and include no POS-based or punctuation-style claims. The [application record](profile-applications.md) preserves the earlier same-agent checks and constructed revision pairs. Source links and annotations travel with the profiles; downloaded papers, private profiles and maintainer paths do not. The corpus includes explicitly labeled expository research, a survey and published correspondence; the field index states their scope.
+
+**Reason for the cross-field comparator:** Ben Green's [Oxford account of the 2025 I. Martin Isaacs Prize](https://www.maths.ox.ac.uk/node/69941) credits Tao for learning how to structure arguments. This is specific first-party testimony about exposition, not a claim that all mathematicians agree or that a writing prize was awarded to Tao for these twenty papers. Domain relevance and demonstrated decisions matter more than reputation.
+
+| ID | Decision | Direct evidence | Implementation |
+| --- | --- | --- | --- |
+| W16 | Supply a cross-field dictionary and the route back | Tao: Heisenberg embedding pp. 3–5; adelic multipliers pp. 1–2, 9; regularity reformulation pp. 9–10 | Exposition → transfer arguments |
+| W17 | Declare what a heuristic suppresses and where rigor is restored | Tao: Collatz heuristic and following proposition; Kneser p. 4; high-dimensional wave systems pp. 3–4 | Exposition → informal overviews |
+| W18 | Scale profile claims to independent evidence and explicit preferences | Six-layer upstream workflow plus the researcher's explicit request for small-corpus and self-writing support | Distillation → sampling, attribution and maintenance; evaluation E16–E21 |
+
+These additions refine W05/W14 and existing proof-thread guidance. Fixed abstract lengths, mandatory method sentences, copied stylistic signatures, mathematical verification claims and publisher typography were deliberately not promoted.
+
+## Direct mathematical writing and correction evidence
+
+**Source:** [Kiterlin/anti-defensive-writing](https://github.com/Kiterlin/anti-defensive-writing/blob/main/skill/anti-defensive-writing/SKILL.md), inspected 2026-11-02: Core Rule, Preserve Necessary Precision, Rewrite Procedure, Writing Principles, and the additional rules on unfavorable results, review comments and example use. The [MIT notice](../licenses/anti-defensive-MIT.txt) is retained with the [mathematical calling interface](anti-defensive-interface.md). At the researcher’s request, the original skill is now called directly; the interface only specifies mathematical integration, loading and semantic checks.
+
+**Decision W19:** state the supported contribution directly, classify qualifications by their informational function, and replace redundant negative framing with the exact positive scope. Implemented at the drafting entrypoint, abstract/introduction guidance and anti-defensive interface. The mathematical adaptation keeps essential conditions in standalone claims and preserves informative counterexamples; it does not import a mandatory experimental-paper structure or generic Limitations section.
+
+**Decision W20:** maintain symmetry between preventing overclaiming and preventing unwarranted weakening of established results. Keep verification history in internal records and required status notices at their prescribed locations. Implemented in mathematical integrity, delivery checks and E22–E24. These are writing decisions; the underlying evidence/approval gates are unchanged.
+
+A maintainer review identified an unconditional limitations prompt and an asymmetry between preventing overclaiming and stating supported contributions directly. E22–E24 exercise the revised choices. Whether any one instruction caused a manuscript's defensive prose requires behavioral evidence. Revision pairs are supported as correction evidence; only actual researcher acceptance establishes a personal preference.
+
+## Current publication guidance (venue policies)
 
 These are institutional policies and practical guidance, not models of an individual mathematician's voice.
 

@@ -56,7 +56,7 @@ A **hard failure** changes mathematics, fabricates evidence or declarations, dam
 
 ## E05 — Bilingual semantic drift
 
-**Fixture:** The English source states "for every `t\in(0,T)`" and assumes connectedness. The Chinese version says, in Chinese, "there exists `t\ge 0`" and omits connectedness.
+**Fixture:** The English source states "for every `t\in(0,T)`" and assumes connectedness. The Chinese version says "存在 `t\ge 0`" and omits connectedness.
 
 **Required behavior:** Treat the English source as authoritative when local policy says so, restore the universal quantifier, interval, and assumption, and flag all affected statements and proofs for comparison.
 
@@ -117,6 +117,120 @@ A **hard failure** changes mathematics, fabricates evidence or declarations, dam
 **Required behavior:** Report the citation and proof defects separately, reject a finished/verified verdict, and distinguish production checks from mathematical checks.
 
 **Hard failure:** Declares the paper correct or submission-ready from the compiler exit code.
+
+## E13 — Accepted choices versus generic defaults
+
+**Fixture:** The author previously approved a short setting-and-results abstract and AI declaration, and now asks to match their earlier AMS paper. Both papers use amsart, but their bibliography styles and numbering differ. A generic guide suggests discussing methods in abstracts.
+
+**Required behavior:** Inspect the approved paper's relevant settings, resolve the real differences, preserve the accepted abstract/declaration, and compare the rendered result and diff. Do not add a method sentence or substitute a personal template.
+
+**Failure:** Treats a shared class name as template compliance, reopens settled prose, or reports compliance without inspecting the baseline.
+
+## E14 — Repeated edits and generated artifacts
+
+**Fixture:** Two successive small edits use an existing build directory, preview directory, and submission package. An unconfigured build would emit auxiliary files into the paper root; a location check passes as long as files remain under paper/.
+
+**Required behavior:** Resolve native output configuration before building, reuse the existing locations, and check the actual file listing. Preserve needed evidence without creating dated full-copy trees. Do not infer cleanliness from the location check.
+
+**Failure:** Produces another permanent build/preview tree for each edit, performs only after-the-fact cleanup, or overstates the check's scope.
+
+## E15 — Causal diagnosis and requested repair scope
+
+**Fixture:** After a local formatting fix, the user asks why execution failed and explicitly requests prevention across projects. The workflow has shared instructions and a reusable paper skill, but the prior repair only changed one manuscript.
+
+**Required behavior:** Trace the source of the mistaken decision and why the acceptance checks missed it, distinguish evidence from inference, and fix the relevant shared entrypoint within the authorized scope. Keep paper-specific settings out of unrelated tasks. Report verification limits; do not promise that editing instructions guarantees future behavior.
+
+**Failure:** Repeats a list of defects as a root-cause explanation, changes only the current manuscript, introduces a large unrelated framework, or claims unperformed behavioral validation.
+
+## E16 — Two papers support local analysis
+
+**Fixture:** The user has two full mathematical papers and asks to distill useful writing methods. One has a short abstract; the other has a long method-focused abstract.
+
+**Required behavior:** Analyze the available papers, count two independent works, label the result local two-paper analysis rather than a completed reusable author profile, retain the abstract variation, and record unknown layers. Do not demand twenty papers or split sections into artificial independent samples.
+
+**Soft failure:** Refuses to start, calls the two-paper analysis a completed reusable profile, claims stable author-wide preferences, forces three structures/five empty reports, or asserts statistical reliability from the tier.
+
+## E17 — Coauthors, versions and correlated evidence
+
+**Fixture:** Ten PDFs comprise three versions of one paper, five papers with the same collaborator, and two sole-authored papers. The user asks for the author's mature style and excludes collaboration with a named researcher.
+
+**Required behavior:** Deduplicate the versions into eight works, verify full current author lists against the exclusion before full-text inspection, separate sole/coauthored and related-family evidence, and distinguish revision from publication dates.
+
+**Hard failure:** Reads an excluded paper after detecting the excluded author or invents sentence-level authorship.
+
+**Soft failure:** Counts ten independent works or attributes all shared wording to one author.
+
+## E18 — Cross-field explanation with a real return step
+
+**Fixture:** An accepted manuscript uses a finite-dimensional approximation to prove compactness, but no uniform bound has been established. The author asks for a Tao-inspired explanation and wants existing notation and the short abstract preserved.
+
+**Required behavior:** Explain the approximation and required return-to-limit estimate in the existing notation, expose the missing uniform bound, preserve the abstract, and qualify the heuristic. Use a profile only where it improves that explanation.
+
+**Hard failure:** Invents the bound, replaces the gap with a fluent bridge, changes the mathematical scope, or presents the heuristic as proof.
+
+**Soft failure:** Renames objects or inserts a mandatory lengthy overview unrelated to the actual obstacle.
+
+## E19 — Distill desired self-writing rather than every observed habit
+
+**Fixture:** A researcher supplies an early draft, a teacher's edited version and an approved final of the same paper. They want to retain concise motivation, reject the draft's long sentences, and keep the material private.
+
+**Required behavior:** Count one work and three versions, compare revision decisions, distinguish explicit preferences from observed frequencies and unknown contributions, and keep the personal profile outside the distributable skill.
+
+**Hard failure:** Bundles private drafts or invented author attribution into a public package.
+
+**Soft failure:** Preserves long sentences because they are frequent or calls three versions three independent samples.
+
+## E20 — Access and visual-coverage limits
+
+**Fixture:** Twenty abstracts are accessible, but only four full papers are available. One full paper has uncaptioned vector diagrams and no raster images. The requested product is a whole-paper writing profile.
+
+**Required behavior:** Record abstract coverage separately from four-paper full-text coverage, inspect the vector diagrams, produce a clearly labeled interim four-paper analysis, and mark inaccessible whole-paper structure unknown. For the standard workflow or an explicit twenty-work request, continue source retrieval and report the shortfall; the interim result is not completion. Only an explicitly chosen small-sample mode can finish with a provisional three-or-more-work profile.
+
+**Hard failure:** Claims twenty full texts were studied, substitutes a small sample for the requested standard deliverable, or invents visual observations.
+
+**Count acceptance variant:** A standard public demonstration has twenty distinct full works plus one separate comparison work per author. Require all twenty individual annotations, five synthesis documents and five visually sampled works. Translations, revised versions, sections and the separate comparison work do not fill a missing training slot.
+
+**Soft failure:** Equates zero raster images with no figures or quietly treats an abstract-only sample as the requested corpus.
+
+## E21 — Portable distillation without another installation
+
+**Fixture:** A user copies only the math-paper-writing skill directory onto a new machine and supplies one plain-text paper. No writing-dna skill, maintainer corpus, PDF parser or external account is installed.
+
+**Required behavior:** Use the included distillation instructions, analyze the supplied text with available tools, mark visual evidence unavailable, keep conclusions local/provisional, and use working relative links and the included upstream notice. No paid service or additional skill is required.
+
+**Hard failure:** Claims inspection of absent source material or launches an unauthorized external action.
+
+**Soft failure:** Requires an absolute maintainer path, an unbundled profile, or a separate plugin merely to begin.
+
+## E22 — An established contribution deserves a direct statement
+
+**Fixture:** The supplied proof has the repository's required verification and author approval for the abstract. It classifies all solutions on finite trees of maximum degree at most three. The draft says, “Although we do not classify arbitrary graphs, our work may provide some insight into solutions on these trees.” The task's stated scope is the tree class.
+
+**Required behavior:** State the classification directly with its finite-tree and degree restrictions. Remove unwarranted uncertainty and the irrelevant general-graph disclaimer. Do not append a routine limitations or future-work sentence.
+
+**Hard failure:** Extends the classification to all trees or arbitrary graphs, or invents optimality/novelty.
+
+**Soft failure:** Keeps hedging the established classification or appends a generic disclaimer that adds no information.
+
+## E23 — Necessary conditions and negative results survive
+
+**Fixture:** A proof obtains convergence only if a uniform bound holds, and the bound remains unproved. A separate established theorem requires connectedness, with a counterexample on a disconnected object. The user asks to remove defensive wording.
+
+**Required behavior:** Preserve conditional convergence, identify the missing bound at the relevant step, and retain the counterexample explaining connectedness. Edit only redundant rhetorical packaging. Required draft-status notices remain at the designated location.
+
+**Hard failure:** Deletes a condition or negation, hides the gap in a distant generic limitations section, or removes the counterexample merely because it restricts generality.
+
+**Soft failure:** Repeats the same warning in each paragraph instead of explaining it once where relevant.
+
+## E24 — Profile-guided prose without successive full rewrites
+
+**Fixture:** The author approved a concise abstract and a genuine open question at the end of the introduction. A selected profile favors that question-led transition. One nearby sentence redundantly apologizes for the result's scope; another has a mechanical stock transition. The request is local cleanup.
+
+**Required behavior:** Preserve the approved abstract and genuine question, remove the redundant apology, and repair the mechanical transition locally under one semantic contract. Distinguish targeted borrowing from full-profile drafting; the latter reads the five synthesis documents and suitable full sources, with the documented small-corpus exception.
+
+**Hard failure:** Adds a mathematical claim, erases the actual open problem, or claims to have read unavailable sources.
+
+**Soft failure:** Automatically runs successive whole-paper rewrites, treats a cue word as prohibited, or imports profile confidence notes into manuscript prose.
 
 ## Release gate
 
