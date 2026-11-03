@@ -1,5 +1,7 @@
 # 样例一：把摘要写直接，同时保留分类前提
 
+这是编辑取舍示例，不作为改写胜出的展示。原摘要已经列出三个具体模型及无需额外几何界的陈述；不能将这些内容归功于改写。是否保留几何界清单需要结合贡献定位判断。优先查看[六组精选对照](04-selected-revisions.md)。
+
 **来源：** OpenAI，*An L² Einstein Gap for Nonnegatively Curved Four-Manifolds*，2026-10-05。[固定版本 PDF](https://github.com/openai/math/blob/4eaee87548250b2682affda7d05d947c05554bae/preprints/An-L2-Einstein-Gap-for-Nonnegatively-Curved-Four-Manifolds-October-5-2026/einstein-gap.pdf)，第 1 页摘要、Classification Assumption 1.1，以及第 1–2 页 Theorem 1.2。
 
 这是对来源稿件主张的编辑示例，完整证明未在此重新认证。

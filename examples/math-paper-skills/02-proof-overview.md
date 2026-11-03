@@ -1,5 +1,7 @@
 # 样例二：辅助函数出现后，怎样把读者带回原问题
 
+这是组织取舍示例，不作为完整替代稿。改写更集中地介绍辅助量，但省略了原概览中向量场单调性与平衡角点控制的机制；不能据此宣称全面改善。优先查看[六组精选对照](04-selected-revisions.md)。
+
 **来源：** OpenAI，*A Smooth Nonquadratic Entire Affine Maximal Graph in Dimension Ten*，2026-10-05。[固定版本 PDF](https://github.com/openai/math/blob/4eaee87548250b2682affda7d05d947c05554bae/preprints/Smooth-Nonquadratic-Affine-Maximal-Graph-in-Dimension-Ten-October-5-2026/affine-maximal-dimension-ten.pdf)，第 2 页引言末段与 Proposition 2.1，第 3 页式 (6)。本例重组来源中的证明概览，不认证其全局论证。
 
 ## 原文定位

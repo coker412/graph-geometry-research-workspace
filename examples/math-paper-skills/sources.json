@@ -34,6 +34,68 @@
       "manuscript_date": "2026-10-05",
       "quoted_excerpt": "The main obstacle is then global existence: a priori the auxiliary function P could vanish at a finite radius.",
       "inspection_scope": "Selected pages and local formulas, not a complete proof audit."
+    },
+    {
+      "id": "365-02",
+      "version": "adc7f1241b42e322a6451854ab7e4b4c146bf78a",
+      "pdf_url": "https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/Smooth-Anisotropic-Uniqueness-in-the-Calderon-Problem-from-One-Boundary-Patch-September-24-2026/paper.pdf",
+      "pdf_sha256": "1ec46ed64206d12d8fdca42ae7454db52571c0ba1eb458aaf234a6ddea061d39",
+      "pdf_pages": 43,
+      "inspected_pages": [
+        19,
+        36
+      ],
+      "title": "Smooth anisotropic uniqueness in the Calderón problem from one boundary patch",
+      "author": "OpenAI",
+      "manuscript_date": "2026-09-24",
+      "quoted_excerpt": "We now apply the product continuation criterion near a point where an isometry is already known on one side.",
+      "inspection_scope": "Selected paragraphs, adjacent context and rendered pages; editorial comparison, not complete proof certification."
+    },
+    {
+      "id": "359-01",
+      "version": "adc7f1241b42e322a6451854ab7e4b4c146bf78a",
+      "pdf_url": "https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/A-negatively-pinched-Kahler-threefold-without-bounded-holomorphic-coordinates-September-25-2026/paper.pdf",
+      "pdf_sha256": "59e7bcf19b96d5d90e787622473764011de3be9d93854b39fc065f019667e022",
+      "pdf_pages": 36,
+      "inspected_pages": [
+        16
+      ],
+      "title": "A negatively pinched Kähler threefold without bounded holomorphic coordinates",
+      "author": "OpenAI",
+      "manuscript_date": "2026-09-25",
+      "quoted_excerpt": "We emphasize the order of the choices.",
+      "inspection_scope": "Selected paragraphs, adjacent context and rendered pages; editorial comparison, not complete proof certification."
+    },
+    {
+      "id": "351-01",
+      "version": "adc7f1241b42e322a6451854ab7e4b4c146bf78a",
+      "pdf_url": "https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/A-closed-Ricci-flow-with-bounded-scalar-curvature-and-finite-time-curvature-blowup-September-24-2026/paper.pdf",
+      "pdf_sha256": "88b1d8270cb2bc5fb315b3421f984f9db84a4431d4780f89b1bcf6504839510b",
+      "pdf_pages": 20,
+      "inspected_pages": [
+        5,
+        15
+      ],
+      "title": "A closed Ricci flow with bounded scalar curvature and finite-time curvature blowup",
+      "author": "OpenAI",
+      "manuscript_date": "2026-09-24",
+      "quoted_excerpt": "Proposition 2.1 is the external existence input to this paper.",
+      "inspection_scope": "Selected paragraphs, adjacent context and rendered pages; editorial comparison, not complete proof certification."
+    },
+    {
+      "id": "361-02",
+      "version": "adc7f1241b42e322a6451854ab7e4b4c146bf78a",
+      "pdf_url": "https://github.com/openai/math/blob/adc7f1241b42e322a6451854ab7e4b4c146bf78a/preprints/A-Three-Dimensional-Counterexample-to-Integer-Degree-Harmonic-Dimension-Comparison-September-26-2026/paper.pdf",
+      "pdf_sha256": "6c7b86f0f59fcdb9da790ae15c943dc881e1ca4f758033611e84eca8dd93e4a2",
+      "pdf_pages": 39,
+      "inspected_pages": [
+        24
+      ],
+      "title": "A Three-Dimensional Counterexample to Integer-Degree Harmonic Dimension Comparison",
+      "author": "OpenAI",
+      "manuscript_date": "2026-09-26",
+      "quoted_excerpt": "Density extends the maps",
+      "inspection_scope": "Selected paragraphs, adjacent context and rendered pages; editorial comparison, not complete proof certification."
     }
   ]
 }

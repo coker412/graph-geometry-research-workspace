@@ -105,6 +105,7 @@ required_files=(
   "examples/math-paper-skills/01-conditional-abstract.md"
   "examples/math-paper-skills/02-proof-overview.md"
   "examples/math-paper-skills/03-hessian-study.md"
+  "examples/math-paper-skills/04-selected-revisions.md"
   "examples/math-paper-skills/OPENAI-MATH-LICENSE"
   "examples/math-paper-skills/README.md"
   "examples/math-paper-skills/check_examples.py"
