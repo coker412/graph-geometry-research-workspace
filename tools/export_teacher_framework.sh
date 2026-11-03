@@ -58,8 +58,13 @@ copy_file "agents/instructions/personal-research.md" "agents/instructions/person
 copy_file "tools/research_tasks.py" "tools/research_tasks.py"
 copy_file "tools/tests/test_research_tasks.py" "tools/tests/test_research_tasks.py"
 copy_file "tools/tests/test_setup.py" "tools/tests/test_setup.py"
+copy_file "tools/tests/test_paper_tools.py" "tools/tests/test_paper_tools.py"
 
 # Publish only the reviewed, reusable writing skill resources.
+copy_file ".agents/skills/math-paper-writing/scripts/pdf_pages.py" ".agents/skills/math-paper-writing/scripts/pdf_pages.py"
+copy_file ".agents/skills/math-paper-writing/scripts/check_tex_log.py" ".agents/skills/math-paper-writing/scripts/check_tex_log.py"
+copy_file ".agents/skills/math-paper-study-guide/scripts/pdf_pages.py" ".agents/skills/math-paper-study-guide/scripts/pdf_pages.py"
+copy_file ".agents/skills/math-paper-study-guide/scripts/check_tex_log.py" ".agents/skills/math-paper-study-guide/scripts/check_tex_log.py"
 copy_file "examples/math-paper-skills/01-conditional-abstract.md" "examples/math-paper-skills/01-conditional-abstract.md"
 copy_file "examples/math-paper-skills/02-proof-overview.md" "examples/math-paper-skills/02-proof-overview.md"
 copy_file "examples/math-paper-skills/03-hessian-study.md" "examples/math-paper-skills/03-hessian-study.md"

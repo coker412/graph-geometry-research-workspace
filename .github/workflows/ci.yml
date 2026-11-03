@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install PDF extraction dependency for tests
+        run: python -m pip install PyMuPDF==1.28.0
+
       - name: Check source manifest
         run: python tools/update_manifest.py check
 

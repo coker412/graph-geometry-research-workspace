@@ -51,6 +51,8 @@ Use author profiles, `anti-defensive-writing` and Humanizer only as the task nee
 
 ## Delivery and maintenance
 
+For repeated file work, execute the optional [PDF page reader](scripts/pdf_pages.py) or [TeX log scanner](scripts/check_tex_log.py) with `--help`; do not load their implementations for ordinary use. Reuse existing editable source or page-labelled text first. The reader caches unfiltered extracted text against the PDF SHA-256 and returns an index unless `--pages` or `--find` is requested. An index is not reading evidence: complete all reading required by the selected workflow, and inspect PDF notation/figures as needed. After the actual project build, the scanner summarizes `.log`/`.blg` diagnostics; it does not establish a fresh build or inspect the PDF.
+
 Standard author-profile distillation uses at least twenty complete works and five synthesis documents. Also support an explicitly chosen provisional profile from three or more works; fewer works support local analysis only. Never reduce a requested count using the small-sample option. Keep author profiles optional and subordinate to mathematical integrity, the user's accepted choices, and the destination manuscript's conventions.
 
 Before handoff, apply the relevant [delivery checks](references/delivery-checks.md). Report changed paths, checks, unresolved mathematical or bibliographic risks, and preserved evidence status. A successful build checks typesetting, not mathematics.

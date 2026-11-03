@@ -44,6 +44,8 @@ For the researcher's own writing, distinguish original draft, collaborator/teach
 
 Prefer complete original text for a whole-paper profile. Abstract-only access supports abstract analysis only. Use available text/PDF tools; prefer editable source when supplied. Inspect mathematical notation and visual material in the rendered PDF when extraction is ambiguous. A downloaded full text is not evidence that every argument has been read or verified.
 
+When no reusable page-labelled extraction exists, use [pdf_pages.py](../scripts/pdf_pages.py) with an explicit `--cache` path in the existing reading/build directory. The default index and `--find` locate material; `--pages 2,5-7` prints those PDF pages without truncation and `--pages all` prints the full extraction. Repeated uses verify the source hash and reuse the text. Fresh extraction requires PyMuPDF; it does not perform OCR, count independent works, remove mathematical content, or replace the required full-text reading. Use existing metadata/identifiers to distinguish versions, not file hashes alone.
+
 For each source, retain a compact record, for example:
 
 ```json

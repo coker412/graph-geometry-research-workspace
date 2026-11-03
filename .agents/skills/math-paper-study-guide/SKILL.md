@@ -65,6 +65,8 @@ The default cycle is **first complete PDF → reader feedback → revision**. Pu
 
 ## Check the result at the requested scope
 
+For repeated file work, execute the optional [PDF page reader](scripts/pdf_pages.py) or [TeX log scanner](scripts/check_tex_log.py) with `--help`; do not load their implementations for ordinary use. Prefer existing editable source or page-labelled text. The reader caches unfiltered extracted text against the PDF SHA-256; by default it prints an index, with `--find` for locating pages and `--pages` for complete page text. An index or a few pages cannot stand in for whole-paper reading. Empty extracted pages need visual/OCR inspection. The log scanner summarizes the actual build's `.log`/`.blg` files; still check build status, freshness and rendered pages as described below.
+
 Compare source and explanation for hypotheses, dimensions, quantifiers, definitions, signs, scaling, norms, limits, base-point dependence and boundary terms. Overview, detailed derivation and reconstruction must agree. Report suspected source gaps without disguising them as exposition or silently repairing the theorem.
 
 For a full edition, inspect the finished PDF using only its declared reader background and external inputs. Locate a difficult chain's prerequisites, choices, calculations and return to the target at actual PDF locations. Repair connections that require remembered chat or hidden source comments. Check one joint dependency and one external input when present, and that reference answers follow from material already taught. Assess mathematical coverage and teaching accessibility separately; this is editorial self-review, not learner testing.

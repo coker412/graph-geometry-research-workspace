@@ -42,6 +42,8 @@ Use the repository's documented build command. If none exists, infer the engine 
 
 Resolve output paths before running the build. Reuse the established build, preview, and clean-rebuild locations; configure the native tool's output directory when it prevents recurring root-level artifacts. An isolated submission rebuild needs a clean working location, not a new permanent directory on every edit. Preserve only the backups and evidence required for the actual change. Inspect the final file listing as well as the logs; a location-only check cannot establish that the project is uncluttered.
 
+The optional [check_tex_log.py](../scripts/check_tex_log.py) accepts explicit `.log` and `.blg` paths from the actual build and emits counts plus a few located examples per severity. Exit codes are 0 for no matched diagnostics, 1 for detected diagnostics, and 2 for unreadable/empty inputs. It is a pattern-based aid, not a full TeX parser; inspect relevant continuations and unfamiliar diagnostics in the original logs. Keep using the project's build command, checking its exit status and the current PDF.
+
 A zero exit code is necessary but not sufficient. Inspect the log for at least:
 
 - TeX errors;

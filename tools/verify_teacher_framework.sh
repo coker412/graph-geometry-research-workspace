@@ -17,6 +17,10 @@ elif [[ $# -eq 1 ]] && [[ "$1" == "--public-source" ]]; then
 fi
 
 public_skill_files=(
+  ".agents/skills/math-paper-writing/scripts/pdf_pages.py"
+  ".agents/skills/math-paper-writing/scripts/check_tex_log.py"
+  ".agents/skills/math-paper-study-guide/scripts/pdf_pages.py"
+  ".agents/skills/math-paper-study-guide/scripts/check_tex_log.py"
   ".agents/skills/math-paper-writing/assets/writing-dna-skill/LICENSE"
   ".agents/skills/math-paper-writing/assets/writing-dna-skill/SKILL.md"
   ".agents/skills/math-paper-writing/assets/writing-dna-skill/UPSTREAM.json"
@@ -102,6 +106,7 @@ public_skill_files=(
 )
 
 required_files=(
+  "tools/tests/test_paper_tools.py"
   "examples/math-paper-skills/01-conditional-abstract.md"
   "examples/math-paper-skills/02-proof-overview.md"
   "examples/math-paper-skills/03-hessian-study.md"
