@@ -338,6 +338,8 @@ Automated checks can test protected tokens, links, builds, and supplied calculat
 
 **Soft failure:** Only changes words when structural editing is authorized; repeatedly runs cleaners with incompatible scopes; treats all recurrence as redundancy; or creates a new mandatory workflow file instead of delivering prose.
 
+**Context-pair extension:** Give similar reminders, negations and explanatory restatements different surrounding arguments. Include a reminder after an intervening calculation versus an immediately duplicated sentence; an inferable but useful formula interpretation versus a second identical interpretation; a padded opening whose mathematical clause must survive; and an unresolved stronger conclusion that must not become a negative theorem. Request actual prose, including unchanged outputs. For each deletion check both retained meaning and the next reader task. Missing context must not be filled with an invented justification for deletion. Record source/output pairs and separate fidelity from provisional reader-value judgments; stock-phrase counts are not pass criteria.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:

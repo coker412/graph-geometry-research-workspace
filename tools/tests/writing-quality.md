@@ -293,3 +293,111 @@ Instruction snapshots (SHA-256):
 - math-paper-study-guide/SKILL.md: 00116c368351fa6f9f1b7dfdfc2d4e9f5773b1ac16035786b06203641bf83904
 
 Mechanical provenance check: all 21 recorded upstream hashes were recovered after removing only the two marked local integration sections. In a temporary skill copy, adding an unrecorded line to the bundled cleaner made the resource validator exit 1. The unchanged distribution passed; no expected hash was refreshed for the negative control. The six existing file-helper tests also passed.
+
+## E33 follow-up: preserve explanations by their function
+
+**Method and scope.** On 2026-11-04, the maintainer applied the revised function check to the ten synthetic passages below. Inputs supply the mathematical facts; structural deletion is authorized except where noted. These are actual same-context outputs and self-review, not isolated model runs, an A/B experiment, independent verification, or reader comprehension measurements. No live manuscript was edited. The task is to improve prose where warranted and retain effective prose otherwise, not to maximize deletions.
+
+### Pair 1: a useful reminder versus immediate duplication
+
+**1A context.** C was introduced before an intervening calculation as independent of n. The reader now returns to the convergence argument.
+
+Input: “We obtain ‖u_n−u‖≤C/n. Recall that C is independent of n. Hence u_n→u.”
+
+Output: “We obtain ‖u_n−u‖≤C/n. Recall that C is independent of n. Hence u_n→u.”
+
+Review: keep. The reminder reconnects the estimate to its limiting use; its being inferable from earlier setup does not make it useless. Fidelity and reader guidance retained; quality judged unchanged.
+
+**1B context.** The same independence condition is already in the immediately preceding clause, with no intervening calculation.
+
+Input: “For every n≥1, ‖u_n−u‖≤C/n, where C is independent of n. Note that C is independent of n. Hence u_n→u.”
+
+Output: “For every n≥1, ‖u_n−u‖≤C/n, where C is independent of n. Hence u_n→u.”
+
+Review: remove the duplicate reminder. Independence and its next use remain adjacent. Provisional improvement: one repeated assertion removed without increasing the reader's reconstruction work.
+
+### Pair 2: formula interpretation versus repeated interpretation
+
+**2A context.** A reader familiar with vectors is meeting this projection for the first time; 1 denotes the all-ones vector in R^m, m≥1.
+
+Input: “Set Pv=v−((v₁+⋯+v_m)/m)1. In other words, P subtracts the mean from every coordinate.”
+
+Output: “Set Pv=v−((v₁+⋯+v_m)/m)1. In other words, P subtracts the mean from every coordinate.”
+
+Review: keep. The explanation decodes the formula rather than adding a new proposition. Removing it would lose the supplied teaching purpose even though the formula is unchanged. Quality judged unchanged.
+
+**2B context.** Same audience and notation; the interpretation is already present immediately before the formula.
+
+Input: “The map P subtracts the mean from every coordinate: Pv=v−((v₁+⋯+v_m)/m)1. In other words, P subtracts the mean from every coordinate.”
+
+Output: “The map P subtracts the mean from every coordinate: Pv=v−((v₁+⋯+v_m)/m)1.”
+
+Review: remove the second interpretation, preserving the first. Provisional improvement: less repetition with both the operation and its formula retained. This is not a rule against post-formula explanations.
+
+### Pair 3: an unproved upgrade versus a proved negative conclusion
+
+**3A context.** The supplied argument proves pointwise convergence. Uniform convergence has not been settled; a later application would require it.
+
+Input: “The argument proves pointwise convergence. It does not establish uniform convergence.”
+
+Output: “The argument proves pointwise convergence. It does not establish uniform convergence.”
+
+Review: keep. The second sentence marks an actual unresolved prerequisite for the application. Replacing it with “The convergence is not uniform” would assert a new result. Quality judged unchanged.
+
+**3B context.** The supplied source proves both pointwise convergence and failure of uniform convergence.
+
+Input: “The convergence is pointwise but not uniform.”
+
+Output: “The convergence is pointwise but not uniform.”
+
+Review: keep the negative conclusion. Replacing it with “Uniform convergence has not been established” would weaken the supplied result. No new proof or counterexample is claimed. Quality judged unchanged.
+
+### Pair 4: a relevant scope comparison versus an unused aside
+
+**4A context.** A synthetic prior theorem requires compactness; the supplied current theorem holds on complete metric spaces. The user requests a comparison of those assumptions.
+
+Input: “The earlier theorem assumes compactness. The present theorem requires completeness but does not require compactness.”
+
+Output: “The earlier theorem assumes compactness. The present theorem requires completeness but does not require compactness.”
+
+Review: keep. The negative clause answers the requested comparison. No real publication or novelty is attributed. Quality judged unchanged.
+
+**4B context.** The precise supplied result applies to every complete metric space; there is no compactness-based comparison, ambiguity, later use or audience need for a separate compactness remark. Structural compression is authorized.
+
+Input: “The theorem applies to every complete metric space. Compactness is not required.”
+
+Output: “The theorem applies to every complete metric space.”
+
+Review: omit the unused aside at the content-selection stage. The universal scope survives; the decision depends on the supplied context, not on the negative sentence form. Provisional improvement: removes an unmotivated detour.
+
+### Controls: change the framing only; retain unresolved context
+
+**5 context.** A bound has constant C allowed to depend on T but independent of n, and n tends to infinity with T fixed. Only wording revision is requested.
+
+Input: “It is important to note that C may depend on T but is independent of n. We may therefore let n tend to infinity with T fixed.”
+
+Output: “The constant C may depend on T but is independent of n. We may therefore let n tend to infinity with T fixed.”
+
+Review: only the padded opening is replaced. Dependence on T, independence of n and fixed-T scope all remain. Provisional improvement: direct subject; no stronger uniformity claim.
+
+**6 context.** Only this sentence is supplied, with no theorem, neighboring text or evidence identifying what “This” denotes. The user asks whether to delete it as defensive.
+
+Input: “This does not require compactness.”
+
+Output: “This does not require compactness.”
+
+Editorial note: “Keep provisionally. The missing referent and neighboring argument determine whether this states useful scope or repeats an existing condition.”
+
+Review: unresolved contextual value is reported, not converted into a deletion or invented comparison. Retention is not endorsement of the unsupported mathematical claim.
+
+### Read-back and negative controls
+
+Across the ten outputs, three duplicate/unused sentences were removed and one padded opening was rewritten. Five passages were deliberately retained as effective; one remained unchanged with an unresolved-context note. These are descriptive counts, not quality scores. Read-back found no lost supplied mathematics or reading function in these outputs; that is a maintainer judgment, not independent evidence.
+
+The review rejects three deliberately faulty alternatives: deleting independence of n from 1A, replacing “does not establish uniform convergence” in 3A by “is not uniform”, and replacing the fixed-T conclusion in 5 by a bound uniform in T. It accepts the unchanged outputs, so a zero-edit result is not treated as a failed test. No lexical test is used to infer defensiveness. Existing E33 handoff and study cases remain applicable; this follow-up does not claim a new execution of all earlier cases.
+
+Instruction snapshots for this follow-up (SHA-256):
+
+- math-paper-writing/SKILL.md: 17ca2e8b66051b12c4d60a031f5aec58fc45ac7523bb5327d9cddebde16d63ad
+- math-paper-writing/references/anti-defensive-interface.md: 7588e89258f5feedc2f925957241a6b01fa4e179b1693cfef202a194c580c0c0
+- math-paper-writing/references/delivery-checks.md: cb7f19b8b9fcc0c877f4c869dd5385b4a7d212c25c013a2818ed88dccc6dd26b

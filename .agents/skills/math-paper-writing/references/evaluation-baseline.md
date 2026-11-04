@@ -76,3 +76,7 @@ E32 adds an authentic public-source introduction task. The maintainer drafted an
 ## 2026-11-04 content selection and skill coordination
 
 E33 exercises structural versus language-only scope, contextual clarification, repeated paragraph functions, causal expansion, iterative integration, protected mathematical contrast, whitelist applicability and teaching detail. Actual supplied inputs and outputs are retained in tests/writing-quality.md in the distribution; E01–E08 were repeated at fragment scope. This is same-context maintenance, not independent execution or reader validation. Two documented mathematics-only additions to bundled upstream skills were checked by reconstructing the original hashes. Static validation covers 33 case definitions, not 33 behavioral passes.
+
+## 2026-11-04 explanation-function follow-up
+
+The E33 extension records ten synthetic same-context outputs: three contextual deletions, one framing-only revision, five retained effective passages and one unresolved-context retention. Read-back checks mathematical meaning and reader function separately; negative controls distinguish an unproved stronger conclusion from a proved negative result. This is a narrow development walkthrough, not a fresh-context test or measured quality gain. Earlier cases were not newly rerun. The case-definition count remains 33. The entrypoint, anti-defensive interface and delivery check now route this decision at actual edit time.

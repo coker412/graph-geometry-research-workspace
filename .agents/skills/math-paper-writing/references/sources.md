@@ -180,6 +180,10 @@ Tao asks authors to make a contribution prominent. Halmos and Knuth warn against
 
 Serre and Knuth object to symbol-heavy writing that makes readers reconstruct grammar. Mathematical notation remains essential, but prose should state the logical relation between formulas and identify the acting objects.
 
+## Functional explanation check (2026-11-04)
+
+Decision F01, implemented in [the anti-defensive interface](anti-defensive-interface.md#check-function-before-editing): judge mathematical content and reader guidance separately before deleting a reminder or explanation. Targeted sources inspected: [mathematical-academic-writing's functional audit](https://github.com/JiahaoLi-creator/mathematical-academic-writing/blob/main/references/anti_defensive_audit.md), especially mathematical negation protection, warning signals and ordinary discourse devices; [math-prose's workflow](https://github.com/TianhuaGao/math-prose/blob/main/SKILL.md), especially semantic action and justified repetition; and [the mathematics-paper guide's §2](https://github.com/haruhisa-enomoto/math-paper-skills/blob/main/skills/write-research-paper/references/paper-writing.md), on useful scope statements. These are targeted conceptual comparisons, not imported skill dependencies or independent efficacy evidence. Do not adopt blanket deletion of recapitulation or advance summaries: useful proof orientation and teaching repetition remain audience-dependent. The paired E33 follow-up exercises this boundary.
+
 ## Maintenance rule
 
 When adding a source, read the original text far enough to establish context, record a stable link, inspected locus, limitations, decision ID, and implementation target. Add only principles that change concrete writing decisions. Do not accumulate quotations, prestige lists, or generic advice. Recheck time-sensitive publication policies at the point of use and update the inspection date when their role in the skill changes.
