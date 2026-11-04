@@ -326,6 +326,8 @@ Automated checks can test protected tokens, links, builds, and supplied calculat
 
 **Soft failure:** Returns only a checklist; buries the contribution; lists techniques without a connection; forces irrelevant limitations or a roadmap; claims reader comprehension from self-review.
 
+**Distillation variant:** Analyze an author's abstract and complete introduction as a pair, with main-statement and proof anchors. Identify separate decisions, their relationship and scope; do not infer an author-wide rule from two examples or count the two sections as independent works. Apply one supported choice to an abstract/introduction pair based on supplied mathematics, and test a requested result-only abstract where a method sentence is unnecessary. Record actual prose and the scope of the paired coverage.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:

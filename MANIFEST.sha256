@@ -37,7 +37,7 @@ cc3d842a912f0ed1fc80ae8d2ca7ab6cff37756422069424bf2edec554219fc9  .agents/skills
 8a566ef6a7a377b4fdcc48e91f9de054d6f4a1c5ad04ae981346318de5b6c083  .agents/skills/math-paper-writing/references/author-models.md
 39ce2e990f3a154b2ccf3b127a4136ec3e9c31eec06a995505fc22a57a2f20a3  .agents/skills/math-paper-writing/references/delivery-checks.md
 c9c760a1b70d993a9217c4cf582f0e509445bc186d8a773f460057b93fcbf771  .agents/skills/math-paper-writing/references/evaluation-baseline.md
-8f2fb0dd06a175ba25c58059aba9472e5cc34de06c5f35c898ae3ccef2823386  .agents/skills/math-paper-writing/references/evaluation-suite.md
+94413264f78602021bfc4d37128e500f226e58cb6d24083d7a379aa88f5412f0  .agents/skills/math-paper-writing/references/evaluation-suite.md
 46518179db9c03181d33c794bd828292a48e38a4168e3e095eb9e6f5396a63c2  .agents/skills/math-paper-writing/references/exposition-and-structure.md
 e765c47686daecc8bbbf33a8e2ee626f93f4a54f76095aed08aa30d7fb2d5e10  .agents/skills/math-paper-writing/references/field-profiles.md
 eed640b1c2eafc810bca3065bc485c356135e4c040afef0b005de7e24b1563fb  .agents/skills/math-paper-writing/references/figures-tables-and-diagrams.md
@@ -70,15 +70,15 @@ e0c348abd65b057b8635663b72c628c56a6e9a5b331d68f12c1379c455d9688b  .agents/skills
 eb4816f71d6e6de64b1483ab0ecd5980f853b15a325e1ef3d371efaff9949b31  .agents/skills/math-paper-writing/references/profiles/stanley/language-dna.md
 d789b789b893d9914c7b77e8b6cdd2bd21ea7355b63519ecefd7932912ab9fd3  .agents/skills/math-paper-writing/references/profiles/stanley/structure-patterns.md
 4c72240fb06c8a4c69fa80d75dfc664c6a30609a3f040587ee33024992845f5b  .agents/skills/math-paper-writing/references/profiles/stanley/visual-style-guide.md
-8061fe70b98133cc279ceba5bfc6c07bc4b262f67a24c08728fc8b0c5e20ff73  .agents/skills/math-paper-writing/references/profiles/tao/Writing-DNA.md
+9ce88471c5b67d9a865ae2ba1bb0a161c1f90b20235ded1f3792d561e9fdd84e  .agents/skills/math-paper-writing/references/profiles/tao/Writing-DNA.md
 d25ded286f841072749630eabf5f15df43097cebee707da2d6484e5d3e892d03  .agents/skills/math-paper-writing/references/profiles/tao/cognitive-framework.md
 192c4747b84bf391a366da0fae0217aa5d331fdf764efaa89d09907e573c1fc4  .agents/skills/math-paper-writing/references/profiles/tao/language-dna.md
 32aef8a3f0df2d73f47f6b482a9b9dca62a98a8fdb33f27c74981264bcfe077b  .agents/skills/math-paper-writing/references/profiles/tao/sources.json
 7b00de0707a7f75abd7fdf8e404075f82066b48a39e32314e4e307aaea7d866c  .agents/skills/math-paper-writing/references/profiles/tao/statistics.json
-573eaea7051fb125c48c5a29a377958639f42752eaea4ac1dac8a2a5f93f0115  .agents/skills/math-paper-writing/references/profiles/tao/structure-patterns.md
+04012e1b8bf7df9ad7357a878f76ce8544e82e21e5aa50face7d014e7d4f614a  .agents/skills/math-paper-writing/references/profiles/tao/structure-patterns.md
 db8aaebdcbdf4f0228ae69da9dabb4407b17bf360ad8ec6ebe6d079735e3119d  .agents/skills/math-paper-writing/references/profiles/tao/visual-style-guide.md
 88b75cfcaa74c4f03ced63d87b61fb1cdf74af62f6d06d1dbecea8bb266727cd  .agents/skills/math-paper-writing/references/sources.md
-706cf6a53369399dab02e87d146de18b2c69a120ccb434ef09b3955326ac9b26  .agents/skills/math-paper-writing/references/style-distillation.md
+997e92f143dbf53fb8125fc12ae97d7802e5fb883668dc4d1ec1ae40db4c9e08  .agents/skills/math-paper-writing/references/style-distillation.md
 8926c0ec2ecfd562452eb58992de7b76f05cb096293663fc9a93d7e838287e44  .agents/skills/math-paper-writing/references/submission-and-peer-review.md
 90c489eaa9792867ad48c5ab40dbd7c792b57fecdafc010497574b0ed7e8dd92  .agents/skills/math-paper-writing/references/voice-and-genre.md
 d2e392a39c0534f7328c0edc6c9c476a16236321996707ee05057bf92e4d652d  .agents/skills/math-paper-writing/scripts/check_skill_resources.py
@@ -175,7 +175,7 @@ f4aaba20378f3393c33455c751bcb68a3adeaa2dbacb97088e336a12f89f2bca  tools/tests/te
 f44d507252ee1c577f98cd4a6455f0ce4046883a2a451e87b25381af8c326ac7  tools/tests/test_setup.py
 4264375586b602f23cdc021ceeae63eca343da2981b4ca798cf191a91ec5552a  tools/tests/test_update_manifest.py
 9bbe833eaae543c0355e94607127915d482ede94e4b9de18e8aff101df03d0ca  tools/tests/test_workspace_hygiene.py
-9a27f00778c27eef07da3d58bb28c8d1f56533c38ee94d96090267ba6c4f2732  tools/tests/writing-quality.md
+3cb02f286928ee68463f71698ec4da1b5509a1077b890fe9ee8de3836bcd21b3  tools/tests/writing-quality.md
 7449fdd44c843efc111e1f12e25ce0ce852c4fa3f15c0efc3fc3bb4079801bf6  tools/update_manifest.py
 089a2273104a5171800a85a23fda3301771b000e8b6aded1cef176d6daf9222b  tools/verify_teacher_framework.sh
 7b86cbc8b11e78b71cf6fb3a8d5a2a8be8b10e62d3cf37cd34cfa00f22304125  tools/workspace_hygiene.py

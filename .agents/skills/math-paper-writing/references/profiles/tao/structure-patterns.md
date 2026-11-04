@@ -40,6 +40,17 @@ T18 and T20 require separate treatment: surveys can reorder established argument
 
 Most papers end after completing an argument or stating a mathematically focused question. Distinctive closing asides and jokes are not part of the reusable architecture.
 
+## Abstract and introduction: paired observations
+
+This focused follow-up re-examines **2 of the 20 works**, T07 and T14. Their complete abstracts and introductions were reread in the recorded versions; rendered PDF pages 1–2 of T07 and pages 1 and 3 of T14 were also checked to resolve extracted formulas. The observations below are local evidence, not a completed twenty-pair analysis or an unseen test.
+
+| Work / loci | Abstract decision | What the introduction adds | Borrowing condition |
+| --- | --- | --- | --- |
+| T07, PDF p. 1 abstract; pp. 1–2 introduction, Theorem 1.1 and strategy paragraph | Makes progress legible through the parameter range and comparison, while retaining the sufficiently large starting index depending on t. It does not explain the packing mechanism. | Defines perfect packing, situates the question, states the theorem, then explains the perimeter/area obstruction and the near-lattice remedy. | For a parameter improvement, retain both the gain and its cost. Explain the decisive construction in the introduction when the abstract already identifies the result without it. Do not transfer the endpoint t=1 or the starting index n₀=1 to the new theorem. |
+| T14, PDF p. 1 abstract; pp. 1–5 introduction, especially Theorem 0.3 on p. 3 | Uses the lower bound, previous construction and new polylogarithmic bound to show the improvement; fixes the infinite-dimensional operator setting. It gives no detailed matrix mechanism. | Supplies the quantitative obstruction and previous construction, states the new theorem, then develops the larger-matrix strategy and the resulting operator problem. | When a bound's value is unclear alone, a verified comparison can earn abstract space. The longer introduction serves this construction; it is not a preferred length for every paper. Do not call the new exponent optimal. |
+
+**Abstract takeaway:** choose enough quantitative context to show the contribution while keeping indispensable scope; a method sentence is optional. **Introduction takeaway:** expand the comparison into the actual mathematical obstacle and mechanism rather than repeating the bound with more adjectives. These two cases support targeted borrowing; they do not establish a uniform Tao opening template. Neither source's omission of a method from its abstract is a defect to repair.
+
 ## Source index
 
 Dates are first arXiv submissions; page anchors refer to the recorded inspected version. All twenty works are sole-authored by Terence Tao. T18 and T20 are surveys; the other eighteen are research papers/notes. Related papers are distinct works but not independent evidence of author-wide habits. There was no reserved unseen test paper.

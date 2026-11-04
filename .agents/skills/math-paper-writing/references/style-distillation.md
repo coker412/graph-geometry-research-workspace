@@ -71,6 +71,24 @@ For each source, retain a compact record, for example:
 
 Unknown fields stay unknown; do not invent dates, author contributions or quotations. Use stable page/section references or hash-bound text slices. Keep the record proportional to the corpus rather than creating empty files for every possible dimension.
 
+## Give abstracts and introductions a dedicated paired reading
+
+Allocate attention by editorial importance, not word count. For each work in a standard study, closely read its abstract and complete introduction as a pair, then check their selection and presentation against the main statements and relevant proof passages. This supplements the full-work reading; it does not replace it. Record actual coverage separately (abstracts, introductions, body connections), including absent abstracts or inaccessible sections. Twenty abstract/introduction pairs still count as twenty works, not forty independent samples. In small-sample mode apply the same paired reading to the available works.
+
+Look for decisions rather than a mandatory sentence pattern:
+
+| Part | What to distill |
+| --- | --- |
+| Abstract | Which result leads; which scope conditions survive compression; how significance is made concrete; whether a comparison or method earns its space; which secondary results, setup and proof details are left to the paper. |
+| Introduction | How the question becomes understandable; which literature comparisons explain the contribution; where results appear and how much setup they need; how motivation, examples and the actual proof mechanism connect; how technical detail and navigation are allocated. |
+| Their relationship | What is repeated to orient readers, what is expanded or deferred, and how both remain faithful to the same theorem. In particular, an omitted abstract detail is not permission to omit a necessary hypothesis or to generalize the conclusion. |
+
+Keep compact passage-level evidence in the existing structure report or source annotations: source locations, the editorial choice and its mathematical purpose, what the other part adds, and an exception or unknown. Compare across works and genres before inferring an author tendency. Report section-specific language observations separately from pooled prose statistics; do not turn a distinguished author's long abstract, detailed introduction or unusual ordering into a universal requirement.
+
+For new or updated profiles, give abstract decisions and introduction decisions separate, readily findable entries in the existing structure report and compact Writing-DNA document. Each needs supporting loci and use conditions, or an explicit statement that evidence is insufficient. Preserve the five-document format; no extra template pack or numerical importance weights are needed. When updating an older profile, state how many pairs were actually re-examined rather than implying that all twenty received this new analysis.
+
+Test a borrowed decision on the intended part using supported mathematical content. Check both fidelity and a specific expository purpose: an abstract should let the reader identify the result and scope without needing the introduction; an introduction should develop context or explanation rather than simply lengthen the abstract. Include a case where a method sentence or literature comparison should be omitted. Save the actual output and review in the existing application/evaluation record. Distillation examines published parts together; whole-paper composition still follows the user's body-first, introduction-later order.
+
 ## Six layers, adapted to mathematical papers
 
 1. **Language.** Measure prose separately from displays, citations and bibliographies where feasible. Record extraction/filtering rules. Compare relevant genres and sections, not just pooled words. Do not infer part of speech from untagged tokens or treat Chinese character thresholds as English sentence targets. Formula-induced fragmentation, common subject nouns and journal headings are confounders. For a small or noisy corpus, report qualitative observations and unavailable statistics honestly.
@@ -97,7 +115,7 @@ Distinguish the requested use before drafting:
 - **Full profile-guided drafting:** read all five synthesis documents, then read five complete source works closest to the new text's genre and topic. Use metadata to select them and prefer recent works among equally relevant matches. The upstream skill requires five full texts and fills shortages with the same genre on other topics. In this mathematical adaptation, if fewer than five suitable works are available, read those available and state the narrower evidence; do not pad with irrelevant texts. For a small-corpus profile, read its single consolidated document and available sources. Previously read material still present in the working context need not be mechanically reloaded.
 - **Targeted borrowing of a method or local revision:** read the profile's applicable layers and the passages supporting the selected decision. This is a lighter mathematical adaptation, not completion of the upstream full-profile workflow. The portable examples in `author-models.md` support this use; they do not replace an author's five synthesis documents and raw corpus for a full-profile claim.
 
-Translate the material into a short working selection: the relevant structure, two or three writing choices that solve this task, and the original passages that illustrate them. Use that selection to draft; do not paste the profile's metadata, confidence annotations or warnings into manuscript prose. Preserve mathematical meaning, existing notation, accepted abstracts and venue conventions.
+Translate the material into a short working selection: the relevant structure, two or three writing choices that solve this task, and the original passages that illustrate them. For an abstract or introduction, select the corresponding section-specific decisions and inspect their paired source passages; do not rely only on a whole-paper profile. Use that selection to draft; do not paste the profile's metadata, confidence annotations or warnings into manuscript prose. Preserve mathematical meaning, existing notation, accepted abstracts and venue conventions.
 
 When comparison is requested, distinguish **already covered**, **new useful decision**, **author-specific option**, and **not supported/rejected**. Add a general rule only if it changes a concrete decision, survives the target manuscript's constraints and has traceable support. Do not merge contradictory author preferences into an accumulating checklist. Profile changes should record which new source or explicit user choice changed the inference.
 

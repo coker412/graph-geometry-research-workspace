@@ -199,3 +199,25 @@ Introduction follow-up instruction snapshots (SHA-256):
 - math-paper-writing/SKILL.md: 01a37bd0d383973e048420e1497dddfdc2131eb5cb3ef803575a8470e0b7ddfd
 - math-paper-writing/references/exposition-and-structure.md: 4dcf2ae8226fa2a570a69f06e9bebf2a12945084588ddc64c57762fa692d5e13
 - math-paper-writing/references/delivery-checks.md: 39ce2e990f3a154b2ccf3b127a4136ec3e9c31eec06a995505fc22a57a2f20a3
+
+## E32 paired-distillation follow-up: abstract versus introduction
+
+**Scope and sources.** On 2026-11-04, reread the complete abstracts and introductions of Tao T07 (2202.03594v2, PDF pp. 1–2) and T14 (1805.11131v3, PDF pp. 1–5), checking their main statements and mechanism passages. Local PDFs and extracted texts matched the recorded SHA-256 values. Rendered pages inspected: T07 pp. 1–2; T14 pp. 1 and 3. The passage-level annotations are in the Tao structure report. This adds paired analysis for 2/20 existing works, not a new twenty-work distillation. The original DNA workflow remains unchanged; its mathematical adaptation supplies this focused update.
+
+**Observed decisions.** Both abstracts identify an improvement through quantitative context and retain consequential scope, while leaving their detailed mechanism to the introduction. Their introductions develop the reason for the improvement at different lengths. That supports a local choice about allocating information, not a universal requirement to include comparisons or to reproduce Tao's sentence forms. The earlier whole-paper annotations did not separately record this division of work; the profile now does.
+
+**Application task.** Using the complete supplied mathematical section in E31, write a standalone result-only abstract and a short introductory passage for a reader familiar with the spectral theorem. No novelty or literature comparison is supplied. This is an elementary composition exercise, not an introduction for a new research contribution. Borrow the allocation of information, not the source papers' mathematics or quantitative comparison.
+
+**Abstract output.** Let A be a real symmetric positive semidefinite n×n matrix, n≥2, whose kernel is spanned by the all-ones vector. The equation Ax=b is solvable exactly when b has zero mean. Its mean-zero solution is unique and satisfies ‖x‖₂≤λ₂⁻¹‖b‖₂, where λ₂ is the least positive eigenvalue of A.
+
+**Introductory output.** Consider Ax=b for a real symmetric positive semidefinite matrix A on Rⁿ, n≥2, whose kernel is spanned by the all-ones vector. This kernel has two roles: it restricts the allowable right-hand sides and leaves a constant undetermined in the solution. The natural formulation therefore pairs a zero-mean condition on b with a zero-mean normalization of x.
+
+On this subspace the equation has a unique solution. Expanding b in an orthonormal eigenbasis constructs it by dividing each coefficient by the corresponding positive eigenvalue. The same formula bounds its Euclidean norm by λ₂⁻¹‖b‖₂, where λ₂ is the least positive eigenvalue. This connects compatibility, the construction and its quantitative control in a single argument.
+
+**Review and controls.** The abstract states the setting, equivalence, normalization, uniqueness and norm bound without requiring the introduction. The introduction explains why those conditions occur and how the estimate is tied to the construction. Both agree with the supplied E31 body. The comparison sentence used in the source abstracts was deliberately not transferred: this task supplies no earlier result to compare. When asked whether to append the spectral-method sentence to the result-only abstract, retain the abstract unchanged; the requested result and scope are already recoverable, and the mechanism belongs in the accompanying introductory passage. When asked whether two pairs establish a Tao-wide rule, answer no and retain the 2/20 coverage label. These are actual same-context outputs and self-review, not an independent experiment or a measured readability improvement. No new general mathematical result or full learning manuscript is claimed.
+
+Paired-distillation follow-up instruction snapshots (SHA-256):
+
+- math-paper-writing/references/style-distillation.md: 997e92f143dbf53fb8125fc12ae97d7802e5fb883668dc4d1ec1ae40db4c9e08
+- math-paper-writing/references/profiles/tao/structure-patterns.md: 04012e1b8bf7df9ad7357a878f76ce8544e82e21e5aa50face7d014e7d4f614a
+- math-paper-writing/references/profiles/tao/Writing-DNA.md: 9ce88471c5b67d9a865ae2ba1bb0a161c1f90b20235ded1f3792d561e9fdd84e

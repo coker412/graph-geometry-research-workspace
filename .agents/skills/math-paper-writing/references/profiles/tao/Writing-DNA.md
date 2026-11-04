@@ -14,6 +14,15 @@
 
 These are repeated corpus observations with known family/genre dependencies. They have not been tested on unseen papers or by an independent reader.
 
+## Abstract and introduction decisions
+
+The [paired analysis](structure-patterns.md#abstract-and-introduction-paired-observations) currently re-examines T07 and T14, **2 of the 20 works**. Use these as local choices, not a twenty-paper recurrence claim:
+
+- **Abstract:** when a parameter range or bound is the contribution, select the result, indispensable scope and a useful verified comparison. Both examples leave the detailed mechanism to the introduction; do not automatically append a method sentence.
+- **Introduction:** develop the comparison into the mathematical obstacle and the actual construction or estimate that addresses it. T07 does this compactly; T14 needs a longer setup and construction. Adapt the amount of explanation to the new argument rather than copying either length.
+
+Check the paired source passages and the destination result before applying these choices. A result-only abstract remains appropriate when the user requests it or the comparison would add no useful information.
+
 ## Do not turn these into rules
 
 Do not imitate long abstracts, repeated verbal signatures, jokes, parenthetical density, or arbitrary notation. Do not import survey omissions into a research proof. T07 is a compact construction; T18/T20 are audience-specific surveys. A user's accepted short abstract and locked notation remain binding.
