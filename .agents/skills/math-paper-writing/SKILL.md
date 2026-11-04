@@ -5,15 +5,15 @@ description: Draft, revise, audit, or prepare mathematical manuscripts and submi
 
 # Mathematical Paper Writing
 
-Produce mathematical papers that readers can understand, check, and use, while preserving the established mathematics and the author's defensible voice. Mathematical fidelity is the first gate; then improve exposition, including emphasis, organization, useful detail, notation, and prose. Correctness alone is not a writing-quality verdict, and writing quality is distinct from the importance of the research result.
+Write mathematical papers that readers can understand, check, and use. Build coherent exposition from the first draft: choose a useful organization, explain the mathematical ideas, allocate detail, and write precise, natural prose. Mathematical fidelity constrains every stage; it is not the entire objective. Writing quality is also distinct from the importance of the research result.
 
 State established contributions directly at their supported strength, with necessary scope. Do not add a default limitations paragraph.
 
-## Resolve the editing baseline before writing
+## Identify whether to draft or revise
 
-Use the current request together with earlier accepted choices to identify the authoritative manuscript, requested change, protected content, approved style sample, and existing build/delivery locations. Keep this compact in working context or the project's existing state; do not create a new tracking file for each edit.
+For a **first draft from results or notes**, identify the mathematical source, intended reader, requested scope, accepted conventions and delivery location. Design the exposition using [the first-draft guidance](references/exposition-and-structure.md#from-results-to-a-first-draft). Supply the requested prose, statements and proofs, not only a plan. Notes establish the mathematics; their chronology, wording and organization need not become the paper's. An existing manuscript is not required.
 
-Inspect the relevant baseline before choosing alternatives. An explicit author preference overrides this skill's generic defaults; a formatting request does not reopen an accepted abstract, notation, or author declaration. Translate the applicable requirements into concrete edits and comparisons before the first write. At handoff, compare the actual diff and rendered artifact with that baseline, not merely with a generic checklist.
+For a **revision**, inspect the authoritative manuscript and inherited author decisions before choosing changes. Preserve approved content outside the requested scope; a formatting request does not reopen an accepted abstract, notation or declaration. Compare the actual diff and rendered result with that baseline. Keep clear existing text when no useful revision is needed; this does not limit first-draft composition or an authorized structural rewrite. Keep working decisions compact; do not create a tracking file for each task.
 
 ## Scope and mathematical boundaries
 
@@ -28,7 +28,7 @@ Follow applicable repository instructions for evidence, publication, paths, and 
 - Honor single-language requests; synchronize versions only within the authorized scope and report pre-existing divergence.
 - Preparing submission materials does not authorize submission.
 
-## Load guidance for the actual edit
+## Load guidance for the writing task
 
 Read only applicable references, once. Combine routes when an edit crosses their boundaries.
 

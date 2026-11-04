@@ -4,7 +4,7 @@ These are decision principles, not a universal house style. Adapt them to the pa
 
 ## What a writing improvement must accomplish
 
-First check mathematical fidelity against the authoritative text. Then judge exposition for the intended reader, separately from the novelty or importance of the result. Use these dimensions to diagnose a passage, not to award a universal score:
+Use the following dimensions to compose a first draft and to diagnose a revision, with mathematical fidelity checked against the source results throughout. Assess exposition for the intended reader separately from the novelty or importance of the result; these are not a universal score:
 
 | Dimension | Evidence to look for in the text |
 | --- | --- |
@@ -14,7 +14,20 @@ First check mathematical fidelity against the authoritative text. Then judge exp
 | Precision and usability | Notation is manageable, hypotheses and references are findable, and a reader can check or apply the result. |
 | Prose and economy | Sentences have clear subjects and relations, paragraphs develop their point, and length serves the reader. |
 
-These dimensions can conflict. A longer explanation may resolve a genuine obstacle; a shorter version may obscure it. Name the specific benefit and cost of a revision, with locations in both texts. Preserve the original when the alternative only sounds different. Word counts, readability formulas, compliance checklists, and model preferences do not establish reader understanding. A model can help locate defects and compare passages; reader preference and comprehension require reader evidence. For structured maintenance tests, see [evaluation-suite.md](evaluation-suite.md).
+These dimensions can conflict. A longer explanation may resolve a genuine obstacle; a shorter version may obscure it. For revisions, name the benefit and cost with locations in both texts; preserve the original when the alternative only sounds different. For first drafts, check whether the artifact actually explains the problem, develops the argument, and supplies its promised content. Word counts, readability formulas, compliance checklists, and model preferences do not establish reader understanding. For structured maintenance tests, see [evaluation-suite.md](evaluation-suite.md).
+
+## From results to a first draft
+
+Build the paper around the mathematical work the reader needs to understand. Use the available results and proofs to make these editorial choices while drafting:
+
+- **Select the focus.** Decide which result answers the paper's main question, how other results contribute, and what mathematical significance the sources actually support. Give the draft a specific title and a coherent purpose; avoid narrating the research chronology.
+- **Design the route.** Supply enough setup to understand the main statement, then arrange proof ingredients in a useful reading order. Design notation where none is fixed. Choose examples, diagrams, and lemma boundaries for a concrete explanatory role.
+- **Explain the ideas as they enter.** When an auxiliary object, estimate or construction first appears, show what it accomplishes. Write out the decisive link in the proof rather than leaving a list of techniques to expand later.
+- **Test the architecture in prose.** For substantial work, sketch the key statements and their dependencies, then write the hardest connection before polishing routine material. If that passage reveals a missing input, an awkward detour or an unsuitable lemma boundary, revise the structure and continue. Do not freeze every heading in advance or pause for approval at each ordinary drafting step.
+- **Allocate detail and write connected prose.** Develop unfamiliar or consequential steps; keep routine work proportionate to the audience. Each paragraph should advance the current mathematical question, and each technical detour should return to it.
+- **Complete the requested artifact.** Write the body, including the supplied proof work, and derive the abstract and introduction from the stable argument. A structural prototype helps when needed, but is an intermediate step. Use an existing style profile selectively from the outset when requested, rather than relying on a final cosmetic pass.
+
+Keep source-supported claims and their status intact throughout. Missing mathematics remains an identified gap; missing exposition is work to complete in the draft. Review the draft for its mathematical content and its effectiveness as a paper, without requiring an earlier prose version to compare against.
 
 ## Start with a reader and a central message
 
@@ -33,18 +46,19 @@ At each transition, ask:
 
 ## Organize around mathematical dependencies
 
-A common research-paper order is:
+Organize at three connected scales. These are drafting decisions, not three mandatory outlines or a quota of headings:
 
-1. problem, scope, and precise setup;
-2. definitions and notation needed downstream;
-3. examples, counterexamples, or preliminary results;
-4. lemmas that isolate the real obstacles;
-5. main proof;
-6. applications, and mathematically consequential boundary cases or open questions when relevant.
+| Scale | Decisions to make |
+| --- | --- |
+| Whole paper | What question connects the results? Where should the reader meet the main statements, necessary setup, proof mechanisms and consequences? What belongs in the main text or an appendix? |
+| Section and proof | What does this part establish, which inputs does it need, and where is its output used? How do construction, estimates, choices and closure fit together? Which technical detour earns a separate lemma? |
+| Paragraph and calculation | What is the immediate goal? Why introduce this object or choose this parameter now? What justifies the next displayed relation, and how does it advance the proof? |
 
-This is a proof-development order, not a mandatory reading order. Give enough setup to state the main result early when that helps the reader understand the subsequent machinery. State technical inputs before their use, with a clear pointer if their proofs come later. Choose the order for the actual contribution: a classification may start from its invariant, a construction from the object it builds, and an estimate from the quantity it controls. Do not force unrelated results into a single slogan.
+Logical dependence and reading order are different. A theorem may be stated before the lemmas proving it, provided its objects are already introduced; the proof must still receive the inputs it uses. When several premises are jointly necessary, retain that conjunction. A dependency diagram helps with branching, but a short argument needs no graph.
 
-Write a rapid structural prototype when the architecture is unclear. Then rewrite it. Drafting discovers the structure; revision makes the structure legible.
+Connect the scales: a calculation supplies a proof step, a proof step closes a module, and the module advances a stated result. A list of section titles or lemma numbers does not show these connections. Choose the route for the actual contribution: a classification may start from its invariant, a construction from the object it builds, and an estimate from the quantity it controls. Keep related material together and avoid forcing unrelated results into one slogan.
+
+For a substantial first draft, move from a compact structural prototype to the difficult connections, then complete the body and revisit the global arrangement. New local difficulties can require changes at the larger scales. A clear short argument can be composed directly; the aim is an effective paper, not a separate architecture document.
 
 ## Title and abstract
 

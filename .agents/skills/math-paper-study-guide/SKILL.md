@@ -41,9 +41,9 @@ Reconstructed motivation is one way to understand a choice, not the author's his
 
 Scale the structure to the task; a short argument may need only connected paragraphs. For substantial learning material in any language or requested medium, provide:
 
-1. **Main line:** the exact target and a small set of meaningful proof modules, each with input conditions, precise output, and next use. Group by mathematical work, not page boundaries or one node per formula.
-2. **Local dependencies:** show what each module actually uses, how hypotheses are met, and where source results or gaps enter. Distinguish logical dependence, prerequisite knowledge, module membership, and reading order. Jointly needed premises must remain a conjunction; separate arrows must not suggest that each premise alone suffices.
-3. **Derivations:** teach prerequisites before first use and expand the decisive calculations beside the steps they explain. State objects, parameter ranges and dependencies in actual mathematical form; prose explains their purpose.
+1. **Whole-edition route:** connect the exact problem and result to a small set of meaningful proof modules, each with input conditions, precise output and next use. Arrange the reader's path through them, including prerequisites needed at each point; do not copy the source's page order automatically.
+2. **Module and proof structure:** explain the local target, obstacle, construction or estimate, and closing step. Show how hypotheses are met and how each output returns to the main line. Distinguish logical dependence, prerequisite knowledge and reading order; jointly needed premises remain a conjunction.
+3. **Paragraphs and calculations:** teach the operation needed at the point of use, expand decisive calculations, and connect their output back to the module's goal. State objects, parameter ranges and dependencies mathematically. Group by meaningful work, not one node or heading per formula.
 
 In a PDF, use a proof overview, navigable sections, and local derivations or clearly linked appendices. Give a compact diagram when branching matters; a short linear argument can use an implication chain. If an interactive reader is requested, preserve the same dependencies when folding modules and provide usable navigation and diagram controls. Required PDF explanations must not be deferred to a website or chat.
 

@@ -26,6 +26,8 @@ A **hard failure** changes mathematics, fabricates evidence or declarations, dam
 
 Use the dimensions in [exposition-and-structure.md](exposition-and-structure.md#what-a-writing-improvement-must-accomplish). First compare mathematics and protected content; only surviving candidates enter the quality comparison. Retain original and revised passages, the intended audience, and enough adjacent context to assess the edit. Report each relevant dimension as improved, unchanged, worse, or unresolved, with a passage-level reason. A fidelity pass does not imply a quality pass. Do not add these judgments into a single score.
 
+For composition tests, supply mathematical notes without an existing prose baseline. Assess the actual draft against those notes and its intended reader: substantive organization, explanation, local reasoning and completion of the requested artifact. A before/after wording comparison is not required; an accurate list of inputs is not a completed draft.
+
 Include clean originals, cases needing expansion, and cases needing structural change. Use authentic authorized passages as well as synthetic development fixtures; label them. Preserve unsuccessful edits and ties. Selected successes are demonstrations, not an estimated success rate.
 
 For a stronger comparison, conceal which version used the skill, vary presentation order, and give the reader a task grounded in the passage: locate a hypothesis, explain a parameter choice, reconstruct a connection, or apply the stated result. Check the answer against the source. Record the reader's relevant background and separate comprehension from preference. Use distinct readers or comparable matched passages when prior exposure would contaminate the comparison. Do not infer understanding from speed alone.
@@ -302,6 +304,18 @@ Automated checks can test protected tokens, links, builds, and supplied calculat
 
 **Soft failure:** Produces only a plan, renames fixed objects, or adds headings and summaries without repairing reading order.
 
+## E31 — Compose a first draft without a prose baseline
+
+**Fixture:** The user supplies unordered mathematical facts and proof steps, with the required evidence and author approval for the requested draft, but no manuscript. For a real symmetric positive semidefinite matrix A on R^n, n≥2, the kernel is spanned by the all-ones vector. The spectral decomposition gives a positive least eigenvalue λ₂ on its orthogonal complement. Supplied steps establish that Ax=b is solvable exactly for mean-zero b, that the mean-zero solution is unique, and that its norm is at most λ₂⁻¹ times the norm of b. Write a complete short research-style section, including statement and proof, for a mathematically trained reader.
+
+**Required behavior:** Choose a coherent title and order, introduce the problem and the kernel's role, state the result, and write the supplied spectral argument with the normalization and norm estimate. Return actual prose, not an outline or a request for an existing draft. Evaluate the output's exposition as well as its mathematical fidelity.
+
+**Hard failure:** Claims A is invertible on all of R^n, omits the compatibility or normalization condition, or invents novelty or literature.
+
+**Soft failure:** Only restates the input list, asks for a prose baseline unnecessarily, or leaves the decisive argument for a later writing pass.
+
+**Architecture variant:** Explain the whole-section route, the internal proof dependencies and the purpose of its spectral calculation. Then adapt the entry to a learning text using the supplied example A=((1,-1),(-1,1)), b=(1,-1), with the spectral theorem accepted as background. Require an actual calculation and a return to the general result; do not confuse stating the theorem early with proving it without its inputs. Treat this as a small-scale architecture test, not a whole-paper trial.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:
@@ -313,6 +327,6 @@ Before calling a substantial skill revision validated:
 5. rerun affected cases after repair;
 6. avoid a claim of independent validation when the maintainer evaluated its own output.
 
-For changes intended to improve exposition, also record the actual original/revised comparisons for affected quality cases, including ties or regressions. If only same-context walkthroughs were performed, report that limited completion and leave fresh-context and reader validation open.
+For changes intended to improve exposition, record the actual drafts or original/revised comparisons for affected cases, including ties or regressions where applicable. Include first-draft tasks with no prose baseline when changing drafting guidance. If only same-context walkthroughs were performed, report that limited completion and leave fresh-context and reader validation open.
 
 This suite does not certify mathematics in a paper. It tests whether the skill preserves the stated writing and integrity contract under representative pressure.
