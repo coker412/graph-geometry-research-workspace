@@ -146,6 +146,7 @@ required_files=(
   "agents/instructions/queue-and-escalation.md"
   "agents/instructions/paper-writing.md"
   "README.md"
+  "README.zh-CN.md"
   "TEACHER_FRAMEWORK_HANDOFF.md"
   "TEACHER_SETUP_README.md"
   "RETHLAS使用教程.md"

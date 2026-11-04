@@ -180,6 +180,7 @@ copy_file "agents/instructions/queue-and-escalation.md" "agents/instructions/que
 copy_file "agents/instructions/paper-writing.md" "agents/instructions/paper-writing.md"
 copy_file ".gitignore" ".gitignore"
 copy_file "README.md" "README.md"
+copy_file "README.zh-CN.md" "README.zh-CN.md"
 copy_file "TEACHER_FRAMEWORK_HANDOFF.md" "TEACHER_FRAMEWORK_HANDOFF.md"
 copy_file "TEACHER_SETUP_README.md" "TEACHER_SETUP_README.md"
 copy_file "RETHLAS使用教程.md" "RETHLAS使用教程.md"

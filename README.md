@@ -1,5 +1,7 @@
 # Geometry and Mathematics Research Workspace
 
+**English** | [简体中文](README.zh-CN.md)
+
 Continue mathematical research across sessions with a reviewable record of the evidence.
 
 [![Public workspace checks](https://github.com/coker412/graph-geometry-research-workspace/actions/workflows/ci.yml/badge.svg)](https://github.com/coker412/graph-geometry-research-workspace/actions/workflows/ci.yml)
