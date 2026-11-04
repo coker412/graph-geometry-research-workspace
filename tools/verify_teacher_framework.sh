@@ -107,6 +107,7 @@ public_skill_files=(
 
 required_files=(
   "tools/tests/test_paper_tools.py"
+  "tools/tests/writing-quality.md"
   "examples/math-paper-skills/01-conditional-abstract.md"
   "examples/math-paper-skills/02-proof-overview.md"
   "examples/math-paper-skills/03-hessian-study.md"

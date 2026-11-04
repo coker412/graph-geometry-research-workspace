@@ -18,4 +18,6 @@ Check, in proportion to the task:
 10. cover letters and referee responses against the manuscript, decision letter, and current venue requirements;
 11. changed LaTeX and all affected versions with the repository's build procedure.
 
+After fidelity checks, compare the original and revision on the relevant [exposition dimensions](exposition-and-structure.md#what-a-writing-improvement-must-accomplish). Identify the reading difficulty actually resolved and any cost in length, notation, or navigation. A safe but unhelpful rewrite is not an improvement. Keep ties and regressions visible; revert gratuitous changes. This is editorial review unless actual reader evidence was collected.
+
 For file edits, report changed paths, checks run, unresolved mathematical or bibliographic risks, and the preserved evidence status. A successful build certifies typesetting, not mathematics.

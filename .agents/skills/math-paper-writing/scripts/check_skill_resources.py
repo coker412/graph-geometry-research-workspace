@@ -81,8 +81,8 @@ def main(skill_root: Path) -> int:
     if evaluation.is_file():
         evaluation_text = evaluation.read_text(encoding="utf-8")
         cases = CASE_RE.findall(evaluation_text)
-        # E01–E15: inherited; E16–E21: distillation; E22–E24: direct writing.
-        expected = [f"E{number:02d}" for number in range(1, 25)]
+        # E01–E24: inherited; E25–E30: exposition quality after fidelity.
+        expected = [f"E{number:02d}" for number in range(1, 31)]
         if cases != expected:
             failures.append(f"evaluation cases are incomplete or unordered: {cases}")
         for case in expected:
@@ -117,7 +117,7 @@ def main(skill_root: Path) -> int:
 
     print(
         f"Skill resource checks passed: {len(markdown_files)} Markdown files, "
-        "all references routed, 24 evaluation cases complete."
+        "all references routed, 30 evaluation case definitions complete (not behavioral passes)."
     )
     return 0
 

@@ -122,6 +122,26 @@ These are institutional policies and practical guidance, not models of an indivi
 
 ## Decision traceability
 
+### 2026-11-04 exposition-quality maintenance
+
+The quality dimensions in `exposition-and-structure.md` are a working synthesis for editing, not a validated scale or a claimed consensus ranking. Mathematical fidelity remains a prerequisite. The source principles already present were made actionable through original/revised comparisons in E25–E30; the borrowed projects below were inspected, not installed or executed.
+
+Additional targeted reading:
+
+- Tao, [Motivate the paper](https://terrytao.wordpress.com/advice-on-writing-papers/motivate-the-paper/), main post: connect local work to its purpose and use a simpler case where useful. [Give appropriate amounts of detail](https://terrytao.wordpress.com/advice-on-writing-papers/give-appropriate-amounts-of-detail/), main post: distribute detail by importance and reader familiarity. [Don't overoptimise](https://terrytao.wordpress.com/advice-on-writing-papers/dont-overoptimise/), discussion of brevity: compression can make exposition worse. Implemented in proof overviews, detail allocation, and retaining clear originals.
+- Igor Pak, [How to Write a Clear Math Paper](https://www.math.ucla.edu/~pak/papers/how-to-write1.pdf), Sections 1.1–1.3: clarity concerns how readers encounter and use a paper, not phrasing alone. His deliberately false introductory statement is a cautionary example, not a mathematical input. This supports treating clarity and correctness separately.
+
+Comparable projects inspected at pinned versions:
+
+| Project and inspected locus | Useful comparison and adaptation boundary |
+| --- | --- |
+| [Orchestra ml-paper-writing](https://github.com/orchestra-research/ai-research-skills/blob/773a52944ba4747a18bd4ae9ade53fff041adcbc/20-ml-paper-writing/ml-paper-writing/SKILL.md), Narrative Principle | Connect claims, support and significance. Adapt to theorem relationships; do not impose empirical-paper sections, fixed abstract formulas or routine approval pauses. |
+| [slark-prime ml-paper-writing](https://github.com/slark-prime/ml-paper-writing/blob/9146d4023e0e632396725e796fcc3a40637e80ef/SKILL.md), mission and organization | Give supported contributions appropriate prominence and choose representations for their purpose. Do not adopt acceptance/marketing as the objective, fixed module counts or its additional planning objects. |
+| [Lorena Barba's sciwrite](https://github.com/labarba/sciwrite/blob/347306c514619fa2806e96c8e0aa1c2db162e76f/skills/sciwrite/SKILL.md), Pass 3 and Reporting findings | Prioritize consequential paragraph problems and contextual before/after comparisons. Do not impose sentence-length thresholds or Nature abstract conventions on mathematics. |
+| [K-Dense scientific-writing](https://github.com/K-Dense-AI/claude-scientific-skills/blob/a25cf9ec00e2745d03f8704acf6f6919694ccd9a/skills/scientific-writing/SKILL.md), evidence binding and bundled tools | Useful separation of evidence checks and prose. Our existing mathematical checks already cover the relevant need; no additional registries or clinical-reporting workflow imported. |
+
+No upstream code or instruction text from these four projects was bundled. Their existence, popularity, or design does not demonstrate better writing outcomes. The comparison informed scoped editorial choices, not a competitive performance claim.
+
 The identifiers below are maintenance handles. They map source-derived decisions to their operational implementation; they are not citations for a research paper.
 
 | ID | Decision | Main source basis | Implemented in |

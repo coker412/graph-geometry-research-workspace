@@ -59,6 +59,7 @@ copy_file "tools/research_tasks.py" "tools/research_tasks.py"
 copy_file "tools/tests/test_research_tasks.py" "tools/tests/test_research_tasks.py"
 copy_file "tools/tests/test_setup.py" "tools/tests/test_setup.py"
 copy_file "tools/tests/test_paper_tools.py" "tools/tests/test_paper_tools.py"
+copy_file "tools/tests/writing-quality.md" "tools/tests/writing-quality.md"
 
 # Publish only the reviewed, reusable writing skill resources.
 copy_file ".agents/skills/math-paper-writing/scripts/pdf_pages.py" ".agents/skills/math-paper-writing/scripts/pdf_pages.py"

@@ -5,7 +5,7 @@ description: Draft, revise, audit, or prepare mathematical manuscripts and submi
 
 # Mathematical Paper Writing
 
-Produce clear mathematical papers while preserving the established mathematics and the author's defensible voice.
+Produce mathematical papers that readers can understand, check, and use, while preserving the established mathematics and the author's defensible voice. Mathematical fidelity is the first gate; then improve exposition, including emphasis, organization, useful detail, notation, and prose. Correctness alone is not a writing-quality verdict, and writing quality is distinct from the importance of the research result.
 
 State established contributions directly at their supported strength, with necessary scope. Do not add a default limitations paragraph.
 
@@ -45,7 +45,7 @@ Read only applicable references, once. Combine routes when an edit crosses their
 | Defensive contribution statements, repetitive caveats, or vague self-limitation | Read [anti-defensive-interface.md](references/anti-defensive-interface.md), then use the original `anti-defensive-writing` skill directly |
 | Detailed Chinese learning edition | Use the separate `math-paper-study-guide` skill; do not impose its teaching structure on a manuscript |
 
-For substantial drafting, organize from mathematical dependencies outward and write the abstract and introduction once the body is stable. For existing text, make the smallest change that solves the requested writing problem. Proof exposition must keep the target and persistent objects visible, return from technical detours, and factor long arguments at meaningful interfaces; the exposition reference gives the checks.
+For substantial drafting, use mathematical dependencies to design the reader's route and write the abstract and introduction once the body is stable. For existing text, diagnose the actual reading difficulty before editing; make a local repair or reorganize the affected passage as needed. Compare the revision with the original for a specific benefit and cost. Keep clear text unchanged when an alternative brings no demonstrable benefit. The exposition reference gives the quality dimensions and proof-organization checks.
 
 Use author profiles, `anti-defensive-writing` and Humanizer only as the task needs; preserve mathematical meaning and accepted author choices.
 

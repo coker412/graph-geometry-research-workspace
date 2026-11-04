@@ -53,6 +53,8 @@ For a whole-paper or structural task, use the first-draft procedure and completi
 
 Include optional reconstruction questions or nearby examples only where they test a real bottleneck, with worked guidance and reference explanations in the artifact. Never withhold an explanation until the reader answers, or replace untaught reasoning with an exercise. Track demonstrated understanding separately from supplied teaching; silence, paraphrase, and finished checklists do not establish mastery.
 
+For a useful learning check, ask for an operation the explanation has taught: choose a parameter, verify an input hypothesis, or carry out a nearby calculation. Provide its worked answer and point to the teaching that supports it. An assistant's successful calculation checks the explanation's coverage, not the human reader's understanding; do not turn it into a mastery score.
+
 Use a topic-specific PDF filename and matching editable entry point, such as `<论文主题>-中文学习稿.pdf` or `<topic>-study-guide.pdf`, unless the user has chosen another convention. Reuse the owning directory and build location. Inspect a named successful example's difficult passages before following its teaching approach; do not copy its page count or headings.
 
 The default cycle is **first complete PDF → reader feedback → revision**. Put paper-specific explanations back in that edition. Refine shared guidance only when feedback supports a transferable decision, consolidating existing advice rather than adding a universal rule or a separate feedback log for each question. A proposed explanation remains untested until there is relevant reader evidence.

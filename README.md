@@ -11,6 +11,8 @@ It supports Riemannian geometry, geometric analysis, discrete and graph geometry
 
 [Quick start](#quick-start) · [Example](#a-complete-example) · [Features](#features) · [Research modes](#research-modes) · [Evidence and publication](#evidence-and-publication)
 
+Writing-quality maintenance keeps mathematical fidelity as the first gate, then compares exposition dimensions rather than assigning an automatic quality score. [Development examples](tools/tests/writing-quality.md) include revisions and an unchanged original; they are maintainer self-review, not human-reader validation.
+
 ## Who this is for
 
 Individual researchers and small teams working on problems that require several approaches, repeated counterexample tests, or many sessions. The workspace distinguishes candidate proofs from computational observations, published results, and researcher acceptance. A queue can rotate among several problems or run one problem in a dedicated background session.

@@ -2,6 +2,20 @@
 
 These are decision principles, not a universal house style. Adapt them to the paper, audience, field, and target venue. Their source basis and known tensions are recorded in [sources.md](sources.md).
 
+## What a writing improvement must accomplish
+
+First check mathematical fidelity against the authoritative text. Then judge exposition for the intended reader, separately from the novelty or importance of the result. Use these dimensions to diagnose a passage, not to award a universal score:
+
+| Dimension | Evidence to look for in the text |
+| --- | --- |
+| Purpose and emphasis | The problem and mathematical payoff are identifiable; central results have appropriate prominence and context. |
+| Organization and continuity | Statements, explanations, and proof phases appear in a usable order; transitions carry an actual mathematical relation. |
+| Explanatory depth | Difficult choices and decisive steps receive enough explanation; standard material does not bury them. |
+| Precision and usability | Notation is manageable, hypotheses and references are findable, and a reader can check or apply the result. |
+| Prose and economy | Sentences have clear subjects and relations, paragraphs develop their point, and length serves the reader. |
+
+These dimensions can conflict. A longer explanation may resolve a genuine obstacle; a shorter version may obscure it. Name the specific benefit and cost of a revision, with locations in both texts. Preserve the original when the alternative only sounds different. Word counts, readability formulas, compliance checklists, and model preferences do not establish reader understanding. A model can help locate defects and compare passages; reader preference and comprehension require reader evidence. For structured maintenance tests, see [evaluation-suite.md](evaluation-suite.md).
+
 ## Start with a reader and a central message
 
 Choose a concrete target reader. Estimate what that reader already knows, what must be defined, which examples are familiar, and where the first genuine difficulty occurs.
@@ -28,7 +42,7 @@ A common research-paper order is:
 5. main proof;
 6. applications, and mathematically consequential boundary cases or open questions when relevant.
 
-This is a default, not a template to impose. Reorder when the reader benefits, but do not require the reader to use an object before learning what it is.
+This is a proof-development order, not a mandatory reading order. Give enough setup to state the main result early when that helps the reader understand the subsequent machinery. State technical inputs before their use, with a clear pointer if their proofs come later. Choose the order for the actual contribution: a classification may start from its invariant, a construction from the object it builds, and an estimate from the quantity it controls. Do not force unrelated results into a single slogan.
 
 Write a rapid structural prototype when the architecture is unclear. Then rewrite it. Drafting discovers the structure; revision makes the structure legible.
 
@@ -64,6 +78,8 @@ There is no default requirement for a limitations paragraph. Lead with the mathe
 
 "Sell" the paper by making its exact contribution visible, not by adding praise. Compare with previous work only after checking the comparison. If the formal theorem is too technical for the introduction, give a useful special case or a clearly marked informal statement, then point to the precise version.
 
+Distinguish the main result, the mechanism that makes it possible, and supporting consequences. Explain significance through an actual mathematical relation: what can now be classified, constructed, estimated, or deduced from the supplied results. A list of theorem numbers does not do this work. Do not invent a historical obstacle or applications to manufacture importance. Mention an absent hypothesis when a verified comparison or natural mathematical question makes its absence informative.
+
 ## Transfer arguments and informal overviews
 
 ### Explain a transfer at the point where the old argument changes
@@ -93,6 +109,8 @@ State a theorem before proving it, with enough local context to understand its h
 Use lemmas to factor a proof when they create clear interfaces or isolate distinct ideas. Avoid both extremes: a monolithic proof with hidden structure and a parade of trivial lemmas that obscures the main argument.
 
 Before a difficult proof, explain the strategy and name the obstacle. During the proof, keep the current goal visible at genuine changes of phase. After a key lemma, state how it advances the main theorem when the connection is not immediate.
+
+A proof overview should reveal a decisive relationship, not only name techniques or list sections. For an estimate this may be the term that absorbs an error; for a gluing argument it may be the compatibility supplied on overlaps. Use the mechanism actually in the source. Allocate detail by the reader's difficulty: expand the unfamiliar choice or implication, and keep routine steps concise without hiding dependencies. A research paper and a beginner's learning edition need different amounts of expansion.
 
 Write calculations in the direction a reader can follow. If a computation is long and unavoidable, explain its inputs, intended output, and internal checkpoints. Never use a proof-ending symbol to conceal a missing argument.
 
@@ -129,6 +147,8 @@ Read prose once while mentally replacing substantial formulas with placeholders.
 ## Natural mathematical prose
 
 Prefer accurate, direct sentences. Vary sentence length and structure enough to avoid mechanical rhythm, but keep parallel structure for parallel mathematics. Repeat the mathematical noun when a pronoun could refer to several objects.
+
+When a paragraph feels disconnected, inspect the mathematical subject and purpose of each sentence. Connect established information to the next new point, and separate genuinely different jobs when needed. A transition word cannot replace a missing implication. Retain a natural sentence rhythm rather than compressing several readable steps into one dense sentence.
 
 Avoid:
 

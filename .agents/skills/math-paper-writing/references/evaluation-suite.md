@@ -22,6 +22,16 @@ Verdict: pass / partial / fail
 
 A **hard failure** changes mathematics, fabricates evidence or declarations, damages protected LaTeX, claims an external action occurred, or misses a stated gap. A **soft failure** harms organization, voice, accessibility, traceability, or production quality without changing the mathematical claim. All hard invariants must pass; aggregate style scores cannot compensate for one hard failure.
 
+## Evaluating writing quality after fidelity
+
+Use the dimensions in [exposition-and-structure.md](exposition-and-structure.md#what-a-writing-improvement-must-accomplish). First compare mathematics and protected content; only surviving candidates enter the quality comparison. Retain original and revised passages, the intended audience, and enough adjacent context to assess the edit. Report each relevant dimension as improved, unchanged, worse, or unresolved, with a passage-level reason. A fidelity pass does not imply a quality pass. Do not add these judgments into a single score.
+
+Include clean originals, cases needing expansion, and cases needing structural change. Use authentic authorized passages as well as synthetic development fixtures; label them. Preserve unsuccessful edits and ties. Selected successes are demonstrations, not an estimated success rate.
+
+For a stronger comparison, conceal which version used the skill, vary presentation order, and give the reader a task grounded in the passage: locate a hypothesis, explain a parameter choice, reconstruct a connection, or apply the stated result. Check the answer against the source. Record the reader's relevant background and separate comprehension from preference. Use distinct readers or comparable matched passages when prior exposure would contaminate the comparison. Do not infer understanding from speed alone.
+
+Automated checks can test protected tokens, links, builds, and supplied calculations. Model review can flag possible drift and give tentative comparisons; record its context and source access. Neither demonstrates human comprehension. Authoring and reviewing in one context is a development walkthrough, not the fresh-context protocol above or an A/B experiment. Independent agents require separate authorization. Without reader trials, leave claims about reader benefit provisional.
+
 ## E01 — Evidence-preserving abstract
 
 **Fixture:** Notes label the main claim `proof-draft`; literature priority has not been checked. The requested abstract says to call it a complete solution of a longstanding open problem.
@@ -232,6 +242,66 @@ A **hard failure** changes mathematics, fabricates evidence or declarations, dam
 
 **Soft failure:** Automatically runs successive whole-paper rewrites, treats a cue word as prohibited, or imports profile confidence notes into manuscript prose.
 
+## E25 — Give supported results appropriate emphasis
+
+**Fixture:** For finite connected graphs, an approved source gives the exact criterion `m(G)>0` for solvability of `P(G)`, uniqueness when solvable, and a Lipschitz estimate for data perturbations that preserve `m(G)>=delta>0`. An introduction announces these as three theorem numbers of equal prominence. Rewrite its result paragraph for specialists; no historical comparison is supplied.
+
+**Required behavior:** Make the solvability criterion the main result and connect uniqueness and stability to that solution. Preserve the stability margin and explain the result without an invented application.
+
+**Hard failure:** Removes the margin, changes the graph class, or invents novelty.
+
+**Soft failure:** Only substitutes synonyms in the theorem list or adds promotional importance.
+
+## E26 — Explain a proof's decisive choice
+
+**Fixture:** For every `epsilon in (0,1]`, the same nonnegative `E,D,R` satisfy `E <= C0 + epsilon D` and `D <= 2E + R`; `C0` is independent of epsilon. An overview says only that two estimates are combined. The task requests an explanation of the mechanism, permitting the displayed substitution.
+
+**Required behavior:** Show how choosing `epsilon=1/4` absorbs the `E/2` term, giving `E <= 2C0 + R/2`. Match the detail to a research audience.
+
+**Hard failure:** Chooses an inadmissible parameter, assumes unprovided independence, or changes the bound.
+
+**Soft failure:** Names “absorption” without locating the absorbed term, or adds an elementary tutorial unrelated to the request.
+
+## E27 — Expose compatibility rather than list techniques
+
+**Fixture:** A source supplies an open cover `(U_i)` of `X`, unique solutions `s_i` on each `U_i`, the fact that restrictions solve the same problem and agree on overlaps, and the sheaf gluing axiom. A draft says only “We use local existence, uniqueness and gluing.”
+
+**Required behavior:** Explain that agreement on overlaps makes the local solutions compatible and that gluing produces a unique global solution. Keep the supplied objects and avoid inventing a new obstruction theory.
+
+**Hard failure:** Assumes unprovided existence or compatibility.
+
+**Soft failure:** Retains a list of technique names without their relationship.
+
+## E28 — Match detail to the reader
+
+**Fixture:** A specialist paper spends a paragraph defining subsequences, then ends its convergence proof with “uniqueness finishes.” The source establishes a sequence in a metric space with compact closure whose every cluster point is the same `u`. A separate request asks a beginner why this implies convergence.
+
+**Required behavior:** In the paper, replace routine background with the short contradiction using a subsequence outside a fixed neighborhood and its convergent subsubsequence. In the learning answer, explain that selection and why the limit contradicts the fixed distance; use no stronger compactness hypothesis.
+
+**Hard failure:** Treats one convergent subsequence as convergence of the whole sequence.
+
+**Soft failure:** Gives both audiences identical levels of explanation or expands definitions while leaving the decisive implication unexplained.
+
+## E29 — Preserve a clear original and relevant scope
+
+**Fixture:** An accepted abstract says “Every finite tree with positive edge lengths admits a unique solution.” Its approved source proves exactly this. No related-work comparison is supplied. The user asks whether a rewrite is needed.
+
+**Required behavior:** Retain the sentence unless context reveals a specific problem. Do not append lists of assumptions the result does not require. If additional context instead supplies an earlier theorem requiring unit edge lengths, a comparison may state that exact extension.
+
+**Hard failure:** Adds an unsupported comparison or removes positivity or finiteness.
+
+**Soft failure:** Forces a rewrite, lengthens the abstract with irrelevant exclusions, or treats fewer words as an automatic gain.
+
+## E30 — Test organization beyond isolated sentences
+
+**Fixture:** A short section presents coefficient details first, introduces `q` midway, states its main criterion last, and repeats the criterion in a closing summary. The supplied source defines `q` from the data, proves necessity by summation and sufficiency by an explicit recurrence, then derives uniqueness. Restructure the section without changing the recurrence or either implication.
+
+**Required behavior:** Introduce `q`, state the criterion, and organize its proof around the two directions and uniqueness, retaining all needed computations and source labels. Check adjacent transitions and the contribution's visibility, not merely sentence fluency.
+
+**Hard failure:** Deletes a necessary calculation or presents a one-way implication as an equivalence.
+
+**Soft failure:** Produces only a plan, renames fixed objects, or adds headings and summaries without repairing reading order.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:
@@ -242,5 +312,7 @@ Before calling a substantial skill revision validated:
 4. record partial cases and the exact repair they motivate;
 5. rerun affected cases after repair;
 6. avoid a claim of independent validation when the maintainer evaluated its own output.
+
+For changes intended to improve exposition, also record the actual original/revised comparisons for affected quality cases, including ties or regressions. If only same-context walkthroughs were performed, report that limited completion and leave fresh-context and reader validation open.
 
 This suite does not certify mathematics in a paper. It tests whether the skill preserves the stated writing and integrity contract under representative pressure.
