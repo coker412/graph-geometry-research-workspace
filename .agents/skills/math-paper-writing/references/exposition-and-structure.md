@@ -78,7 +78,7 @@ Do not put proof details, undefined notation, or claims absent from the body int
 
 ## Introduction
 
-Treat the introduction as a substantial piece of mathematical exposition. An early draft can test the paper's focus and architecture; reconcile the final version with the stable body. Do not postpone all thinking about motivation until the end.
+Treat the introduction as a substantial piece of mathematical exposition. In whole-paper drafting, write it after the body has stable main statements and a developed proof structure. Decide the question, contribution and reader's route during initial planning; those decisions need not be written as an introduction. Then compose the introduction from the actual results and argument, and check it against the body. If the user requests only an introduction or explicitly wants an early draft, work from the available source material and identify any unresolved dependencies rather than requiring an entire manuscript first.
 
 **Compose from concrete anchors.** Locate the main statement and scope, the proof passage carrying the central idea, and the closest verified literature relevant to the comparison. Choose a route that explains the question, what the result changes, and how the argument achieves it. Write connected prose; a bibliography tour followed by a list of theorems is not enough. Keep anchors in the existing working context or review notes, not a mandatory new file. If comparison evidence is missing, draft the supported mathematics and report the missing comparison separately; do not invent a gap.
 
