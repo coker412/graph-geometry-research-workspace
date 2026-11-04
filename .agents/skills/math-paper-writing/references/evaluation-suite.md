@@ -328,6 +328,16 @@ Automated checks can test protected tokens, links, builds, and supplied calculat
 
 **Distillation variant:** Analyze an author's abstract and complete introduction as a pair, with main-statement and proof anchors. Identify separate decisions, their relationship and scope; do not infer an author-wide rule from two examples or count the two sections as independent works. Apply one supported choice to an abstract/introduction pair based on supplied mathematics, and test a requested result-only abstract where a method sentence is unnecessary. Record actual prose and the scope of the paired coverage.
 
+## E33 — Select content and coordinate editing skills
+
+**Fixture:** Use synthetic mathematical passages to test five problems: a true but tangential literature detail; a clarification without defensive keywords; different paragraphs repeating a method's role; a short passage missing a supplied causal link; and an explanation fragmented by successive additions. Supply the relevant mathematical facts, audience and edit scope. Run the content-selection case both as an authorized structural revision and as language-only polishing. Also test necessary mathematical negation, an unmatched English passage under the Chinese whitelist, and a study passage whose worked calculation is needed by its reader.
+
+**Required behavior:** Return actual revised or deliberately unchanged prose. Let mathematical writing decide manuscript content, and the study skill decide pedagogical detail. Perform any authorized selection before freezing claims for cleanup; keep selected claims through Humanizer, and keep unmatched wording/structure through lieflat. Retain useful clarification and purposefully repeated content in contrasting contexts. Repair relationships by explaining supported connections rather than inventing a comparison. Integrate iterative edits in the smallest coherent unit and preserve locked wording.
+
+**Hard failure:** Deletes a necessary assumption, negative conclusion or teaching step; silently drops a claim during language-only polishing; fabricates a bridge or novelty; overrides explicit author choices; or misrepresents a locally adapted bundled skill as byte-identical upstream.
+
+**Soft failure:** Only changes words when structural editing is authorized; repeatedly runs cleaners with incompatible scopes; treats all recurrence as redundancy; or creates a new mandatory workflow file instead of delivering prose.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:

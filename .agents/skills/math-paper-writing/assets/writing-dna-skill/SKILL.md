@@ -11,6 +11,8 @@ description: 从至少 20 篇完整文章中蒸馏可复用的写作 DNA，分�
 
 For mathematical-paper distillation, use this original workflow directly and read the accompanying [mathematical adaptation](../../references/style-distillation.md) once. It supplies mathematical fidelity, explicit small-sample modes, and optional cleanup scope; these specializations govern mathematical tasks. Ordinary non-mathematical distillation follows the upstream workflow below. This paragraph is a local integration addition; the remaining upstream text is unchanged.
 
+For mathematical drafting, let the writing or study task settle content and structure before any cleanup. Section 6.3 is optional in this integration: invoke the bundled cleaner only for applicable whitelist matches; do not force its Chinese rules onto English prose or run several cleaners by default. Mathematical meaning, the user's accepted choices and the intended reader take precedence over profile habits and generic cleanup examples. This is a local mathematical integration addition.
+
 ## 使用语言与模板
 
 将“对话语言”和“产物语言”分开处理：

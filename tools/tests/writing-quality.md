@@ -221,3 +221,75 @@ Paired-distillation follow-up instruction snapshots (SHA-256):
 - math-paper-writing/references/style-distillation.md: 997e92f143dbf53fb8125fc12ae97d7802e5fb883668dc4d1ec1ae40db4c9e08
 - math-paper-writing/references/profiles/tao/structure-patterns.md: 04012e1b8bf7df9ad7357a878f76ce8544e82e21e5aa50face7d014e7d4f614a
 - math-paper-writing/references/profiles/tao/Writing-DNA.md: 9ce88471c5b67d9a865ae2ba1bb0a161c1f90b20235ded1f3792d561e9fdd84e
+
+## E33: content selection, integration and skill handoffs
+
+**Method.** Same-context development on 2026-11-04. The following synthetic inputs supply the mathematics and scope; outputs were written and reviewed by the maintainer. No private manuscript or teacher annotation is reproduced. These are behavioral walkthroughs, not independent skill invocations or reader trials.
+
+### 1. The same information under two editing scopes
+
+Input: “Lemma A supplies the estimate used below. Lemma B in the same source classifies a different boundary problem.” Both statements are supplied as true; the classification has no role anywhere in this manuscript. The user first authorizes restructuring this paragraph for its present purpose.
+
+Structural output: “The estimate used below follows from Lemma A.” The unused classification is omitted at the mathematical-writing stage. That sentence, with its attribution, becomes the complete handoff to optional language cleanup.
+
+Language-only variant, using the original two sentences as the handoff: “The estimate used below follows from Lemma A. Lemma B in the same source classifies a different boundary problem.” Both claims remain. The omission is not smuggled into Humanizer's preservation contract. If the author instead requires retaining both facts somewhere, relocation needs a suitable destination; the structural output above does not satisfy that changed request.
+
+### 2. A clarification with no defensive keyword
+
+Input for graph specialists: “Let G=(V,E) be a finite simple graph. Vertices of degree zero are allowed.” There is no preceding minimum-degree convention or comparison, and the graph definition already allows them.
+
+Output: “Let G=(V,E) be a finite simple graph.” No scope is lost in this supplied context. The reason is redundancy, not the presence of a hedge.
+
+Contrast input: the preceding discussion is specifically of a supplied earlier theorem assuming minimum degree one, and the new result includes isolated vertices. Output: “Unlike the earlier theorem, this result also allows isolated vertices.” Here the comparison earns its place. This is a synthetic supplied comparison, not a claim about an actual paper.
+
+### 3. Repeated paragraph roles and a necessary mathematical bridge
+
+Input: two paragraphs say “We combine two estimates to obtain the bound” and “Our method first uses control of D and then returns to E.” The supplied proof facts are E≤C₀+εD and D≤2E+R for nonnegative E,D,R, with C₀ independent of ε and both inequalities available for every ε∈(0,1]. The user requests an explanation for a research audience.
+
+Output: “Substituting D≤2E+R into E≤C₀+εD and choosing ε=1/4 gives E≤C₀+E/2+R/4. Absorbing E/2 yields E≤2C₀+R/2.” This replaces two method announcements with the actual connection. It is longer than simply saying “combine the estimates”; the extra information explains the choice and closure.
+
+Contrast: an abstract states the final estimate, the introduction gives the argument above, and the theorem specifies the full hypotheses. Retain those occurrences when each serves that distinct purpose; repeating the bound alone does not establish redundancy.
+
+### 4. Integrate successive additions rather than append another explanation
+
+Input: the accepted E31 mathematics, plus scattered explanatory sentences: “We impose zero mean on x. A has a kernel. We also need b to have zero mean. The eigenvalue estimate gives the bound. The kernel consists of constants.” Structural revision is authorized; no wording is locked.
+
+Output: “Because A annihilates constants, Ax=b requires b to have zero mean, and solutions are determined only up to a constant. Restricting both b and x to the mean-zero subspace removes this ambiguity. There the eigenvalues are positive; inversion in an orthonormal eigenbasis gives the unique normalized solution and the bound ‖x‖₂≤λ₂⁻¹‖b‖₂.” This passage follows E31's definition of A and λ₂; it is not a standalone theorem. The construction, compatibility and normalization remain connected. In a language-only or verbatim-lock variant, do not make this structural rewrite without authorization.
+
+### 5. Necessary contrast, genuine whitelist match and unmatched prose
+
+Mathematical input: “这里得到逐点收敛，而不是一致收敛。” The supplied source explicitly distinguishes these conclusions. Output unchanged: “这里得到逐点收敛，而不是一致收敛。” The negative clause carries mathematical scope; neither anti-defensive cleanup nor the local mathematical whitelist integration deletes it.
+
+Whitelist input: “说白了，这个估计只适用于 t>0。” Output: “这个估计只适用于 t>0。” The matched opening is removed under rule 9; the strict time range and restriction survive.
+
+English input to the Chinese whitelist: “The estimate holds for every t in (0,T).” Output unchanged: “The estimate holds for every t in (0,T).” No English trigger is invented. Under a separate authorized Humanizer language-only request, claims and mathematical tokens would still be fixed by its own handoff.
+
+### 6. A study explanation retains its operation
+
+Input: a learner does not yet know how the mean-zero normalization works. Use the E31 example A=((1,−1),(−1,1)), b=(1,−1), x=(1/2,−1/2). A suggestion says to compress the worked explanation to “The spectral theorem gives the result.”
+
+Output: “矩阵 A 把 (1,1) 送到零，把 (1,−1) 送到 2(1,−1)。因此对 b=(1,−1)，沿这个方向把系数除以 2，得到 x=(1/2,−1/2)。代入可得 Ax=b，而且 x 的分量和为零。所有其他解都可以加上 c(1,1)，零均值条件把这个自由度固定下来。” The learning task keeps the operation and its check. A specialist-paper compression is not imported merely because both artifacts concern the same result.
+
+### Handoff and regression review
+
+Content selection, clarity and preservation were reviewed separately. The cases produce a deletion, a retained clarification, an expanded causal link, an integrated paragraph, an unchanged mathematical contrast, one genuine whitelist edit, an unchanged English sentence and a worked teaching explanation. No hard failure was found in these supplied outputs; this is not an estimated success rate.
+
+E01–E08 were repeated at their supplied fragment scope: E01 preserves proof-draft and omits unchecked priority; E02 chooses the existentially supplied f without asserting every isomorphism is continuous; E03 retains the explicit unsupported implication as a gap; E04 leaves labels, references, citation keys, the open time interval and Faber--Krahn unchanged; E05 restores connectedness and the universal open-interval quantifier; E06 describes the plot as numerical evidence and leaves missing provenance unresolved; E07 leaves unconfirmed submission declarations as placeholders; E08 retains compactness at the indicated subsequence step and does not claim an unapplied edit. The existing fragment outputs above remain applicable. No full manuscript build, independent audit or reader experiment was run.
+
+### Local adaptations and remaining limits
+
+The bundled DNA entry and lieflat cleaner contain explicitly marked mathematics-only additions. Removing those marked sections recovers the recorded upstream SHA-256 values; all other pinned runtime files remain byte-identical. Distributed hashes and local-change descriptions were updated to record this authorized change, not to redefine upstream. The global Humanizer and anti-defensive installations were read but not edited. Their cooperation is handled by the mathematical interfaces.
+
+The original Humanizer permits paragraph merging/splitting while requiring all supplied claims to survive; the interface therefore freezes the post-selection handoff. Some upstream examples shorten information more aggressively than their preservation rules allow. These examples do not override the mathematical contract. Technical-neutral voice, protected mathematical typography and the explicit small-corpus DNA mode already had integration guidance; no new defect is claimed for those covered boundaries. Effects on future contexts and other genres remain unmeasured.
+
+Instruction snapshots (SHA-256):
+
+- math-paper-writing/SKILL.md: 7d8e73a98ecc8b2bf1fd5c6c7ecebc9df3e48ff106db17640b734327cffd08af
+- math-paper-writing/references/humanizer-interface.md: ad4a3a32aa988a779835da9dd2f29efb8b71652a33b5b14c34e5e8cbcabd7a3b
+- math-paper-writing/references/anti-defensive-interface.md: 3232de14dc994d1117727cedb25040cba0e6ba92bf4e16f01542ee41d5902eb4
+- math-paper-writing/references/exposition-and-structure.md: 707b38ac5b4bc5bb5bc33c9ec2ead60154f592eae5bcf3e9816e2b1d831694f9
+- math-paper-writing/assets/writing-dna-skill/SKILL.md: 999d7452aa55df308caa92a7898fb69951a2785c4ca056dd5cd18c428aaac595
+- math-paper-writing/assets/writing-dna-skill/skills/lieflat-less-ai-tone/SKILL.md: 792659ce4c21ae0f48f2b6dc0baa9d0e359b648eb9e71aa6fc02f6fe1dac2b55
+- math-paper-study-guide/SKILL.md: 00116c368351fa6f9f1b7dfdfc2d4e9f5773b1ac16035786b06203641bf83904
+
+Mechanical provenance check: all 21 recorded upstream hashes were recovered after removing only the two marked local integration sections. In a temporary skill copy, adding an unrecorded line to the bundled cleaner made the resource validator exit 1. The unchanged distribution passed; no expected hash was refreshed for the negative control. The six existing file-helper tests also passed.

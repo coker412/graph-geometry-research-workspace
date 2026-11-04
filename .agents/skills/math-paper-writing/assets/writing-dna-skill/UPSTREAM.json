@@ -3,12 +3,12 @@
   "commit": "35a38cf4690d6048aca10fd2692c2b55de5bcb3f",
   "checked": "2026-11-02",
   "license": "MIT",
-  "scope": "Pinned upstream runtime; SKILL.md has one documented mathematical-routing paragraph. All other upstream runtime files are unchanged.",
+  "scope": "Pinned upstream runtime with documented mathematics-only additions in the DNA entry and bundled cleaner. All other upstream runtime text is unchanged.",
   "sha256": {
     "LICENSE": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685",
-    "SKILL.md": "27882f6a2984edc5c017d4f7c716c80272225b04c77a492ea23b511dafab42c3",
+    "SKILL.md": "999d7452aa55df308caa92a7898fb69951a2785c4ca056dd5cd18c428aaac595",
     "references/workflow.en.md": "8c13efd81ec070a945faf7d6cc6013ed8bec6af50335d067d6ace7ff47164a14",
-    "skills/lieflat-less-ai-tone/SKILL.md": "16661f5c97fc856d21d7bd0b33471e7f0ca20fbc13c4d5136ef5288680bea7d1",
+    "skills/lieflat-less-ai-tone/SKILL.md": "792659ce4c21ae0f48f2b6dc0baa9d0e359b648eb9e71aa6fc02f6fe1dac2b55",
     "templates/author-corpus/README.md": "2e2321dae2b272fd4ec52ddc7270387032bbab852c7c4bbad281cfd350eeaeb0",
     "templates/author-corpus/en/README.md": "5285aebbb953c3db4ccee0ac6185aff5aab772dd1f86c1d4c77a93237aa4cfda",
     "templates/author-corpus/en/Writing-DNA.md": "17ec8c6074bf2d53979d8736210357f99797440c80c037e1f1b916e0985e27ff",
@@ -51,6 +51,8 @@
     "templates/author-corpus/zh/语言DNA.md": "20fcd0bb7350ff8cd5260d0fa8b965bf320e577fa62871a3166db24109a85186"
   },
   "local_changes": {
-    "SKILL.md": "Added Mathematical papers: bundled integration, linking ../../references/style-distillation.md. No upstream workflow text removed or rewritten."
-  }
+    "SKILL.md": "Added Mathematical papers: bundled integration: mathematical adaptation link, task ownership and optional language-appropriate cleanup. The remaining upstream text is unchanged.",
+    "skills/lieflat-less-ai-tone/SKILL.md": "Added 本地数学适配: selected-content handoff, mathematical invariants, purposeful teaching repetition and language applicability. The remaining upstream text is unchanged."
+  },
+  "local_changes_checked": "2026-11-04"
 }

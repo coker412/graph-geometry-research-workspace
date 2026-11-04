@@ -171,6 +171,14 @@ Avoid:
 
 The author's voice may be present in motivation and informal remarks, but formal claims must remain distinguishable from opinion or heuristic explanation.
 
+## Select information and integrate revisions
+
+Correct and relevant information still needs a purpose at its present location. For background, literature details and explanatory sentences, ask what the intended reader would lose here if the item were deleted or moved to its point of use. Keep an explanation that resolves a real ambiguity even if it follows from a definition. Defer an otherwise useful detail when the reader does not yet need it; omit it within an authorized structural edit when it serves no current or downstream purpose. Necessary scope, evidence and an unfavorable result affecting the conclusion cannot be removed for economy.
+
+Read related paragraphs together and identify the understanding each adds. Different wording can repeat the same introduction of a method, contribution or background. Merge, shorten or redistribute such material while retaining the causal connections and credit. Conversely, an abstract's summary, an introduction's explanation and a theorem's precise statement can repeat a result for different purposes. A learning edition may also need a worked example and a return to the general statement.
+
+When several rounds have appended explanations, revise the affected passage as a whole. A request to clarify a point may call for replacing a sentence or reordering the argument rather than adding another sentence. Preserve accepted mathematics, explicitly protected wording and author decisions; earlier unprotected wording is not automatically permanent. Recheck the passage with its neighbors for a clear focus, first-use comprehension and links between claims. Use the smallest coherent unit that resolves the problem, not a fixed paragraph quota.
+
 ## Revision passes
 
 For a substantial paper, separate at least these concerns:

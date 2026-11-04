@@ -4,4 +4,6 @@ For repetitive caveats, apologetic contribution statements or unnecessary hedgin
 
 Apply primarily to abstracts, introductions and discussion. Keep formal statements and proofs unchanged unless their revision is explicitly requested. Supply the passage, intended contribution and the mathematical content to preserve: hypotheses, quantifiers, formulas, references and proof status. Keep necessary conditions with the claim. Apply experimental advice only to actual experiments. After revision, compare mathematical meaning using the existing [semantic checks](humanizer-interface.md); no separate audit workflow is needed.
 
-Use author profiles for writing choices and Humanizer for mechanical wording as needed. Do not make all three compulsory passes. Follow the original skill's procedure rather than duplicating it here.
+Diagnose the sentence's function, including redundant clarification without defensive keywords. Deletion must leave its necessary scope, logic or reader guidance supplied in context. A true but tangential literature fact is normally a content-selection issue for mathematical writing, not evidence of defensive tone. Useful contrasts such as pointwise versus uniform convergence remain mathematical content.
+
+Follow the [stage boundaries](humanizer-interface.md#coordinate-editing-stages): use this intervention when needed before freezing the selected passage for language cleanup. Do not make profiles, anti-defensive writing and Humanizer compulsory successive passes. Follow the original skill's procedure rather than duplicating it here.

@@ -48,7 +48,7 @@ Read only applicable references, once. Combine routes when an edit crosses their
 
 For whole-paper drafting, first identify the question, contribution and mathematical dependencies, then write the body. Write the full introduction once the main statements and proof structure are stable, and derive the abstract from the completed paper. Early architecture decisions do not require an introduction draft. For existing text, diagnose the actual reading difficulty before editing; make a local repair or reorganize the affected passage as needed. Compare the revision with the original for a specific benefit and cost. Keep clear text unchanged when an alternative brings no demonstrable benefit. The exposition reference gives the quality dimensions and proof-organization checks.
 
-Use author profiles, `anti-defensive-writing` and Humanizer only as the task needs; preserve mathematical meaning and accepted author choices.
+Use author profiles, `anti-defensive-writing` and language cleanup only as the task needs. Mathematical writing owns manuscript content and organization; the study skill owns learning editions. Follow the [stage boundaries](references/humanizer-interface.md#coordinate-editing-stages) so cleanup receives selected content rather than deciding what the paper should contain.
 
 ## Delivery and maintenance
 

@@ -17,6 +17,8 @@ Use the request and existing preferences without an intake questionnaire or prel
 
 Default to Chinese unless the user chooses another language. Default to a reader fluent in calculus and linear algebra who only vaguely recognizes advanced-course concepts; an explicit reader background overrides this. An English edition uses the same teaching standard and does not imply a specialist audience or a submission manuscript.
 
+This skill controls teaching structure and detail. Optional author profiles or language cleaners must respect the declared reader's needs: a worked calculation, prerequisite explanation or purposeful restatement is not disposable merely because a specialist paper could be shorter. Complete teaching-content decisions before language cleanup; return substantive changes to this stage rather than letting a cleaner remove untaught steps.
+
 ## Establish the source and its boundaries
 
 Identify the exact accessible source/version, agreed scope, source status and gaps, whether auditing is requested, and the notation and labels to preserve. Follow applicable repository instructions already in context.

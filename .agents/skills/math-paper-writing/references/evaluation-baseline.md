@@ -72,3 +72,7 @@ Researcher feedback identified that the entrypoint and quality examples still em
 ## 2026-11-04 introduction execution follow-up
 
 E32 adds an authentic public-source introduction task. The maintainer drafted an introduction focused on Ellenberg–Gijswijt's cap-set consequence, read back its question/result/payoff/mechanism, checked it against fixed source passages, and narrowed one comparison sentence. Three follow-up controls exercise missing literature, an unsupported support claim and mechanism compression. E01–E08 were repeated at their supplied fragment scope. Actual outputs are retained in the distribution's tests/writing-quality.md. This is same-context development, with prior access to the original introduction, not independent evaluation or evidence of better reader comprehension. Static validation now covers 32 case definitions; it does not execute them.
+
+## 2026-11-04 content selection and skill coordination
+
+E33 exercises structural versus language-only scope, contextual clarification, repeated paragraph functions, causal expansion, iterative integration, protected mathematical contrast, whitelist applicability and teaching detail. Actual supplied inputs and outputs are retained in tests/writing-quality.md in the distribution; E01–E08 were repeated at fragment scope. This is same-context maintenance, not independent execution or reader validation. Two documented mathematics-only additions to bundled upstream skills were checked by reconstructing the original hashes. Static validation covers 33 case definitions, not 33 behavioral passes.

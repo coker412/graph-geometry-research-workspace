@@ -6,14 +6,24 @@ Use this protocol when an available Humanizer skill is requested or would materi
 
 Apply constraints in this order:
 
-1. the user's requested mathematical meaning and scope;
+1. the user's request, accepted author choices and permitted scope;
 2. applicable repository and publication policy;
 3. formal statements, evidence status, and checked citations;
 4. this skill's mathematical integrity rules;
-5. explicit author voice choices and compatible, selected writing-profile traits;
+5. compatible, selected writing-profile traits;
 6. Humanizer's style preferences.
 
 When a style preference conflicts with mathematical convention or semantic preservation, preserve the mathematics.
+
+## Coordinate editing stages
+
+Choose the owner by deliverable: mathematical writing selects and organizes manuscript content; the study skill selects teaching content and necessary detail. An author profile supplies optional, source-supported choices to that owner. It does not override the task's audience or approved content.
+
+For an authorized structural revision, finish the [information selection and integration](exposition-and-structure.md#select-information-and-integrate-revisions) before freezing a passage for language cleanup. Anti-defensive writing may remove redundant caveats and rebuild a paragraph when needed within that scope. Then give Humanizer the selected passage, retained claims, audience and any locked structure. Its preservation rule applies to this handoff version, not to every sentence from earlier drafts. Humanizer can merge or split paragraphs when allowed; it must not discard claims to solve an unresolved content-selection problem.
+
+Use the bundled lieflat cleaner only for explicit whitelist matches after the content and structure are settled. Its unchanged-paragraph-order rule is narrower than Humanizer's scope. Do not ask both to control the same structural decision or run them successively by default. The original DNA cleanup step is optional for mathematical work, and its Chinese rules do not license inventing equivalent English triggers.
+
+If cleanup reveals a substantive omission, unnecessary claim or structural problem, return that issue to the owning writing/study stage, revise within the user's scope, and refresh the handoff before any further polish. Do not loop through cleaners until every one prefers the prose. A generic example or style preference never authorizes removing necessary hypotheses, technical contrasts, intentional repetition or protected notation.
 
 ## Default scope
 
@@ -54,7 +64,7 @@ For defensive framing, use the [anti-defensive-writing interface](anti-defensive
 
 ### 1. Freeze the semantic contract
 
-Record for the selected passage:
+Record for the selected handoff passage, after any authorized content selection:
 
 - each factual and mathematical claim;
 - hypotheses, quantifiers, parameter ranges, and exceptions;
