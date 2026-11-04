@@ -35,7 +35,8 @@ Read only applicable references, once. Combine routes when an edit crosses their
 | Task | Required guidance |
 | --- | --- |
 | Drafting mathematical claims, proof-bearing edits, or mathematical audit, including wording changes to formal statements | [mathematical-integrity.md](references/mathematical-integrity.md) |
-| Titles, abstracts, introductions, structure, notation, or proof exposition | [exposition-and-structure.md](references/exposition-and-structure.md) |
+| First-draft or revised introduction | [Introduction drafting and read-back](references/exposition-and-structure.md#introduction): write actual prose, check what a reader can recover, then reconcile it with the body and cited sources |
+| Titles, abstracts, structure, notation, or proof exposition | [exposition-and-structure.md](references/exposition-and-structure.md) |
 | `.tex`/`.bib`, builds, translation, or bilingual synchronization | [latex-and-bilingual-writing.md](references/latex-and-bilingual-writing.md) |
 | Figures, diagrams, tables, or captions | [figures-tables-and-diagrams.md](references/figures-tables-and-diagrams.md) |
 | Cover letters, submission packages, or referee responses | [submission-and-peer-review.md](references/submission-and-peer-review.md) |
@@ -45,7 +46,7 @@ Read only applicable references, once. Combine routes when an edit crosses their
 | Defensive contribution statements, repetitive caveats, or vague self-limitation | Read [anti-defensive-interface.md](references/anti-defensive-interface.md), then use the original `anti-defensive-writing` skill directly |
 | Detailed Chinese learning edition | Use the separate `math-paper-study-guide` skill; do not impose its teaching structure on a manuscript |
 
-For substantial drafting, use mathematical dependencies to design the reader's route and write the abstract and introduction once the body is stable. For existing text, diagnose the actual reading difficulty before editing; make a local repair or reorganize the affected passage as needed. Compare the revision with the original for a specific benefit and cost. Keep clear text unchanged when an alternative brings no demonstrable benefit. The exposition reference gives the quality dimensions and proof-organization checks.
+For substantial drafting, use mathematical dependencies to design the reader's route. An early introduction can test the paper's focus; finalize its claims and the abstract against the stable body. For existing text, diagnose the actual reading difficulty before editing; make a local repair or reorganize the affected passage as needed. Compare the revision with the original for a specific benefit and cost. Keep clear text unchanged when an alternative brings no demonstrable benefit. The exposition reference gives the quality dimensions and proof-organization checks.
 
 Use author profiles, `anti-defensive-writing` and Humanizer only as the task needs; preserve mathematical meaning and accepted author choices.
 

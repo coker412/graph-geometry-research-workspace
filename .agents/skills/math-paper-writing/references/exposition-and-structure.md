@@ -78,21 +78,17 @@ Do not put proof details, undefined notation, or claims absent from the body int
 
 ## Introduction
 
-Write the introduction after the mathematical body is stable enough to summarize honestly. It should let an appropriate reader identify:
+Treat the introduction as a substantial piece of mathematical exposition. An early draft can test the paper's focus and architecture; reconcile the final version with the stable body. Do not postpone all thinking about motivation until the end.
 
-- the problem and why it arises;
-- the verified state of relevant literature;
-- the gap addressed by the paper;
-- the main result, with accurate scope;
-- the central proof idea and technical obstruction;
-- where the arguments are located;
-- a limitation or boundary case when it materially affects the claim, its interpretation, or a verified comparison with prior work.
+**Compose from concrete anchors.** Locate the main statement and scope, the proof passage carrying the central idea, and the closest verified literature relevant to the comparison. Choose a route that explains the question, what the result changes, and how the argument achieves it. Write connected prose; a bibliography tour followed by a list of theorems is not enough. Keep anchors in the existing working context or review notes, not a mandatory new file. If comparison evidence is missing, draft the supported mathematics and report the missing comparison separately; do not invent a gap.
 
-There is no default requirement for a limitations paragraph. Lead with the mathematical contribution, retaining the conditions needed to understand it. A specific failure of a natural extension can explain the theorem; a routine reminder that the paper does not solve every larger problem adds no information. For repetitive or apologetic framing, use the [anti-defensive diagnosis](anti-defensive-interface.md).
+Give the main result appropriate prominence. If its formal version requires too much setup, introduce a useful special case or a clearly marked informal statement and point to the precise version. Explain significance through what can now be classified, constructed, estimated or deduced. Explain the mechanism by a causal connection in the proof, not a list of method names. An obstruction belongs here when it explains an actual choice or innovation.
 
-"Sell" the paper by making its exact contribution visible, not by adding praise. Compare with previous work only after checking the comparison. If the formal theorem is too technical for the introduction, give a useful special case or a clearly marked informal statement, then point to the precise version.
+**Read back the delivered prose.** After drafting, try to recover from the introduction alone: the question; the result and its scope; its mathematical payoff or verified relation to earlier work; and the decisive idea. Point to the sentences supplying the answers. Do not fill missing links from your knowledge of the body. Then cross-check those answers against the source anchors, including constants, quantifiers and the attribution of methods. This same-context exercise detects omissions and mismatches; it is not a test with an unfamiliar reader.
 
-Distinguish the main result, the mechanism that makes it possible, and supporting consequences. Explain significance through an actual mathematical relation: what can now be classified, constructed, estimated, or deduced from the supplied results. A list of theorem numbers does not do this work. Do not invent a historical obstacle or applications to manufacture importance. Mention an absent hypothesis when a verified comparison or natural mathematical question makes its absence informative.
+**Repair the diagnosed problem and repeat the affected check.** If the result is buried, move it; if a connection is missing, write that connection; if background obscures the question, shorten or relocate it. When the body changes, revisit the affected introduction claims. Deliver the prose, with a brief review note stating any unresolved substantive issue. Do not substitute a compliance checklist for the introduction or claim that following this process guarantees good writing.
+
+Scale the introduction to the paper and audience. There is no fixed paragraph count or mandatory roadmap, novelty slogan, obstacle, or limitations paragraph. Give navigation when it helps locate a substantial argument. A specific failure of a natural extension can illuminate the theorem; a list of assumptions the paper does not need usually adds nothing unless a verified comparison makes it informative. Avoid invented history and applications. For repetitive or apologetic framing, use the [anti-defensive diagnosis](anti-defensive-interface.md).
 
 ## Transfer arguments and informal overviews
 

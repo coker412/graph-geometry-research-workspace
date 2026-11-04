@@ -159,3 +159,43 @@ First-draft and architecture follow-up snapshots (SHA-256; separate from the ear
 - math-paper-writing/references/exposition-and-structure.md: a39ef7bb794f82dee7bcee451af755c5a36c2af0812b886d5255c4653f44237d
 - math-paper-study-guide/SKILL.md: 340904531d8f1e4e0dde079b93392de58b2b3d27504326b11a616d1793da622c
 - math-paper-study-guide/references/chinese-study-edition-method.md: 6c2f15f4168c9cdf24646b5167191e050f29d7b6683025cbfe3adf645356017b
+
+## E32 follow-up: an introduction from a public mathematical argument
+
+**Task and evidence.** On 2026-11-04, compose a short introduction for a specialist from Ellenberg–Gijswijt's four-page [2016 paper, fixed v1](https://arxiv.org/html/1605.09223v1), focusing on its cap-set consequence. This is an attributed editorial demonstration, not our research, a replacement manuscript, or a claim to improve the authors' introduction. The maintainer read the full paper, including its original introduction; this is not a blind or fresh-context test. “We” below refers to the source authors.
+
+**Source anchors.** Proposition 2 and its proof supply the matrix-rank mechanism; Theorem 4 and its proof supply the support/dimension step; Corollary 5 supplies the quantitative cap-set consequence. For context, consult [Bateman–Katz v2, abstract](https://arxiv.org/abs/1101.5851v2) and [Croot–Lev–Pach v2, abstract](https://arxiv.org/abs/1605.01506v2). Only those two abstracts were checked directly; their complete proofs were not reviewed.
+
+**Draft output.**
+
+How large can a subset of F₃ⁿ be if it contains no nonconstant three-term arithmetic progression? Bateman and Katz obtained the bound O(3ⁿ/n¹⁺ᵋ) for some ε>0. The exponential base in that estimate is still 3. We prove that every such set A satisfies
+
+|A| = o(2.756ⁿ) as n → ∞.
+
+Thus the density of A decays exponentially, improving the polynomial saving in the earlier bound.
+
+The argument adapts the polynomial method of Croot, Lev and Pach, who obtained an exponential bound in (Z/4Z)ⁿ. Choose a polynomial P vanishing outside A. The absence of progressions makes the matrix (P(−a−b)) indexed by a,b∈A diagonal. A degree restriction bounds its rank and hence the number of nonzero values of P. Comparing this support bound with the dimension of the space of such polynomials gives an upper bound for |A| in terms of a monomial count. A large-deviation estimate for that count yields the exponential saving.
+
+**Read-back before source reconciliation.** The first sentence supplies the question; the display gives the result and asymptotic parameter; the next sentence identifies the quantitative payoff. The second paragraph explains how the progression condition becomes a rank restriction and how that restriction reaches the set size. It does not require a roadmap for this short note. A point to verify against the body is whether the argument can choose P nonzero throughout A: the draft does not assert this, and the dimension step must not be shortened to such an assertion.
+
+**Source reconciliation and repair.** The initial sentence “This leaves open whether a bound with exponential base strictly below 3 is possible” can be read as a historical priority assertion broader than the checked comparison. The delivered draft above replaces it with “The exponential base in that estimate is still 3.” The other sentences are unchanged. The revised sentence describes the displayed bound itself, while the next display and its explanation supply the advance. Rechecking this change requires no claim about all preceding literature.
+
+The matrix description specializes the source's coefficients to α=β=γ=−1 in F₃, so −γA=A and its diagonal entries are P(a). It does not assert that all of them are nonzero. The support/dimension bridge in Theorem 4 is retained. The displayed asymptotic bound matches Corollary 5; the two prior-work comparisons match the checked abstracts. This is a source-fidelity review, not new certification of the cited theorem.
+
+**Negative controls, deliberately supplied after drafting.**
+
+| Changed input or proposed edit | Actual response | Review |
+| --- | --- | --- |
+| Remove verified prior-work material; permit only the supplied theorem and proof | Opening: “We study subsets of F₃ⁿ containing no nonconstant three-term arithmetic progression. We prove that every such set A satisfies \|A\|=o(2.756ⁿ) as n→∞, so its density decays exponentially.” Retain the supported mechanism paragraph, removing its attribution sentence until checked. Separate note: the literature comparison remains to be verified. | Produces usable prose without inventing a historical gap; incomplete context is disclosed outside the introduction. |
+| Replace the dimension bridge by “P is nonzero at every point of A, so the rank equals \|A\|” | Reject that replacement: the source controls support through dimension and does not supply this assertion for the degree-constrained P. Retain the support/dimension sentences. | Detects an unsupported strengthening; this planted error was not an observed model failure. |
+| Ask for a one-sentence mechanism summary | “The progression condition makes a polynomial evaluation matrix diagonal; degree bounds control its rank, and a support–dimension argument turns this into the monomial bound that yields exponential decay.” | Compression retains the intermediate bridge; it is not automatically preferable to the fuller explanation for every reader. |
+
+**E01–E08 regression read-through.** Re-executed at the supplied fragment scope, in the same context. E01: “We present a proof draft for [the supplied claim]”; omit unverified priority. E02: “Choose an isomorphism f:X→Y supplied by Theorem 1”; continuity still requires its own argument. E03: mark the unsupported implication GAP and dependent conclusions conditional; supply no invented proof. E04: keep all six protected tokens verbatim; no full prose or build can be tested because the fixture supplies only fragments. E05: restore connectedness and “对每个 t∈(0,T)”; compare affected statements before declaring synchronization. E06: caption only as a numerical observation; axes, non-color encodings, range and reproducible source remain required rather than invented. E07: draft only the known manuscript/journal portion, with unconfirmed declarations left as placeholders; no submission. E08: “Compactness supplies the convergent subsequence at the indicated proof step, so we retain it”; propose clarification without claiming it was applied. These fragment checks found no hard failure; they are not full manuscript or build tests.
+
+**Outcome and limits.** One actual introduction was drafted, read back and repaired, with three follow-up controls. The positive exposition evidence is a visible question/result/payoff and a causal method explanation. The first draft's comparison sentence needed narrowing. No assertion that this introduction outperforms the original, improves comprehension, or establishes reliable execution across future sessions follows. No human reader, independent agent, new-context trial or TeX build was involved.
+
+Introduction follow-up instruction snapshots (SHA-256):
+
+- math-paper-writing/SKILL.md: 01a37bd0d383973e048420e1497dddfdc2131eb5cb3ef803575a8470e0b7ddfd
+- math-paper-writing/references/exposition-and-structure.md: 4dcf2ae8226fa2a570a69f06e9bebf2a12945084588ddc64c57762fa692d5e13
+- math-paper-writing/references/delivery-checks.md: 39ce2e990f3a154b2ccf3b127a4136ec3e9c31eec06a995505fc22a57a2f20a3

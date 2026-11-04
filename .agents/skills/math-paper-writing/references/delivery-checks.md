@@ -12,7 +12,7 @@ Check, in proportion to the task:
 4. proof-thread continuity: the target remains visible, persistent objects keep stable names, technical detours return to the formula they justify, and the closing step combines earlier outputs on the same object;
 5. proof factorization: long technical passages with a genuine interface are lemmas or appendices, dependencies are stated before use, and short calculations are not over-fragmented;
 6. citations against the claims they support;
-7. abstract, introduction, and conclusion against the body;
+7. abstract, introduction, and conclusion against the body; for introduction drafting or structural revision, perform the [prose read-back and source reconciliation](exposition-and-structure.md#introduction), repair any missing connection or unsupported promise, and repeat the affected check;
 8. language-only edits for semantic drift and rhetorical weakening: established contributions remain direct, necessary scope remains attached, and generic or repeated disclaimers have not been added merely because internal checking was cautious;
 9. visual claims, captions, accessibility, and reproducibility when figures or tables changed;
 10. cover letters and referee responses against the manuscript, decision letter, and current venue requirements;

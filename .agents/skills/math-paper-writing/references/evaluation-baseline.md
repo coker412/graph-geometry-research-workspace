@@ -68,3 +68,7 @@ This work was performed in one authoring/review context. The fresh-context relea
 ### First-draft follow-up
 
 Researcher feedback identified that the entrypoint and quality examples still emphasized revision. The entrypoint now distinguishes composition from revision; the exposition reference supplies a compact first-draft route. E31 uses unordered spectral facts without an existing manuscript. The maintainer produced a complete short section with motivation, proposition and proof, recorded in the same development report. Source fidelity and completed exposition were checked separately. This remains same-context self-review; the checker now covers 31 case definitions. The earlier evidence and snapshots above remain historical records.
+
+## 2026-11-04 introduction execution follow-up
+
+E32 adds an authentic public-source introduction task. The maintainer drafted an introduction focused on Ellenberg–Gijswijt's cap-set consequence, read back its question/result/payoff/mechanism, checked it against fixed source passages, and narrowed one comparison sentence. Three follow-up controls exercise missing literature, an unsupported support claim and mechanism compression. E01–E08 were repeated at their supplied fragment scope. Actual outputs are retained in the distribution's tests/writing-quality.md. This is same-context development, with prior access to the original introduction, not independent evaluation or evidence of better reader comprehension. Static validation now covers 32 case definitions; it does not execute them.

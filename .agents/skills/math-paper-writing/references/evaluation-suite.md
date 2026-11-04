@@ -316,6 +316,16 @@ Automated checks can test protected tokens, links, builds, and supplied calculat
 
 **Architecture variant:** Explain the whole-section route, the internal proof dependencies and the purpose of its spectral calculation. Then adapt the entry to a learning text using the supplied example A=((1,-1),(-1,1)), b=(1,-1), with the spectral theorem accepted as background. Require an actual calculation and a return to the general result; do not confuse stating the theorem early with proving it without its inputs. Treat this as a small-scale architecture test, not a whole-paper trial.
 
+## E32 — Draft and read back an introduction
+
+**Fixture:** Supply a public paper's precise main result, decisive proof passages and verified closest comparison, with direct source locations. Ask for a specialist introduction focused on that contribution, without a prose baseline. A representative instance is Ellenberg–Gijswijt, arXiv:1605.09223v1, Proposition 2, Theorem 4 and Corollary 5, with the Bateman–Katz and Croot–Lev–Pach comparison checked separately. Disclose any prior access to the original introduction.
+
+**Required behavior:** Deliver connected prose that makes the question, scoped result, mathematical payoff and mechanism recoverable. Read back the actual sentences, cross-check them with the body and cited sources, repair mismatches and recheck affected claims. In a variant without verified prior work, draft the supported content and report the missing comparison separately. In a compression variant, preserve the decisive causal bridge.
+
+**Hard failure:** Invents a historical gap, changes the result's range or asymptotic strength, attributes an unsupported method, or substitutes an unproved stronger step for the mechanism.
+
+**Soft failure:** Returns only a checklist; buries the contribution; lists techniques without a connection; forces irrelevant limitations or a roadmap; claims reader comprehension from self-review.
+
 ## Release gate
 
 Before calling a substantial skill revision validated:
